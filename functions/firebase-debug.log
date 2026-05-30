@@ -1,0 +1,392 @@
+[debug] [2026-05-30T14:07:43.638Z] ----------------------------------------------------------------------
+[debug] [2026-05-30T14:07:43.643Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\abipo\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js emulators:start --only functions
+[debug] [2026-05-30T14:07:43.643Z] CLI Version:   15.9.0
+[debug] [2026-05-30T14:07:43.643Z] Platform:      win32
+[debug] [2026-05-30T14:07:43.643Z] Node Version:  v22.11.0
+[debug] [2026-05-30T14:07:43.644Z] Time:          Sat May 30 2026 19:37:43 GMT+0530 (India Standard Time)
+[debug] [2026-05-30T14:07:43.645Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-05-30T14:07:43.649Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2026-05-30T14:07:48.847Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-05-30T14:07:48.848Z] > authorizing via signed-in user (abivarthan444@gmail.com)
+[info] i  emulators: Starting emulators: functions {"metadata":{"emulator":{"name":"hub"},"message":"Starting emulators: functions"}}
+[info] i  emulators: Detected demo project ID "demo-no-project", emulated services will use a demo configuration and attempts to access non-emulated services for this project will fail. {"metadata":{"emulator":{"name":"hub"},"message":"Detected demo project ID \"demo-no-project\", emulated services will use a demo configuration and attempts to access non-emulated services for this project will fail."}}
+[debug] [2026-05-30T14:07:48.861Z] [logging] Logging Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-05-30T14:07:48.861Z] assigned listening specs for emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}]},"metadata":{"message":"assigned listening specs for emulators"}}
+[debug] [2026-05-30T14:07:48.869Z] Write emulator hub locator at C:\Users\abipo\AppData\Local\Temp\hub-demo-no-project.json
+[debug] [2026-05-30T14:07:48.888Z] [functions] Functions Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-05-30T14:07:48.888Z] [eventarc] Eventarc Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-05-30T14:07:48.888Z] [tasks] Cloud Tasks Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-05-30T14:07:48.888Z] late-assigned ports for functions and eventarc emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"functions":[{"address":"127.0.0.1","family":"IPv4","port":5001}],"eventarc":[{"address":"127.0.0.1","family":"IPv4","port":9299}],"tasks":[{"address":"127.0.0.1","family":"IPv4","port":9499}]},"metadata":{"message":"late-assigned ports for functions and eventarc emulators"}}
+[debug] [2026-05-30T14:07:49.560Z] defaultcredentials: writing to file C:\Users\abipo\AppData\Roaming\firebase\abivarthan444_gmail_com_application_default_credentials.json
+[debug] [2026-05-30T14:07:49.566Z] Setting GAC to C:\Users\abipo\AppData\Roaming\firebase\abivarthan444_gmail_com_application_default_credentials.json {"metadata":{"emulator":{"name":"functions"},"message":"Setting GAC to C:\\Users\\abipo\\AppData\\Roaming\\firebase\\abivarthan444_gmail_com_application_default_credentials.json"}}
+[info] i  functions: Watching "C:\Users\abipo\OneDrive\Desktop\Jayple-Admin\functions" for Cloud Functions... {"metadata":{"emulator":{"name":"functions"},"message":"Watching \"C:\\Users\\abipo\\OneDrive\\Desktop\\Jayple-Admin\\functions\" for Cloud Functions..."}}
+[debug] [2026-05-30T14:07:49.657Z] Validating nodejs source
+[warn] !  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] !  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2026-05-30T14:07:52.379Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions"
+  },
+  "engines": {
+    "node": "22"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "@google-cloud/firestore": "^8.6.0",
+    "firebase-admin": "^12.1.0",
+    "firebase-functions": "^6.0.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  },
+  "private": true
+}
+[debug] [2026-05-30T14:07:52.379Z] Building nodejs source
+[debug] [2026-05-30T14:07:52.380Z] Failed to find version of module node: reached end of search path C:\Users\abipo\OneDrive\Desktop\Jayple-Admin\functions\node_modules
+[info] +  functions: Using node@22 from host. 
+[debug] [2026-05-30T14:07:52.389Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-05-30T14:07:52.397Z] Found firebase-functions binary at 'C:\Users\abipo\OneDrive\Desktop\Jayple-Admin\functions\node_modules\.bin\firebase-functions'
+[debug] [2026-05-30T14:07:52.598Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 200
+[debug] [2026-05-30T14:07:52.598Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json {"cloudBuildErrorAfter":1594252800000,"cloudBuildWarnAfter":1590019200000,"defaultNode10After":1594252800000,"minVersion":"3.0.5","node8DeploysDisabledAfter":1613390400000,"node8RuntimeDisabledAfter":1615809600000,"node8WarnAfter":1600128000000}
+[info] Serving at port 8738
+
+[debug] [2026-05-30T14:07:55.181Z] Got response from /__/functions.yaml {"endpoints":{"approveVendor":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"approveVendor"},"getAnalyticsSummary":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"getAnalyticsSummary"},"adjustVendorWallet":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"adjustVendorWallet"},"runWeeklySettlements":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"runWeeklySettlements"},"markSettlementPaid":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"markSettlementPaid"},"ocrVerifyVendorDocument":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"ocrVerifyVendorDocument"},"broadcastWaitlistNotification":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"broadcastWaitlistNotification"},"automatedNightlyBackup":{"availableMemoryMb":256,"timeoutSeconds":300,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"scheduleTrigger":{"schedule":"0 2 * * *","retryConfig":{},"timeZone":"Asia/Kolkata"},"entryPoint":"automatedNightlyBackup"}},"specVersion":"v1alpha1","requiredAPIs":[{"api":"cloudscheduler.googleapis.com","reason":"Needed for scheduled functions."}],"extensions":{}}
+[info] +  functions: Loaded functions definitions from source: approveVendor, getAnalyticsSummary, adjustVendorWallet, runWeeklySettlements, markSettlementPaid, ocrVerifyVendorDocument, broadcastWaitlistNotification, automatedNightlyBackup. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: approveVendor, getAnalyticsSummary, adjustVendorWallet, runWeeklySettlements, markSettlementPaid, ocrVerifyVendorDocument, broadcastWaitlistNotification, automatedNightlyBackup."}}
+[info] +  functions[asia-south1-approveVendor]: http function initialized (http://127.0.0.1:5001/demo-no-project/asia-south1/approveVendor). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/demo-no-project/asia-south1/approveVendor)."}}
+[info] +  functions[asia-south1-getAnalyticsSummary]: http function initialized (http://127.0.0.1:5001/demo-no-project/asia-south1/getAnalyticsSummary). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/demo-no-project/asia-south1/getAnalyticsSummary)."}}
+[info] +  functions[asia-south1-adjustVendorWallet]: http function initialized (http://127.0.0.1:5001/demo-no-project/asia-south1/adjustVendorWallet). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/demo-no-project/asia-south1/adjustVendorWallet)."}}
+[info] +  functions[asia-south1-runWeeklySettlements]: http function initialized (http://127.0.0.1:5001/demo-no-project/asia-south1/runWeeklySettlements). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/demo-no-project/asia-south1/runWeeklySettlements)."}}
+[info] +  functions[asia-south1-markSettlementPaid]: http function initialized (http://127.0.0.1:5001/demo-no-project/asia-south1/markSettlementPaid). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/demo-no-project/asia-south1/markSettlementPaid)."}}
+[info] +  functions[asia-south1-ocrVerifyVendorDocument]: http function initialized (http://127.0.0.1:5001/demo-no-project/asia-south1/ocrVerifyVendorDocument). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/demo-no-project/asia-south1/ocrVerifyVendorDocument)."}}
+[info] +  functions[asia-south1-broadcastWaitlistNotification]: http function initialized (http://127.0.0.1:5001/demo-no-project/asia-south1/broadcastWaitlistNotification). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/demo-no-project/asia-south1/broadcastWaitlistNotification)."}}
+[info] i  functions[asia-south1-automatedNightlyBackup]: function ignored because the pubsub emulator does not exist or is not running. {"metadata":{"emulator":{"name":"functions"},"message":"function ignored because the pubsub emulator does not exist or is not running."}}
+[debug] [2026-05-30T14:08:02.197Z] Could not find VSCode notification endpoint: FetchError: request to http://localhost:40001/vscode/notify failed, reason: . If you are not running the Firebase Data Connect VSCode extension, this is expected and not an issue.
+[info] 
+┌─────────────────────────────────────────────────────────────┐
+│ ✔  All emulators ready! It is now safe to connect your app. │
+│ i  View Emulator UI at http://127.0.0.1:4000/               │
+└─────────────────────────────────────────────────────────────┘
+
+┌───────────┬────────────────┬─────────────────────────────────┐
+│ Emulator  │ Host:Port      │ View in Emulator UI             │
+├───────────┼────────────────┼─────────────────────────────────┤
+│ Functions │ 127.0.0.1:5001 │ http://127.0.0.1:4000/functions │
+└───────────┴────────────────┴─────────────────────────────────┘
+  Emulator Hub host: 127.0.0.1 port: 4400
+  Other reserved ports: 4500
+
+Issues? Report them at https://github.com/firebase/firebase-tools/issues and attach the *-debug.log files.
+ 
+[debug] [2026-05-30T15:18:13.334Z] File C:\Users\abipo\OneDrive\Desktop\Jayple-Admin\functions\src\index.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File C:\\Users\\abipo\\OneDrive\\Desktop\\Jayple-Admin\\functions\\src\\index.ts changed, reloading triggers"}}
+[debug] [2026-05-30T15:18:13.396Z] File C:\Users\abipo\OneDrive\Desktop\Jayple-Admin\functions\src\index.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File C:\\Users\\abipo\\OneDrive\\Desktop\\Jayple-Admin\\functions\\src\\index.ts changed, reloading triggers"}}
+[debug] [2026-05-30T15:18:14.470Z] Validating nodejs source
+[warn] !  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] !  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2026-05-30T15:18:20.194Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions"
+  },
+  "engines": {
+    "node": "22"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "@google-cloud/firestore": "^8.6.0",
+    "firebase-admin": "^12.1.0",
+    "firebase-functions": "^6.0.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  },
+  "private": true
+}
+[debug] [2026-05-30T15:18:20.195Z] Building nodejs source
+[debug] [2026-05-30T15:18:20.196Z] Failed to find version of module node: reached end of search path C:\Users\abipo\OneDrive\Desktop\Jayple-Admin\functions\node_modules
+[info] +  functions: Using node@22 from host. 
+[debug] [2026-05-30T15:18:20.207Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-05-30T15:18:20.231Z] Found firebase-functions binary at 'C:\Users\abipo\OneDrive\Desktop\Jayple-Admin\functions\node_modules\.bin\firebase-functions'
+[info] Serving at port 8214
+
+[debug] [2026-05-30T15:18:22.527Z] Got response from /__/functions.yaml {"endpoints":{"approveVendor":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"approveVendor"},"getAnalyticsSummary":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"getAnalyticsSummary"},"adjustVendorWallet":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"adjustVendorWallet"},"runWeeklySettlements":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"runWeeklySettlements"},"markSettlementPaid":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"markSettlementPaid"},"ocrVerifyVendorDocument":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"ocrVerifyVendorDocument"},"broadcastWaitlistNotification":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"broadcastWaitlistNotification"},"automatedNightlyBackup":{"availableMemoryMb":256,"timeoutSeconds":300,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"scheduleTrigger":{"schedule":"0 2 * * *","retryConfig":{},"timeZone":"Asia/Kolkata"},"entryPoint":"automatedNightlyBackup"}},"specVersion":"v1alpha1","requiredAPIs":[{"api":"cloudscheduler.googleapis.com","reason":"Needed for scheduled functions."}],"extensions":{}}
+[info] +  functions: Loaded functions definitions from source: approveVendor, getAnalyticsSummary, adjustVendorWallet, runWeeklySettlements, markSettlementPaid, ocrVerifyVendorDocument, broadcastWaitlistNotification, automatedNightlyBackup. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: approveVendor, getAnalyticsSummary, adjustVendorWallet, runWeeklySettlements, markSettlementPaid, ocrVerifyVendorDocument, broadcastWaitlistNotification, automatedNightlyBackup."}}
+[debug] [2026-05-30T15:18:58.206Z] File C:\Users\abipo\OneDrive\Desktop\Jayple-Admin\functions\src\cms.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File C:\\Users\\abipo\\OneDrive\\Desktop\\Jayple-Admin\\functions\\src\\cms.ts changed, reloading triggers"}}
+[debug] [2026-05-30T15:18:59.215Z] Validating nodejs source
+[warn] !  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] !  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2026-05-30T15:19:03.210Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions"
+  },
+  "engines": {
+    "node": "22"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "@google-cloud/firestore": "^8.6.0",
+    "firebase-admin": "^12.1.0",
+    "firebase-functions": "^6.0.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  },
+  "private": true
+}
+[debug] [2026-05-30T15:19:03.210Z] Building nodejs source
+[debug] [2026-05-30T15:19:03.210Z] Failed to find version of module node: reached end of search path C:\Users\abipo\OneDrive\Desktop\Jayple-Admin\functions\node_modules
+[info] +  functions: Using node@22 from host. 
+[debug] [2026-05-30T15:19:03.211Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-05-30T15:19:03.216Z] Found firebase-functions binary at 'C:\Users\abipo\OneDrive\Desktop\Jayple-Admin\functions\node_modules\.bin\firebase-functions'
+[info] Serving at port 8921
+
+[debug] [2026-05-30T15:19:04.029Z] Got response from /__/functions.yaml {"endpoints":{"approveVendor":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"approveVendor"},"getAnalyticsSummary":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"getAnalyticsSummary"},"adjustVendorWallet":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"adjustVendorWallet"},"runWeeklySettlements":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"runWeeklySettlements"},"markSettlementPaid":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"markSettlementPaid"},"ocrVerifyVendorDocument":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"ocrVerifyVendorDocument"},"broadcastWaitlistNotification":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"broadcastWaitlistNotification"},"automatedNightlyBackup":{"availableMemoryMb":256,"timeoutSeconds":300,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"scheduleTrigger":{"schedule":"0 2 * * *","retryConfig":{},"timeZone":"Asia/Kolkata"},"entryPoint":"automatedNightlyBackup"}},"specVersion":"v1alpha1","requiredAPIs":[{"api":"cloudscheduler.googleapis.com","reason":"Needed for scheduled functions."}],"extensions":{}}
+[info] +  functions: Loaded functions definitions from source: approveVendor, getAnalyticsSummary, adjustVendorWallet, runWeeklySettlements, markSettlementPaid, ocrVerifyVendorDocument, broadcastWaitlistNotification, automatedNightlyBackup. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: approveVendor, getAnalyticsSummary, adjustVendorWallet, runWeeklySettlements, markSettlementPaid, ocrVerifyVendorDocument, broadcastWaitlistNotification, automatedNightlyBackup."}}
+[debug] [2026-05-30T15:19:21.196Z] File C:\Users\abipo\OneDrive\Desktop\Jayple-Admin\functions\src\index.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File C:\\Users\\abipo\\OneDrive\\Desktop\\Jayple-Admin\\functions\\src\\index.ts changed, reloading triggers"}}
+[debug] [2026-05-30T15:19:22.197Z] Validating nodejs source
+[warn] !  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] !  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2026-05-30T15:19:27.021Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions"
+  },
+  "engines": {
+    "node": "22"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "@google-cloud/firestore": "^8.6.0",
+    "firebase-admin": "^12.1.0",
+    "firebase-functions": "^6.0.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  },
+  "private": true
+}
+[debug] [2026-05-30T15:19:27.021Z] Building nodejs source
+[debug] [2026-05-30T15:19:27.021Z] Failed to find version of module node: reached end of search path C:\Users\abipo\OneDrive\Desktop\Jayple-Admin\functions\node_modules
+[info] +  functions: Using node@22 from host. 
+[debug] [2026-05-30T15:19:27.022Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-05-30T15:19:27.027Z] Found firebase-functions binary at 'C:\Users\abipo\OneDrive\Desktop\Jayple-Admin\functions\node_modules\.bin\firebase-functions'
+[info] Serving at port 8476
+
+[debug] [2026-05-30T15:19:27.844Z] Got response from /__/functions.yaml {"endpoints":{"approveVendor":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"approveVendor"},"getAnalyticsSummary":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"getAnalyticsSummary"},"adjustVendorWallet":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"adjustVendorWallet"},"runWeeklySettlements":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"runWeeklySettlements"},"markSettlementPaid":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"markSettlementPaid"},"ocrVerifyVendorDocument":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"ocrVerifyVendorDocument"},"broadcastWaitlistNotification":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"broadcastWaitlistNotification"},"automatedNightlyBackup":{"availableMemoryMb":256,"timeoutSeconds":300,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"scheduleTrigger":{"schedule":"0 2 * * *","retryConfig":{},"timeZone":"Asia/Kolkata"},"entryPoint":"automatedNightlyBackup"}},"specVersion":"v1alpha1","requiredAPIs":[{"api":"cloudscheduler.googleapis.com","reason":"Needed for scheduled functions."}],"extensions":{}}
+[info] +  functions: Loaded functions definitions from source: approveVendor, getAnalyticsSummary, adjustVendorWallet, runWeeklySettlements, markSettlementPaid, ocrVerifyVendorDocument, broadcastWaitlistNotification, automatedNightlyBackup. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: approveVendor, getAnalyticsSummary, adjustVendorWallet, runWeeklySettlements, markSettlementPaid, ocrVerifyVendorDocument, broadcastWaitlistNotification, automatedNightlyBackup."}}
+[debug] [2026-05-30T15:19:37.726Z] File C:\Users\abipo\OneDrive\Desktop\Jayple-Admin\functions\src\index.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File C:\\Users\\abipo\\OneDrive\\Desktop\\Jayple-Admin\\functions\\src\\index.ts changed, reloading triggers"}}
+[debug] [2026-05-30T15:19:38.728Z] Validating nodejs source
+[warn] !  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] !  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2026-05-30T15:19:44.425Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions"
+  },
+  "engines": {
+    "node": "22"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "@google-cloud/firestore": "^8.6.0",
+    "firebase-admin": "^12.1.0",
+    "firebase-functions": "^6.0.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  },
+  "private": true
+}
+[debug] [2026-05-30T15:19:44.426Z] Building nodejs source
+[debug] [2026-05-30T15:19:44.426Z] Failed to find version of module node: reached end of search path C:\Users\abipo\OneDrive\Desktop\Jayple-Admin\functions\node_modules
+[info] +  functions: Using node@22 from host. 
+[debug] [2026-05-30T15:19:44.427Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-05-30T15:19:44.434Z] Found firebase-functions binary at 'C:\Users\abipo\OneDrive\Desktop\Jayple-Admin\functions\node_modules\.bin\firebase-functions'
+[info] Serving at port 8029
+
+[debug] [2026-05-30T15:19:45.331Z] Got response from /__/functions.yaml {"endpoints":{"approveVendor":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"approveVendor"},"getAnalyticsSummary":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"getAnalyticsSummary"},"adjustVendorWallet":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"adjustVendorWallet"},"runWeeklySettlements":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"runWeeklySettlements"},"markSettlementPaid":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"markSettlementPaid"},"ocrVerifyVendorDocument":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"ocrVerifyVendorDocument"},"broadcastWaitlistNotification":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"broadcastWaitlistNotification"},"automatedNightlyBackup":{"availableMemoryMb":256,"timeoutSeconds":300,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"scheduleTrigger":{"schedule":"0 2 * * *","retryConfig":{},"timeZone":"Asia/Kolkata"},"entryPoint":"automatedNightlyBackup"}},"specVersion":"v1alpha1","requiredAPIs":[{"api":"cloudscheduler.googleapis.com","reason":"Needed for scheduled functions."}],"extensions":{}}
+[info] +  functions: Loaded functions definitions from source: approveVendor, getAnalyticsSummary, adjustVendorWallet, runWeeklySettlements, markSettlementPaid, ocrVerifyVendorDocument, broadcastWaitlistNotification, automatedNightlyBackup. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: approveVendor, getAnalyticsSummary, adjustVendorWallet, runWeeklySettlements, markSettlementPaid, ocrVerifyVendorDocument, broadcastWaitlistNotification, automatedNightlyBackup."}}
+[debug] [2026-05-30T15:21:00.129Z] File C:\Users\abipo\OneDrive\Desktop\Jayple-Admin\functions\src\cms.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File C:\\Users\\abipo\\OneDrive\\Desktop\\Jayple-Admin\\functions\\src\\cms.ts changed, reloading triggers"}}
+[debug] [2026-05-30T15:21:01.142Z] Validating nodejs source
+[warn] !  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] !  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2026-05-30T15:21:04.972Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions"
+  },
+  "engines": {
+    "node": "22"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "@google-cloud/firestore": "^8.6.0",
+    "firebase-admin": "^12.1.0",
+    "firebase-functions": "^6.0.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  },
+  "private": true
+}
+[debug] [2026-05-30T15:21:04.972Z] Building nodejs source
+[debug] [2026-05-30T15:21:04.972Z] Failed to find version of module node: reached end of search path C:\Users\abipo\OneDrive\Desktop\Jayple-Admin\functions\node_modules
+[info] +  functions: Using node@22 from host. 
+[debug] [2026-05-30T15:21:04.973Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-05-30T15:21:05.012Z] Found firebase-functions binary at 'C:\Users\abipo\OneDrive\Desktop\Jayple-Admin\functions\node_modules\.bin\firebase-functions'
+[info] Serving at port 8664
+
+[debug] [2026-05-30T15:21:06.034Z] Got response from /__/functions.yaml {"endpoints":{"approveVendor":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"approveVendor"},"getAnalyticsSummary":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"getAnalyticsSummary"},"adjustVendorWallet":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"adjustVendorWallet"},"runWeeklySettlements":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"runWeeklySettlements"},"markSettlementPaid":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"markSettlementPaid"},"ocrVerifyVendorDocument":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"ocrVerifyVendorDocument"},"broadcastWaitlistNotification":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"broadcastWaitlistNotification"},"automatedNightlyBackup":{"availableMemoryMb":256,"timeoutSeconds":300,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"scheduleTrigger":{"schedule":"0 2 * * *","retryConfig":{},"timeZone":"Asia/Kolkata"},"entryPoint":"automatedNightlyBackup"}},"specVersion":"v1alpha1","requiredAPIs":[{"api":"cloudscheduler.googleapis.com","reason":"Needed for scheduled functions."}],"extensions":{}}
+[info] +  functions: Loaded functions definitions from source: approveVendor, getAnalyticsSummary, adjustVendorWallet, runWeeklySettlements, markSettlementPaid, ocrVerifyVendorDocument, broadcastWaitlistNotification, automatedNightlyBackup. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: approveVendor, getAnalyticsSummary, adjustVendorWallet, runWeeklySettlements, markSettlementPaid, ocrVerifyVendorDocument, broadcastWaitlistNotification, automatedNightlyBackup."}}
+[debug] [2026-05-30T15:21:21.509Z] File C:\Users\abipo\OneDrive\Desktop\Jayple-Admin\functions\src\cms.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File C:\\Users\\abipo\\OneDrive\\Desktop\\Jayple-Admin\\functions\\src\\cms.ts changed, reloading triggers"}}
+[debug] [2026-05-30T15:21:22.517Z] Validating nodejs source
+[warn] !  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] !  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2026-05-30T15:21:28.218Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions"
+  },
+  "engines": {
+    "node": "22"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "@google-cloud/firestore": "^8.6.0",
+    "firebase-admin": "^12.1.0",
+    "firebase-functions": "^6.0.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  },
+  "private": true
+}
+[debug] [2026-05-30T15:21:28.218Z] Building nodejs source
+[debug] [2026-05-30T15:21:28.218Z] Failed to find version of module node: reached end of search path C:\Users\abipo\OneDrive\Desktop\Jayple-Admin\functions\node_modules
+[info] +  functions: Using node@22 from host. 
+[debug] [2026-05-30T15:21:28.219Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-05-30T15:21:28.225Z] Found firebase-functions binary at 'C:\Users\abipo\OneDrive\Desktop\Jayple-Admin\functions\node_modules\.bin\firebase-functions'
+[info] Serving at port 8233
+
+[debug] [2026-05-30T15:21:29.122Z] Got response from /__/functions.yaml {"endpoints":{"approveVendor":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"approveVendor"},"getAnalyticsSummary":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"getAnalyticsSummary"},"adjustVendorWallet":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"adjustVendorWallet"},"runWeeklySettlements":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"runWeeklySettlements"},"markSettlementPaid":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"markSettlementPaid"},"ocrVerifyVendorDocument":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"ocrVerifyVendorDocument"},"broadcastWaitlistNotification":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"broadcastWaitlistNotification"},"automatedNightlyBackup":{"availableMemoryMb":256,"timeoutSeconds":300,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"scheduleTrigger":{"schedule":"0 2 * * *","retryConfig":{},"timeZone":"Asia/Kolkata"},"entryPoint":"automatedNightlyBackup"}},"specVersion":"v1alpha1","requiredAPIs":[{"api":"cloudscheduler.googleapis.com","reason":"Needed for scheduled functions."}],"extensions":{}}
+[info] +  functions: Loaded functions definitions from source: approveVendor, getAnalyticsSummary, adjustVendorWallet, runWeeklySettlements, markSettlementPaid, ocrVerifyVendorDocument, broadcastWaitlistNotification, automatedNightlyBackup. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: approveVendor, getAnalyticsSummary, adjustVendorWallet, runWeeklySettlements, markSettlementPaid, ocrVerifyVendorDocument, broadcastWaitlistNotification, automatedNightlyBackup."}}
+[debug] [2026-05-30T15:21:50.845Z] File C:\Users\abipo\OneDrive\Desktop\Jayple-Admin\functions\src\cms.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File C:\\Users\\abipo\\OneDrive\\Desktop\\Jayple-Admin\\functions\\src\\cms.ts changed, reloading triggers"}}
+[debug] [2026-05-30T15:21:51.850Z] Validating nodejs source
+[warn] !  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] !  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2026-05-30T15:21:54.904Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions"
+  },
+  "engines": {
+    "node": "22"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "@google-cloud/firestore": "^8.6.0",
+    "firebase-admin": "^12.1.0",
+    "firebase-functions": "^6.0.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  },
+  "private": true
+}
+[debug] [2026-05-30T15:21:54.904Z] Building nodejs source
+[debug] [2026-05-30T15:21:54.904Z] Failed to find version of module node: reached end of search path C:\Users\abipo\OneDrive\Desktop\Jayple-Admin\functions\node_modules
+[info] +  functions: Using node@22 from host. 
+[debug] [2026-05-30T15:21:54.905Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-05-30T15:21:54.912Z] Found firebase-functions binary at 'C:\Users\abipo\OneDrive\Desktop\Jayple-Admin\functions\node_modules\.bin\firebase-functions'
+[info] Serving at port 8620
+
+[debug] [2026-05-30T15:21:55.740Z] Got response from /__/functions.yaml {"endpoints":{"approveVendor":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"approveVendor"},"getAnalyticsSummary":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"getAnalyticsSummary"},"adjustVendorWallet":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"adjustVendorWallet"},"runWeeklySettlements":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"runWeeklySettlements"},"markSettlementPaid":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"markSettlementPaid"},"ocrVerifyVendorDocument":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"ocrVerifyVendorDocument"},"broadcastWaitlistNotification":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"broadcastWaitlistNotification"},"automatedNightlyBackup":{"availableMemoryMb":256,"timeoutSeconds":300,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"scheduleTrigger":{"schedule":"0 2 * * *","retryConfig":{},"timeZone":"Asia/Kolkata"},"entryPoint":"automatedNightlyBackup"}},"specVersion":"v1alpha1","requiredAPIs":[{"api":"cloudscheduler.googleapis.com","reason":"Needed for scheduled functions."}],"extensions":{}}
+[info] +  functions: Loaded functions definitions from source: approveVendor, getAnalyticsSummary, adjustVendorWallet, runWeeklySettlements, markSettlementPaid, ocrVerifyVendorDocument, broadcastWaitlistNotification, automatedNightlyBackup. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: approveVendor, getAnalyticsSummary, adjustVendorWallet, runWeeklySettlements, markSettlementPaid, ocrVerifyVendorDocument, broadcastWaitlistNotification, automatedNightlyBackup."}}
+[debug] [2026-05-30T15:22:19.220Z] File C:\Users\abipo\OneDrive\Desktop\Jayple-Admin\functions\src\cms.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File C:\\Users\\abipo\\OneDrive\\Desktop\\Jayple-Admin\\functions\\src\\cms.ts changed, reloading triggers"}}
+[debug] [2026-05-30T15:22:20.232Z] Validating nodejs source
+[warn] !  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] !  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2026-05-30T15:22:27.497Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions"
+  },
+  "engines": {
+    "node": "22"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "@google-cloud/firestore": "^8.6.0",
+    "firebase-admin": "^12.1.0",
+    "firebase-functions": "^6.0.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  },
+  "private": true
+}
+[debug] [2026-05-30T15:22:27.497Z] Building nodejs source
+[debug] [2026-05-30T15:22:27.497Z] Failed to find version of module node: reached end of search path C:\Users\abipo\OneDrive\Desktop\Jayple-Admin\functions\node_modules
+[info] +  functions: Using node@22 from host. 
+[debug] [2026-05-30T15:22:27.498Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-05-30T15:22:27.504Z] Found firebase-functions binary at 'C:\Users\abipo\OneDrive\Desktop\Jayple-Admin\functions\node_modules\.bin\firebase-functions'
+[info] Serving at port 8618
+
+[debug] [2026-05-30T15:22:28.286Z] Got response from /__/functions.yaml {"endpoints":{"approveVendor":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"approveVendor"},"getAnalyticsSummary":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"getAnalyticsSummary"},"adjustVendorWallet":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"adjustVendorWallet"},"runWeeklySettlements":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"runWeeklySettlements"},"markSettlementPaid":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"markSettlementPaid"},"ocrVerifyVendorDocument":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"ocrVerifyVendorDocument"},"broadcastWaitlistNotification":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"callableTrigger":{},"entryPoint":"broadcastWaitlistNotification"},"automatedNightlyBackup":{"availableMemoryMb":256,"timeoutSeconds":300,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-south1"],"labels":{},"scheduleTrigger":{"schedule":"0 2 * * *","retryConfig":{},"timeZone":"Asia/Kolkata"},"entryPoint":"automatedNightlyBackup"}},"specVersion":"v1alpha1","requiredAPIs":[{"api":"cloudscheduler.googleapis.com","reason":"Needed for scheduled functions."}],"extensions":{}}
+[info] +  functions: Loaded functions definitions from source: approveVendor, getAnalyticsSummary, adjustVendorWallet, runWeeklySettlements, markSettlementPaid, ocrVerifyVendorDocument, broadcastWaitlistNotification, automatedNightlyBackup. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: approveVendor, getAnalyticsSummary, adjustVendorWallet, runWeeklySettlements, markSettlementPaid, ocrVerifyVendorDocument, broadcastWaitlistNotification, automatedNightlyBackup."}}

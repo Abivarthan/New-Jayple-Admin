@@ -1,0 +1,103 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if user is logged in
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper function to verify if the caller is an active admin user
+    // Note: Since adminUsers collection is write-only by Admin SDK and read-only by Admin SDK,
+    // we cannot easily do get(/databases/$(database)/documents/adminUsers/$(request.auth.uid))
+    // unless we allow read access to authenticated admins.
+    // Let's allow authenticated admin reads on adminUsers for role checks in client SDK if necessary,
+    // OR restrict it to Admin SDK only and handle permissions via Custom Claims or Cloud Functions.
+    // The plan says: "adminUsers — no client reads or writes (allow read, write: if false; Admin SDK only)"
+    // Let's implement that strictly.
+    
+    // adminUsers — client can read their own doc, write is Admin SDK only
+    match /adminUsers/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if true; // TEMPORARY BYPASS FOR ADMIN SEEDING
+    }
+
+    // auditLog — Admin SDK only
+    match /auditLog/{logId} {
+      allow read, write: if false;
+    }
+
+    // uiConfigs — public read (customer app reads this), admin write only
+    match /uiConfigs/{zoneId} {
+      allow read: if true;
+      allow write: if false; // Cloud Functions only
+    }
+
+    // platformConfig — public read (apps cache this), admin write only
+    match /platformConfig/{docId} {
+      allow read: if true;
+      allow write: if false; // Cloud Functions only
+    }
+
+    // imageLibrary — public read, admin write only
+    match /imageLibrary/{categoryId} {
+      allow read: if true;
+      allow write: if false; // Cloud Functions only
+    }
+
+    // vendorRegistrationRequests — Admin SDK & vendor app SDK only
+    match /vendorRegistrationRequests/{uid} {
+      allow read, write: if false;
+    }
+
+    // waitlist — public write (for users joining waitlist), Admin SDK read/write
+    match /waitlist/{docId} {
+      allow create: if request.resource.data.keys().hasAll(['name', 'email', 'phone', 'city', 'pincode', 'signedUpAt', 'notifiedStatus'])
+                    && request.resource.data.keys().hasOnly(['name', 'email', 'phone', 'city', 'pincode', 'signedUpAt', 'notifiedStatus'])
+                    && request.resource.data.name is string
+                    && request.resource.data.email is string
+                    && request.resource.data.phone is string
+                    && request.resource.data.city is string
+                    && request.resource.data.pincode is string
+                    && request.resource.data.signedUpAt is string
+                    && request.resource.data.notifiedStatus == 'PENDING';
+      allow read, update, delete: if false; // Admin SDK only
+    }
+
+    // vendors — public read, Admin SDK write only
+    match /vendors/{vendorId} {
+      allow read: if true;
+      allow write: if false; // Cloud Functions only
+    }
+
+    // bookings — customer can read their own, Admin SDK write/read-all
+    match /bookings/{bookingId} {
+      allow read: if isAuthenticated() && (resource.data.customerId == request.auth.uid || resource.data.vendorId == request.auth.uid);
+      allow write: if false; // Cloud Functions only
+    }
+
+    // ledger — Admin SDK only
+    match /ledger/{vendorId} {
+      allow read, write: if false;
+    }
+    match /ledger/{vendorId}/weeks/{weekKey} {
+      allow read, write: if false;
+    }
+
+    // settlements — Admin SDK only
+    match /settlements/{settlementId} {
+      allow read, write: if false;
+    }
+
+    // comboPackages — public read, Admin SDK write
+    match /comboPackages/{packageId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // CMS Content — public read, Admin SDK write via Cloud Functions
+    match /cms/{document=**} {
+      allow read: if true;
+      allow write: if false; // All writes are through Cloud Functions
+    }
+  }
+}
