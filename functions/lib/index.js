@@ -32,8 +32,12 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.automatedNightlyBackup = exports.broadcastWaitlistNotification = exports.ocrVerifyVendorDocument = exports.markSettlementPaid = exports.runWeeklySettlements = exports.adjustVendorWallet = exports.getAnalyticsSummary = exports.approveVendor = void 0;
+exports.verifyAdminPermission = verifyAdminPermission;
 const https_1 = require("firebase-functions/v2/https");
 const admin = __importStar(require("firebase-admin"));
 const zod_1 = require("zod");
@@ -550,4 +554,5 @@ exports.automatedNightlyBackup = (0, scheduler_1.onSchedule)({
         console.error('automatedNightlyBackup: Export operation failed.', error);
     }
 });
+__exportStar(require("./cms"), exports);
 //# sourceMappingURL=index.js.map

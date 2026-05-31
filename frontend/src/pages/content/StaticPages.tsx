@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useStaticPages } from '../../hooks/useCms';
 import { updateStaticPage } from '../../services/cmsService';
-import type { CMSStaticPage } from '../../../../shared/src/types';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Save, CheckCircle } from 'lucide-react';

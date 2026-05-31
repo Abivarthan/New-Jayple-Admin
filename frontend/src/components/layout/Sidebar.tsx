@@ -38,6 +38,7 @@ export const Sidebar: React.FC = () => {
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Zones', path: '/zones', icon: MapPin, permission: 'zones' },
     { name: 'UI Config', path: '/ui-config', icon: Sliders, permission: 'uiconfig' },
+    { name: 'Categories', path: '/categories', icon: Tag, permission: 'content' },
     { name: 'Image Library', path: '/image-library', icon: Image, permission: 'content' },
     { name: 'Vendors', path: '/vendors', icon: Store, permission: 'vendors' },
     { name: 'Customers', path: '/users', icon: User, permission: 'users' },

@@ -1,103 +1,301 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper function to check if user is logged in
-    function isAuthenticated() {
-      return request.auth != null;
+
+    // ══════════════════════════════════════════════════════════════
+    //  UNIFIED RULES — serves all three apps (Customer, Vendor, Admin).
+    //  Keep this file identical in Jayple/ and New-Jayple-Admin/ so a deploy
+    //  from EITHER repo cannot regress the others. Every collection any app
+    //  reads/writes is covered below (enumerated from all three codebases).
+    //  Catalog/config = public read; user/vendor data = signed-in (owner where
+    //  clear); admin-only = isAdmin(); privileged writes = Cloud Functions only.
+    // ══════════════════════════════════════════════════════════════
+
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+
+    // Recognises BOTH admin schemes: the React admin app (adminUsers/{uid},
+    // isActive) AND the legacy admin_users/{email|phone}, status=='active'.
+    function isAdmin() {
+      return isSignedIn() && (
+        (exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid))
+          && get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.isActive == true)
+        || (request.auth.token.email != null
+          && exists(/databases/$(database)/documents/admin_users/$(request.auth.token.email))
+          && get(/databases/$(database)/documents/admin_users/$(request.auth.token.email)).data.status == 'active')
+        || (request.auth.token.phone_number != null
+          && exists(/databases/$(database)/documents/admin_users/$(request.auth.token.phone_number))
+          && get(/databases/$(database)/documents/admin_users/$(request.auth.token.phone_number)).data.status == 'active')
+      );
     }
 
-    // Helper function to verify if the caller is an active admin user
-    // Note: Since adminUsers collection is write-only by Admin SDK and read-only by Admin SDK,
-    // we cannot easily do get(/databases/$(database)/documents/adminUsers/$(request.auth.uid))
-    // unless we allow read access to authenticated admins.
-    // Let's allow authenticated admin reads on adminUsers for role checks in client SDK if necessary,
-    // OR restrict it to Admin SDK only and handle permissions via Custom Claims or Cloud Functions.
-    // The plan says: "adminUsers — no client reads or writes (allow read, write: if false; Admin SDK only)"
-    // Let's implement that strictly.
-    
-    // adminUsers — client can read their own doc, write is Admin SDK only
+    // ══ ADMIN IDENTITY ══════════════════════════════════════════
+    // React admin app login reads its own doc. Writes are Admin SDK only.
     match /adminUsers/{uid} {
-      allow read: if request.auth != null && request.auth.uid == uid;
-      allow write: if true; // TEMPORARY BYPASS FOR ADMIN SEEDING
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+    match /admin_users/{adminId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn();
+      allow delete: if isAdmin();
+    }
+    match /auditLog/{logId} { allow read, write: if false; }
+    match /admin_activity_log/{logId} {
+      allow read, create: if isSignedIn();
+      allow update, delete: if false;
+    }
+    match /configChangeLogs/{logId} {
+      allow read, create: if isSignedIn();
+      allow update, delete: if false;
     }
 
-    // auditLog — Admin SDK only
-    match /auditLog/{logId} {
-      allow read, write: if false;
-    }
-
-    // uiConfigs — public read (customer app reads this), admin write only
-    match /uiConfigs/{zoneId} {
+    // ══ CATALOG / CONFIG — public read, admin/CF write ═════════════
+    match /categories/{categoryId} {
       allow read: if true;
-      allow write: if false; // Cloud Functions only
+      allow write: if false; // admin Cloud Function (manageCategory)
     }
-
-    // platformConfig — public read (apps cache this), admin write only
-    match /platformConfig/{docId} {
-      allow read: if true;
-      allow write: if false; // Cloud Functions only
-    }
-
-    // imageLibrary — public read, admin write only
     match /imageLibrary/{categoryId} {
       allow read: if true;
-      allow write: if false; // Cloud Functions only
+      allow write: if false; // admin Cloud Function (manageImageLibrary)
     }
-
-    // vendorRegistrationRequests — Admin SDK & vendor app SDK only
-    match /vendorRegistrationRequests/{uid} {
-      allow read, write: if false;
-    }
-
-    // waitlist — public write (for users joining waitlist), Admin SDK read/write
-    match /waitlist/{docId} {
-      allow create: if request.resource.data.keys().hasAll(['name', 'email', 'phone', 'city', 'pincode', 'signedUpAt', 'notifiedStatus'])
-                    && request.resource.data.keys().hasOnly(['name', 'email', 'phone', 'city', 'pincode', 'signedUpAt', 'notifiedStatus'])
-                    && request.resource.data.name is string
-                    && request.resource.data.email is string
-                    && request.resource.data.phone is string
-                    && request.resource.data.city is string
-                    && request.resource.data.pincode is string
-                    && request.resource.data.signedUpAt is string
-                    && request.resource.data.notifiedStatus == 'PENDING';
-      allow read, update, delete: if false; // Admin SDK only
-    }
-
-    // vendors — public read, Admin SDK write only
-    match /vendors/{vendorId} {
+    match /serviceZones/{zoneId} {
       allow read: if true;
-      allow write: if false; // Cloud Functions only
+      allow write: if isAdmin();
     }
-
-    // bookings — customer can read their own, Admin SDK write/read-all
-    match /bookings/{bookingId} {
-      allow read: if isAuthenticated() && (resource.data.customerId == request.auth.uid || resource.data.vendorId == request.auth.uid);
-      allow write: if false; // Cloud Functions only
+    match /uiConfigs/{zoneId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
-
-    // ledger — Admin SDK only
-    match /ledger/{vendorId} {
-      allow read, write: if false;
+    match /platformConfig/{docId} {
+      allow read: if true;     // apps cache financial config
+      allow write: if isAdmin();
     }
-    match /ledger/{vendorId}/weeks/{weekKey} {
-      allow read, write: if false;
+    match /appConfig/{document} {
+      allow read: if true;
+      allow write: if isSignedIn();
     }
-
-    // settlements — Admin SDK only
-    match /settlements/{settlementId} {
-      allow read, write: if false;
-    }
-
-    // comboPackages — public read, Admin SDK write
     match /comboPackages/{packageId} {
       allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /promotions/{promoId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /promo_codes/{promoId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn();
+      allow delete: if false;
+    }
+    // Admin CMS content (hero banners, promos, faqs, static pages, settings…)
+    match /cms/{document=**} {
+      allow read: if true;
+      allow write: if false; // admin Cloud Functions
+    }
+
+    // ══ VENDORS (public read) + subcollections ═════════════════════
+    match /vendors/{vendorId} {
+      allow read: if true;
+      allow create: if isOwner(vendorId);
+      allow update: if isOwner(vendorId) || isSignedIn();
+      allow delete: if isAdmin();
+
+      match /services/{serviceId} {
+        allow read: if true;
+        allow write: if isOwner(vendorId);
+      }
+      match /shopImages/{imageId} {
+        allow read: if true;
+        allow write: if isOwner(vendorId);
+      }
+      match /availability/{dayDoc} {
+        allow read: if true;
+        allow write: if isOwner(vendorId);
+      }
+      match /slots/{slotDoc} {
+        allow read: if true;
+        allow write: if isOwner(vendorId);
+      }
+      match /offers/{offerId} {
+        allow read: if true;
+        allow write: if isOwner(vendorId);
+      }
+      match /reviews/{reviewId} {
+        allow read: if true;
+        allow update: if isOwner(vendorId);
+        allow create, delete: if isSignedIn();
+      }
+      match /activities/{activityId} {
+        allow read: if isOwner(vendorId);
+        allow write: if isOwner(vendorId);
+      }
+      match /notifications/{notifId} {
+        allow read, write: if isOwner(vendorId);
+      }
+      match /wallet/{walletDoc} {
+        allow read: if isOwner(vendorId) || isSignedIn();
+        allow write: if false;
+        match /transactions/{txnId} {
+          allow read: if isOwner(vendorId) || isSignedIn();
+          allow write: if isAdmin();
+        }
+      }
+      match /walletTransactions/{txnId} {
+        allow read: if isOwner(vendorId) || isSignedIn();
+        allow write: if isAdmin();
+      }
+    }
+
+    // ══ VENDOR REGISTRATION / ONBOARDING ═══════════════════════════
+    match /vendorRegistrationRequests/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow create, update: if isOwner(uid);
+      allow delete: if isAdmin();
+    }
+    match /pending_vendors/{vendorId} {
+      allow read, write: if isSignedIn();
+    }
+
+    // ══ SERVICES (legacy top-level) ════════════════════════════════
+    match /services/{serviceId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn();
+    }
+
+    // ══ BOOKINGS / SLOTS ═══════════════════════════════════════════
+    match /bookings/{bookingId} {
+      allow read: if isSignedIn();
+      allow create: if true;
+      allow update: if isSignedIn();
+      allow delete: if isAdmin();
+    }
+    match /pendingOrders/{orderId} {
+      allow create: if isSignedIn();
+      allow read, update: if isOwner(resource.data.userId) || isSignedIn();
+    }
+    match /slots/{vendorId}/dates/{dateId}/times/{timeId} {
+      allow read, write: if true;
+    }
+    match /slotLocks/{lockId} {
+      allow read: if true;
+      allow create, update: if isSignedIn();
+      allow delete: if isSignedIn();
+    }
+
+    // ══ USERS / CUSTOMERS ══════════════════════════════════════════
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(userId) || isAdmin();
+      match /notifications/{notificationId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+    match /notifications/{notificationId} {
+      allow read, write: if isSignedIn();
+    }
+    match /referrals/{userId} {
+      allow read: if isOwner(userId);
+      allow list: if isSignedIn();
       allow write: if false;
     }
 
-    // CMS Content — public read, Admin SDK write via Cloud Functions
-    match /cms/{document=**} {
-      allow read: if true;
-      allow write: if false; // All writes are through Cloud Functions
+    // ══ WALLETS / MONEY ════════════════════════════════════════════
+    match /wallets/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+      match /transactions/{txnId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) || isSignedIn();
+        allow update, delete: if isAdmin();
+      }
     }
+    match /transactions/{txnId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+    match /withdrawals/{withdrawalId} {
+      allow read, create, update: if isSignedIn();
+      allow delete: if false;
+    }
+    match /withdrawalRequests/{requestId} {
+      allow read, create, update: if isSignedIn();
+      allow delete: if false;
+    }
+
+    // ══ VENDOR FINANCE (vendor app + Cloud Functions) ══════════════
+    match /ledger/{vendorId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+      match /weeks/{weekKey} {
+        allow read: if isSignedIn();
+        allow write: if isSignedIn();
+      }
+    }
+    match /settlements/{settlementId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+      match /history/{historyId} {
+        allow read: if isSignedIn();
+        allow write: if isSignedIn();
+      }
+    }
+    match /payouts/{payoutId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+    match /codDeposits/{depositId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn();
+      allow delete: if false;
+    }
+    match /commission_payments/{id} {
+      allow read, write: if isSignedIn();
+    }
+    match /vendor_earnings/{id} {
+      allow read, write: if isSignedIn();
+    }
+
+    // ══ REVIEWS / FLAGS / SUPPORT / ALERTS ═════════════════════════
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+    match /reviewFlags/{flagId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
+    match /support_tickets/{ticketId} {
+      allow read, create, update: if isSignedIn();
+      allow delete: if false;
+    }
+    match /alerts/{alertId} { allow read, write: if isSignedIn(); }
+    match /paymentAlerts/{alertId} { allow read, write: if isSignedIn(); }
+    match /failedRefunds/{refundId} { allow read, write: if isSignedIn(); }
+    match /vendor_warnings/{warningId} {
+      allow read, create: if isSignedIn();
+      allow update, delete: if false;
+    }
+    match /vendorWarnings/{vendorId}/warnings/{warningId} {
+      allow read, create, update: if isSignedIn();
+      allow delete: if false;
+    }
+
+    // ══ WAITLIST (notify-me) ═══════════════════════════════════════
+    match /waitlist/{docId} {
+      allow create: if true;
+      allow read: if isAdmin();
+      allow update, delete: if false;
+    }
+
+    // ══ SERVER-ONLY LEDGERS (Cloud Functions / Console only) ═══════
+    match /penaltyLedger/{document} { allow read, write: if false; }
+    match /jaypleCosts/{document} { allow read, write: if false; }
   }
 }

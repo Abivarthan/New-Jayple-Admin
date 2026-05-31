@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { UploadCloud, X, Image as ImageIcon } from 'lucide-react';
+import { UploadCloud, X } from 'lucide-react';
 
 interface ImageUploaderProps {
   value: string;
@@ -33,7 +33,6 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ value, onChange, l
     
     // NOTE: These should be in your .env file
     const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'demo';
-    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'docs_upload_example_us_preset';
 
     try {
       const xhr = new XMLHttpRequest();

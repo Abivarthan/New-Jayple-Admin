@@ -10,6 +10,7 @@ import { Dashboard } from './pages/Dashboard';
 import { PlatformConfig } from './pages/PlatformConfig';
 import { Zones } from './pages/Zones';
 import { ImageLibrary } from './pages/ImageLibrary';
+import { Categories } from './pages/Categories';
 import { UIConfigEditor } from './pages/UIConfigEditor';
 import { Analytics } from './pages/Analytics';
 import { AllVendors } from './pages/vendors/AllVendors';
@@ -61,6 +62,7 @@ const App: React.FC = () => {
               <Route path="zones" element={<Zones />} />
               <Route path="ui-config" element={<UIConfigEditor />} />
               <Route path="image-library" element={<ImageLibrary />} />
+              <Route path="categories" element={<Categories />} />
               <Route path="vendors" element={<AllVendors />} />
               <Route path="vendors/approvals" element={<VendorApprovals />} />
               <Route path="vendors/:id" element={<VendorDetail />} />
