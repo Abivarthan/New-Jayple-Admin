@@ -1,5 +1,5 @@
 import { httpsCallable, getFunctions } from 'firebase/functions';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import { app, db } from './firebase';
 
 const functions = getFunctions(app, 'asia-south1');
@@ -79,6 +79,37 @@ export const removeLibraryImage = (category: string, assetId: string) =>
   _manageImageLibrary({ action: 'removeImage', category, assetId });
 export const setLibraryDefault = (category: string, assetId: string) =>
   _manageImageLibrary({ action: 'setDefault', category, assetId });
+
+// ── Home content (offer cards + cashback/referral copy) ──
+export interface OfferCard { title: string; subtitle: string; route: string }
+export interface HomeContent {
+  offerCards: OfferCard[];
+  cashback: { headline: string; subtext: string };
+  referral: { headline: string; subtext: string };
+}
+
+const _homeDefaults: HomeContent = {
+  offerCards: [
+    { title: 'Flat Offer', subtitle: 'Up to 20% OFF', route: '/explore' },
+    { title: 'Refer & Earn', subtitle: 'Earn with friends', route: '/refer-earn' },
+  ],
+  cashback: { headline: '2% Cashback on every booking', subtext: 'Credited instantly to your Jayple Wallet' },
+  referral: { headline: 'Refer a friend', subtext: 'They get 3% cashback, you get 2% on their first booking' },
+};
+
+export const fetchHomeContent = async (): Promise<HomeContent> => {
+  const snap = await getDoc(doc(db, 'appContent', 'home'));
+  const d = (snap.exists() ? snap.data() : {}) as Record<string, unknown>;
+  const cards = Array.isArray(d.offerCards) ? (d.offerCards as OfferCard[]) : [];
+  return {
+    offerCards: cards.length >= 2 ? cards : _homeDefaults.offerCards,
+    cashback: (d.cashback as HomeContent['cashback']) || _homeDefaults.cashback,
+    referral: (d.referral as HomeContent['referral']) || _homeDefaults.referral,
+  };
+};
+
+const _manageHomeContent = httpsCallable(functions, 'manageHomeContent');
+export const saveHomeContent = (content: HomeContent) => _manageHomeContent({ content });
 
 /** Read a File as a bare base64 string (no data: prefix). */
 export const fileToBase64 = (file: File): Promise<string> =>

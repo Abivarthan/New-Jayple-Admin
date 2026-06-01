@@ -49,6 +49,12 @@ export const fetchCmsSettings = async () => {
   return snapshot.exists() ? snapshot.data() : { version: 0 };
 };
 
+// Image upload (base64 → Firebase Storage via CF; returns { url })
+export const uploadCmsImage = httpsCallable<
+  { fileBase64: string; contentType: string; folder?: string },
+  { url: string }
+>(functions, 'uploadCmsImage');
+
 // Mutations
 export const createHeroBanner = httpsCallable(functions, 'createHeroBanner');
 export const updateHeroBanner = httpsCallable(functions, 'updateHeroBanner');

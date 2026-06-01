@@ -11,6 +11,7 @@ import { PlatformConfig } from './pages/PlatformConfig';
 import { Zones } from './pages/Zones';
 import { ImageLibrary } from './pages/ImageLibrary';
 import { Categories } from './pages/Categories';
+import { HomeContent } from './pages/HomeContent';
 import { UIConfigEditor } from './pages/UIConfigEditor';
 import { Analytics } from './pages/Analytics';
 import { AllVendors } from './pages/vendors/AllVendors';
@@ -23,6 +24,8 @@ import { HeroBanners } from './pages/content/HeroBanners';
 import { Promotions } from './pages/content/Promotions';
 import { StaticPages } from './pages/content/StaticPages';
 import { CMSSettings } from './pages/content/CMSSettings';
+import { Faqs } from './pages/content/Faqs';
+import { Announcements } from './pages/content/Announcements';
 
 // Initialize TanStack Query Client
 const queryClient = new QueryClient({
@@ -63,6 +66,7 @@ const App: React.FC = () => {
               <Route path="ui-config" element={<UIConfigEditor />} />
               <Route path="image-library" element={<ImageLibrary />} />
               <Route path="categories" element={<Categories />} />
+              <Route path="home-content" element={<HomeContent />} />
               <Route path="vendors" element={<AllVendors />} />
               <Route path="vendors/approvals" element={<VendorApprovals />} />
               <Route path="vendors/:id" element={<VendorDetail />} />
@@ -126,18 +130,8 @@ const App: React.FC = () => {
                   <p className="text-slate-400 text-sm">Implementation pending.</p>
                 </div>
               } />
-              <Route path="content/faqs" element={
-                <div className="p-6 bg-slate-800 rounded-xl border border-slate-600 m-8">
-                  <h2 className="text-xl font-bold text-slate-100 mb-2">FAQs CMS</h2>
-                  <p className="text-slate-400 text-sm">Implementation pending.</p>
-                </div>
-              } />
-              <Route path="content/announcements" element={
-                <div className="p-6 bg-slate-800 rounded-xl border border-slate-600 m-8">
-                  <h2 className="text-xl font-bold text-slate-100 mb-2">Announcements CMS</h2>
-                  <p className="text-slate-400 text-sm">Implementation pending.</p>
-                </div>
-              } />
+              <Route path="content/faqs" element={<Faqs />} />
+              <Route path="content/announcements" element={<Announcements />} />
             </Route>
 
             {/* Fallback Route */}

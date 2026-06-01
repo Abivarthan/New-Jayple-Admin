@@ -1,14 +1,18 @@
 import React, { useState, useRef } from 'react';
 import { UploadCloud, X } from 'lucide-react';
+import { uploadCmsImage } from '../../services/cmsService';
+import { fileToBase64 } from '../../services/catalogService';
 
 interface ImageUploaderProps {
   value: string;
   onChange: (url: string) => void;
   label?: string;
   recommendedSize?: string;
+  /** Storage sub-folder under cms/ (e.g. "hero", "promos"). Default "banners". */
+  folder?: string;
 }
 
-export const ImageUploader: React.FC<ImageUploaderProps> = ({ value, onChange, label, recommendedSize }) => {
+export const ImageUploader: React.FC<ImageUploaderProps> = ({ value, onChange, label, recommendedSize, folder }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -26,46 +30,21 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ value, onChange, l
 
     setIsUploading(true);
     setError(null);
-    setProgress(10);
-
-    const formData = new FormData();
-    formData.append('file', file);
-    
-    // NOTE: These should be in your .env file
-    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'demo';
+    setProgress(20);
 
     try {
-      const xhr = new XMLHttpRequest();
-      xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`);
-      
-      xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) {
-          const percentComplete = Math.round((event.loaded / event.total) * 100);
-          setProgress(percentComplete);
-        }
-      };
-
-      xhr.onload = () => {
-        if (xhr.status === 200) {
-          const response = JSON.parse(xhr.responseText);
-          onChange(response.secure_url);
-          setProgress(100);
-        } else {
-          const response = JSON.parse(xhr.responseText);
-          setError(response.error?.message || 'Upload failed');
-        }
-        setIsUploading(false);
-      };
-
-      xhr.onerror = () => {
-        setError('Network error occurred during upload.');
-        setIsUploading(false);
-      };
-
-      xhr.send(formData);
-
-    } catch (err: any) {
-      setError(err.message || 'An error occurred');
+      // Upload via the admin Cloud Function → Firebase Storage (infra rule:
+      // image hosting is Firebase Storage, NOT Cloudinary). Base64 in, URL out.
+      const fileBase64 = await fileToBase64(file);
+      setProgress(60);
+      const res = await uploadCmsImage({ fileBase64, contentType: file.type, folder: folder || 'banners' });
+      const url = (res.data as { url?: string })?.url;
+      if (!url) throw new Error('Upload did not return a URL');
+      onChange(url);
+      setProgress(100);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Upload failed');
+    } finally {
       setIsUploading(false);
     }
   };

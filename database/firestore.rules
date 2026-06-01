@@ -75,6 +75,12 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isSignedIn();
     }
+    // Admin-managed app content (home offer cards, cashback/referral copy…).
+    // Public read; writes via admin Cloud Functions (manageHomeContent).
+    match /appContent/{document} {
+      allow read: if true;
+      allow write: if false;
+    }
     match /comboPackages/{packageId} {
       allow read: if true;
       allow write: if isAdmin();
