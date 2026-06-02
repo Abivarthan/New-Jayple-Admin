@@ -293,13 +293,6 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // ══ WAITLIST (notify-me) ═══════════════════════════════════════
-    match /waitlist/{docId} {
-      allow create: if true;
-      allow read: if isAdmin();
-      allow update, delete: if false;
-    }
-
     // ══ SERVER-ONLY LEDGERS (Cloud Functions / Console only) ═══════
     match /penaltyLedger/{document} { allow read, write: if false; }
     match /jaypleCosts/{document} { allow read, write: if false; }

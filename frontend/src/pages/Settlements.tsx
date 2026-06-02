@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   IndianRupee, Download, Play, CheckCircle2, Clock,
   Search, Eye, Check, X, RefreshCw,
   TrendingUp, Wallet, Landmark, AlertTriangle
 } from 'lucide-react';
+import { fetchSettlements, runSettlements, markSettlementPaid } from '../services/adminDataService';
 
 interface SettlementItem {
   id: string;
@@ -25,83 +26,18 @@ interface SettlementItem {
   processedAt?: string;
 }
 
-const mockSettlements: SettlementItem[] = [
-  {
-    id: 'SET-262201',
-    vendorId: 'vendor_01',
-    shopName: 'Elite Unisex Salon',
-    bankAccount: {
-      accountNumber: '91882001928',
-      ifscCode: 'HDFC0001202',
-      holderName: 'Venkatesh Prasad'
-    },
-    weekKey: '2026-W22',
-    grossEarnings: 42350,
-    commissionPaid: 6352,
-    codCollected: 3200,
-    walletAdjustments: 500,
-    netPayoutDue: 33298,
-    status: 'PENDING'
-  },
-  {
-    id: 'SET-262202',
-    vendorId: 'vendor_02',
-    shopName: 'Sparkles Ladies Spa',
-    bankAccount: {
-      accountNumber: '91992003310',
-      ifscCode: 'ICIC0000411',
-      holderName: 'Priya Sundar'
-    },
-    weekKey: '2026-W22',
-    grossEarnings: 18900,
-    commissionPaid: 2835,
-    codCollected: 1200,
-    walletAdjustments: 0,
-    netPayoutDue: 14865,
-    status: 'PENDING'
-  },
-  {
-    id: 'SET-262101',
-    vendorId: 'vendor_01',
-    shopName: 'Elite Unisex Salon',
-    bankAccount: {
-      accountNumber: '91882001928',
-      ifscCode: 'HDFC0001202',
-      holderName: 'Venkatesh Prasad'
-    },
-    weekKey: '2026-W21',
-    grossEarnings: 38200,
-    commissionPaid: 5730,
-    codCollected: 4500,
-    walletAdjustments: -150,
-    netPayoutDue: 27820,
-    status: 'PAID',
-    paymentTxnId: 'TXN_PAY_991820',
-    processedAt: '22 May 2026, 11:30 AM'
-  },
-  {
-    id: 'SET-262102',
-    vendorId: 'vendor_02',
-    shopName: 'Sparkles Ladies Spa',
-    bankAccount: {
-      accountNumber: '91992003310',
-      ifscCode: 'ICIC0000411',
-      holderName: 'Priya Sundar'
-    },
-    weekKey: '2026-W21',
-    grossEarnings: 15400,
-    commissionPaid: 2310,
-    codCollected: 800,
-    walletAdjustments: 100,
-    netPayoutDue: 12390,
-    status: 'PAID',
-    paymentTxnId: 'TXN_PAY_991821',
-    processedAt: '22 May 2026, 11:34 AM'
-  }
-];
-
 export const Settlements: React.FC = () => {
-  const [settlements, setSettlements] = useState<SettlementItem[]>(mockSettlements);
+  const [settlements, setSettlements] = useState<SettlementItem[]>([]);
+  const [loadingList, setLoadingList] = useState(true);
+  const load = useCallback(async () => {
+    setLoadingList(true);
+    try {
+      setSettlements(await fetchSettlements());
+    } finally {
+      setLoadingList(false);
+    }
+  }, []);
+  useEffect(() => { load(); }, [load]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterWeek, setFilterWeek] = useState('ALL');
   const [filterStatus, setFilterStatus] = useState('ALL');
@@ -127,81 +63,52 @@ export const Settlements: React.FC = () => {
     setTimeout(() => setToastMessage(null), 4000);
   };
 
-  // Run Weekly calculation simulation
+  // Run the REAL weekly settlement Cloud Function (reads ledgers, writes
+  // settlements/{vendorId}/history). Idempotent per vendor+week.
   const handleExecuteWeeklyRun = async () => {
     setIsRunning(true);
     setRunStep(1);
-    setRunLog(['[INIT] Commencing Weekly Settlement calculations...']);
-    
-    await new Promise((r) => setTimeout(r, 900));
-    setRunStep(2);
-    setRunLog((prev) => [
-      ...prev,
-      '[INFO] Reading active merchant listings and current wallet balances from service zones...',
-      '[SUCCESS] Identified 14 registered merchants with net balance adjustments.'
-    ]);
-
-    await new Promise((r) => setTimeout(r, 1200));
-    setRunStep(3);
-    setRunLog((prev) => [
-      ...prev,
-      '[INFO] Validating minimum weekly payout safety threshold (₹500)...',
-      '[SKIP] Merchant "Gentlemens Groom Room" carried forward (Wallet: ₹320.00 < ₹500.00)',
-      '[SKIP] Merchant "Bridal Queen Salon" blocked due to COD collections exceeding ₹5,000 threshold.'
-    ]);
-
-    await new Promise((r) => setTimeout(r, 1000));
-    setRunStep(4);
-    setRunLog((prev) => [
-      ...prev,
-      '[INFO] Computing gross earnings, commissions (15% rate), and adjusting ledger collections...',
-      '[CALC] Elite Unisex Salon Net: ₹33,298 (Gross: ₹42,350, Comm: -₹6,352, COD: -₹3,200, Adjust: +₹500)',
-      '[CALC] Sparkles Ladies Spa Net: ₹14,865 (Gross: ₹18,900, Comm: -₹2,835, COD: -₹1,200)'
-    ]);
-
-    await new Promise((r) => setTimeout(r, 800));
-    setRunStep(5);
-    setRunLog((prev) => [
-      ...prev,
-      '[SUCCESS] Weekly Settlement Calculations finished! Generated payout profiles.',
-      '[AUDIT] Appended immutable ledger record maps to auditLog database.',
-      '[COMPLETE] Weekly payout files prepared.'
-    ]);
-    setIsRunning(false);
+    setRunLog(['[INIT] Calling runWeeklySettlements…']);
+    try {
+      const res = await runSettlements();
+      const data = (res.data as { processed?: number; weekId?: string }) || {};
+      setRunStep(5);
+      setRunLog((prev) => [
+        ...prev,
+        `[SUCCESS] Processed ${data.processed ?? 0} vendor ledger(s) for week ${data.weekId ?? ''}.`,
+        '[INFO] Payouts ≥ ₹500 are now PENDING; smaller balances carried forward.',
+        '[COMPLETE] Settlement run finished.',
+      ]);
+      await load();
+    } catch (err) {
+      setRunStep(5);
+      setRunLog((prev) => [...prev, `[ERROR] ${err instanceof Error ? err.message : 'Run failed'}`]);
+    } finally {
+      setIsRunning(false);
+    }
   };
 
-  // Close Run Settlement Modal & add new pending settlements
   const finalizeWeeklyRun = () => {
     setRunModalOpen(false);
     setRunStep(0);
     setRunLog([]);
-    triggerToast('Weekly settlement calculated successfully. 2 new payout requests compiled!');
+    triggerToast('Settlement run complete — payout list refreshed.');
   };
 
-  // Approve payout as paid
+  // Mark a payout as paid (writes settlements/{vendorId}/history/{id}).
   const handleMarkAsPaid = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!approvingItem || !payoutTxnId.trim()) return;
-
-    // Simulate API update
-    await new Promise((r) => setTimeout(r, 600));
-
-    setSettlements(
-      settlements.map((s) =>
-        s.id === approvingItem.id
-          ? {
-              ...s,
-              status: 'PAID' as const,
-              paymentTxnId: payoutTxnId,
-              processedAt: new Date().toLocaleString('en-IN') + ' (IST)'
-            }
-          : s
-      )
-    );
-
-    triggerToast(`Payout ID ${approvingItem.id} marked as PAID. Reference Txn ID logged.`);
-    setApprovingItem(null);
-    setPayoutTxnId('');
+    try {
+      await markSettlementPaid(approvingItem.vendorId, approvingItem.id, payoutTxnId.trim());
+      triggerToast(`Payout ${approvingItem.id} marked as PAID.`);
+      await load();
+    } catch (err) {
+      triggerToast(err instanceof Error ? err.message : 'Failed to mark paid');
+    } finally {
+      setApprovingItem(null);
+      setPayoutTxnId('');
+    }
   };
 
   // Simulated CSV Payout bank file export download
@@ -445,7 +352,7 @@ export const Settlements: React.FC = () => {
             {filteredSettlements.length === 0 && (
               <tr>
                 <td colSpan={7} className="py-8 text-center text-slate-500">
-                  No weekly settlements located matching filter queries.
+                  {loadingList ? 'Loading settlements…' : 'No weekly settlements yet. Run a settlement to generate payouts.'}
                 </td>
               </tr>
             )}

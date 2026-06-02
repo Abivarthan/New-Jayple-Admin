@@ -1,9 +1,17 @@
 import React, { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Search, Eye, ShieldAlert, Download, X,
   User, Calendar, CreditCard, Lock, Unlock, Phone, Mail,
   MapPin, RefreshCw, ArrowRight, Check, AlertTriangle
 } from 'lucide-react';
+import {
+  fetchCustomers,
+  fetchCustomerDetail,
+  setCustomerLock,
+  adjustCustomerWallet,
+  type AdminCustomer,
+} from '../services/adminDataService';
 
 interface BookingLog {
   id: string;
@@ -42,99 +50,30 @@ interface CustomerListItem {
   transactions: WalletTransaction[];
 }
 
-const mockCustomers: CustomerListItem[] = [
-  {
-    uid: 'USR-882190',
-    name: 'Aishwarya Rajesh',
-    email: 'aishwarya.r@outlook.com',
-    phone: '9840228833',
-    city: 'Chennai',
-    pincode: '600018',
-    walletBalance: 350.00,
-    bookingsCount: 14,
-    status: 'active',
-    createdAt: '12 Jan 2026',
-    referralCode: 'JAY-AISH88',
-    referredBy: 'USR-881029',
-    referralCount: 4,
-    bookings: [
-      { id: 'BKG-99201', shopName: 'Elite Unisex Salon', services: ['Haircut & Styling', 'Beard Grooming'], dateTime: '28 May 2026, 11:30 AM', amount: 750, status: 'COMPLETED', paymentMethod: 'ONLINE' },
-      { id: 'BKG-98401', shopName: 'Sparkles Ladies Spa', services: ['Hydra Facial Treatment'], dateTime: '14 May 2026, 04:00 PM', amount: 1800, status: 'COMPLETED', paymentMethod: 'ONLINE' },
-      { id: 'BKG-97210', shopName: 'Elite Unisex Salon', services: ['Hair Styling & Blow Dry'], dateTime: '01 May 2026, 02:00 PM', amount: 500, status: 'CANCELLED', paymentMethod: 'ONLINE' }
-    ],
-    transactions: [
-      { id: 'TXN-99881', dateTime: '28 May 2026, 12:30 PM', amount: -150, type: 'DEBIT', description: 'Paid for booking BKG-99201 via Wallet', actionedBy: 'system' },
-      { id: 'TXN-99500', dateTime: '24 May 2026, 09:00 AM', amount: 500, type: 'CREDIT', description: 'Referral Bonus Reward', actionedBy: 'system' }
-    ]
-  },
-  {
-    uid: 'USR-773821',
-    name: 'Rahul Krishnan',
-    email: 'rahul.k@gmail.com',
-    phone: '9940112288',
-    city: 'Chennai',
-    pincode: '600004',
-    walletBalance: 0.00,
-    bookingsCount: 8,
-    status: 'active',
-    createdAt: '04 Feb 2026',
-    referralCode: 'JAY-RAHUL77',
-    referredBy: undefined,
-    referralCount: 0,
-    bookings: [
-      { id: 'BKG-99105', shopName: 'Elite Unisex Salon', services: ['Haircut & Beard trim'], dateTime: '26 May 2026, 06:15 PM', amount: 500, status: 'COMPLETED', paymentMethod: 'COD' },
-      { id: 'BKG-98002', shopName: 'Gentlemens Groom Room', services: ['Hair Wash', 'Head Massage'], dateTime: '10 May 2026, 12:00 PM', amount: 400, status: 'COMPLETED', paymentMethod: 'COD' }
-    ],
-    transactions: []
-  },
-  {
-    uid: 'USR-552910',
-    name: 'Meenakshi Sundaram',
-    email: 'meenu.s@yahoo.com',
-    phone: '9789012345',
-    city: 'Tiruchirappalli',
-    pincode: '620002',
-    walletBalance: 1250.00,
-    bookingsCount: 22,
-    status: 'active',
-    createdAt: '18 Nov 2025',
-    referralCode: 'JAY-MEENU55',
-    referredBy: 'USR-550182',
-    referralCount: 9,
-    bookings: [
-      { id: 'BKG-99340', shopName: 'Bridal Queen Salon', services: ['Pre-Bridal Package', 'Facial'], dateTime: '29 May 2026, 10:00 AM', amount: 4500, status: 'CONFIRMED', paymentMethod: 'ONLINE' },
-      { id: 'BKG-98711', shopName: 'Sparkles Ladies Spa', services: ['Pedicure', 'Manicure'], dateTime: '20 May 2026, 03:00 PM', amount: 1200, status: 'COMPLETED', paymentMethod: 'ONLINE' }
-    ],
-    transactions: [
-      { id: 'TXN-99610', dateTime: '29 May 2026, 10:15 AM', amount: -500, type: 'DEBIT', description: 'Redeemed wallet points for booking BKG-99340', actionedBy: 'system' },
-      { id: 'TXN-99110', dateTime: '15 May 2026, 06:30 PM', amount: 1000, type: 'CREDIT', description: 'Admin adjustment: Compensation for booking delay', actionedBy: 'mock_superadmin' }
-    ]
-  },
-  {
-    uid: 'USR-442991',
-    name: 'Karthikeyan Balaji',
-    email: 'karthik.balaji@gmail.com',
-    phone: '9841122334',
-    city: 'Coimbatore',
-    pincode: '641002',
-    walletBalance: -150.00,
-    bookingsCount: 3,
-    status: 'locked',
-    createdAt: '22 Mar 2026',
-    referralCode: 'JAY-KART44',
-    referredBy: undefined,
-    referralCount: 1,
-    bookings: [
-      { id: 'BKG-99001', shopName: 'Gentlemens Groom Room', services: ['Premium Hair Styling'], dateTime: '12 May 2026, 02:00 PM', amount: 600, status: 'CANCELLED', paymentMethod: 'COD' }
-    ],
-    transactions: [
-      { id: 'TXN-98210', dateTime: '12 May 2026, 02:05 PM', amount: -150, type: 'DEBIT', description: 'Cancellation Penalty applied for no-show', actionedBy: 'system' }
-    ]
-  }
-];
+const mapCustomer = (c: AdminCustomer): CustomerListItem => ({
+  uid: c.uid,
+  name: c.name,
+  email: c.email,
+  phone: c.phone,
+  city: c.city,
+  pincode: c.pincode || '—',
+  walletBalance: c.walletBalance,
+  bookingsCount: c.bookingsCount,
+  status: c.status,
+  createdAt: c.joinedAt ? new Date(c.joinedAt).toLocaleDateString() : '—',
+  referralCode: c.referralCode || '—',
+  referredBy: c.referredBy,
+  referralCount: c.referralCount,
+  bookings: [],
+  transactions: [],
+});
 
 export const Users: React.FC = () => {
-  const [customers, setCustomers] = useState<CustomerListItem[]>(mockCustomers);
+  const qc = useQueryClient();
+  const { data: customers = [], isLoading } = useQuery({
+    queryKey: ['adminCustomers'],
+    queryFn: async (): Promise<CustomerListItem[]> => (await fetchCustomers()).map(mapCustomer),
+  });
   const [searchQuery, setSearchQuery] = useState('');
   
   // Filtering States
@@ -162,76 +101,57 @@ export const Users: React.FC = () => {
     setTimeout(() => setNotification(null), 4000);
   };
 
+  // Open the drawer and lazy-load the customer's real bookings + transactions.
+  const openUser = async (user: CustomerListItem) => {
+    setSelectedUser(user);
+    setDrawerTab('profile');
+    const detail = await fetchCustomerDetail(user.uid);
+    setSelectedUser((prev) =>
+      prev && prev.uid === user.uid
+        ? { ...prev, bookings: detail.bookings, transactions: detail.transactions }
+        : prev,
+    );
+  };
+
   const handleWalletAdjustment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedUser) return;
     const amountNum = parseFloat(walletAmount);
-    if (isNaN(amountNum) || !walletReason.trim()) return;
+    if (isNaN(amountNum) || amountNum === 0 || !walletReason.trim()) return;
 
     setWalletSaving(true);
-    // Simulate API Cloud Function execution
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
-    const newTxn: WalletTransaction = {
-      id: `TXN-${Math.floor(10000 + Math.random() * 90000)}`,
-      dateTime: new Date().toLocaleString('en-IN', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
-      }) + ' (IST)',
-      amount: amountNum,
-      type: amountNum >= 0 ? 'CREDIT' : 'DEBIT',
-      description: `Admin adjustment: ${walletReason}`,
-      actionedBy: 'mock_superadmin'
-    };
-
-    const updatedUser: CustomerListItem = {
-      ...selectedUser,
-      walletBalance: selectedUser.walletBalance + amountNum,
-      transactions: [newTxn, ...selectedUser.transactions]
-    };
-
-    setCustomers(customers.map((c) => (c.uid === selectedUser.uid ? updatedUser : c)));
-    setSelectedUser(updatedUser);
-    setWalletSaving(false);
-    setWalletAmount('');
-    setWalletReason('');
-    showNotification(`Adjusted wallet balance for ${selectedUser.name} by ₹${amountNum.toFixed(2)}`);
+    try {
+      const res = await adjustCustomerWallet(selectedUser.uid, amountNum, walletReason.trim());
+      const balanceAfter = res.data?.balanceAfter ?? selectedUser.walletBalance + amountNum;
+      const detail = await fetchCustomerDetail(selectedUser.uid);
+      setSelectedUser((prev) =>
+        prev ? { ...prev, walletBalance: balanceAfter, transactions: detail.transactions } : prev,
+      );
+      qc.invalidateQueries({ queryKey: ['adminCustomers'] });
+      showNotification(`Adjusted wallet balance for ${selectedUser.name} by ₹${amountNum.toFixed(2)}`);
+      setWalletAmount('');
+      setWalletReason('');
+    } catch (err) {
+      showNotification(err instanceof Error ? err.message : 'Wallet adjustment failed');
+    } finally {
+      setWalletSaving(false);
+    }
   };
 
   const toggleAccountLock = async () => {
     if (!selectedUser) return;
-    const newStatus = selectedUser.status === 'active' ? 'locked' : 'active';
-    
-    // Simulate API adjustment
-    await new Promise((resolve) => setTimeout(resolve, 600));
-
-    const updatedUser: CustomerListItem = {
-      ...selectedUser,
-      status: newStatus
-    };
-
-    // If locked, we can add a transaction log or audit record
-    if (newStatus === 'locked' && lockReason.trim()) {
-      const lockTxn: WalletTransaction = {
-        id: `SYS-${Math.floor(10000 + Math.random() * 90000)}`,
-        dateTime: new Date().toLocaleString('en-IN') + ' (IST)',
-        amount: 0,
-        type: 'DEBIT',
-        description: `Account Locked: ${lockReason}`,
-        actionedBy: 'mock_superadmin'
-      };
-      updatedUser.transactions = [lockTxn, ...selectedUser.transactions];
+    const locked = selectedUser.status === 'active';
+    try {
+      await setCustomerLock(selectedUser.uid, locked, lockReason.trim() || undefined);
+      setSelectedUser((prev) => (prev ? { ...prev, status: locked ? 'locked' : 'active' } : prev));
+      qc.invalidateQueries({ queryKey: ['adminCustomers'] });
+      showNotification(`User account status updated to ${locked ? 'LOCKED' : 'ACTIVE'}`);
+    } catch (err) {
+      showNotification(err instanceof Error ? err.message : 'Failed to update account status');
+    } finally {
+      setShowLockConfirm(false);
+      setLockReason('');
     }
-
-    setCustomers(customers.map((c) => (c.uid === selectedUser.uid ? updatedUser : c)));
-    setSelectedUser(updatedUser);
-    setShowLockConfirm(false);
-    setLockReason('');
-    showNotification(`User account status updated to ${newStatus.toUpperCase()}`);
   };
 
   // Filter evaluation logic
@@ -371,10 +291,7 @@ export const Users: React.FC = () => {
                 </td>
                 <td className="py-4 px-6 text-right">
                   <button
-                    onClick={() => {
-                      setSelectedUser(user);
-                      setDrawerTab('profile');
-                    }}
+                    onClick={() => openUser(user)}
                     className="flex items-center gap-1.5 rounded-lg border border-slate-600 bg-slate-700 hover:bg-slate-700 hover:text-slate-100 text-xs font-medium text-slate-300 px-3.5 py-1.5 ml-auto transition-colors"
                   >
                     <Eye size={13} />
@@ -386,7 +303,7 @@ export const Users: React.FC = () => {
             {filteredCustomers.length === 0 && (
               <tr>
                 <td colSpan={7} className="py-8 text-center text-slate-500">
-                  No matching user accounts located.
+                  {isLoading ? 'Loading customers…' : 'No matching user accounts located.'}
                 </td>
               </tr>
             )}

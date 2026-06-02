@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Check, X, ShieldAlert, Phone, Store, User, Sparkles, RefreshCw } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Check, X, ShieldAlert, Phone, Store, User } from 'lucide-react';
+import { fetchVendorRequests, approveVendor, rejectVendor } from '../../services/adminDataService';
 
 interface RegistrationRequest {
   uid: string;
@@ -13,65 +15,43 @@ interface RegistrationRequest {
   gstNumber?: string;
 }
 
-const mockRequests: RegistrationRequest[] = [
-  {
-    uid: 'req_01',
-    shopName: 'Grace Beauty Salon',
-    ownerName: 'Grace Maria',
-    phone: '9876543210',
-    email: 'grace@gmail.com',
-    city: 'Chennai',
-    pincode: '600040',
-    requestedAt: '2 hours ago',
-    gstNumber: '33AAAAA1111A1Z1'
-  },
-  {
-    uid: 'req_02',
-    shopName: 'Elite Grooming Studio',
-    ownerName: 'Rahul Kumar',
-    phone: '9876543211',
-    email: 'rahul@grooming.in',
-    city: 'Chennai',
-    pincode: '600001',
-    requestedAt: '1 day ago'
-  },
-  {
-    uid: 'req_03',
-    shopName: 'Vibe Spa & Salons',
-    ownerName: 'Vignesh K',
-    phone: '9876543212',
-    email: 'vignesh@vibespa.com',
-    city: 'Tiruchirappalli',
-    pincode: '620008',
-    requestedAt: '3 days ago'
-  }
-];
-
 export const VendorApprovals: React.FC = () => {
-  const [requests, setRequests] = useState<RegistrationRequest[]>(mockRequests);
+  const qc = useQueryClient();
+  const { data: requests = [], isLoading } = useQuery({
+    queryKey: ['vendorRequests'],
+    queryFn: async (): Promise<RegistrationRequest[]> => {
+      const raw = await fetchVendorRequests();
+      return raw.map((r) => ({
+        uid: r.uid,
+        shopName: r.shopName,
+        ownerName: r.ownerName,
+        phone: r.phone,
+        email: '',
+        city: r.city,
+        pincode: r.pincode || '—',
+        requestedAt: r.submittedAt ? new Date(r.submittedAt).toLocaleString() : '—',
+        gstNumber: r.gstNumber || undefined,
+      }));
+    },
+  });
   const [rejectingRequest, setRejectingRequest] = useState<RegistrationRequest | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
-  const [submitting, setSubmitting] = useState(false);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
 
-  // AI OCR States
-  const [aiVerifyingUid, setAiVerifyingUid] = useState<string | null>(null);
-  const [verifiedUids, setVerifiedUids] = useState<string[]>([]);
+  const refresh = () => qc.invalidateQueries({ queryKey: ['vendorRequests'] });
 
-  const handleAiVerify = async (uid: string) => {
-    setAiVerifyingUid(uid);
-    // Simulate ocrVerifyVendorDocument Cloud Function call
-    await new Promise((r) => setTimeout(r, 1200));
-    setVerifiedUids((prev) => [...prev, uid]);
-    setAiVerifyingUid(null);
-  };
+  const approveMut = useMutation({
+    mutationFn: (uid: string) => approveVendor(uid),
+    onSuccess: () => refresh(),
+  });
+  const rejectMut = useMutation({
+    mutationFn: ({ uid, reason }: { uid: string; reason: string }) => rejectVendor(uid, reason),
+    onSuccess: () => refresh(),
+  });
+  const submitting = approveMut.isPending || rejectMut.isPending;
 
   const handleApprove = async (uid: string, shopName: string) => {
-    setSubmitting(true);
-    // Simulate approveVendor Cloud Function call
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    setRequests(requests.filter((r) => r.uid !== uid));
-    setSubmitting(false);
+    await approveMut.mutateAsync(uid);
     setActionMessage(`Vendor "${shopName}" approved successfully.`);
     setTimeout(() => setActionMessage(null), 3000);
   };
@@ -83,11 +63,7 @@ export const VendorApprovals: React.FC = () => {
 
   const executeReject = async () => {
     if (rejectingRequest && rejectionReason.trim()) {
-      setSubmitting(true);
-      // Simulate rejectVendor Cloud Function call
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      setRequests(requests.filter((r) => r.uid !== rejectingRequest.uid));
-      setSubmitting(false);
+      await rejectMut.mutateAsync({ uid: rejectingRequest.uid, reason: rejectionReason.trim() });
       setActionMessage(`Application for "${rejectingRequest.shopName}" has been rejected.`);
       setRejectingRequest(null);
       setTimeout(() => setActionMessage(null), 3000);
@@ -134,12 +110,6 @@ export const VendorApprovals: React.FC = () => {
                     <div>
                       <p className="font-semibold text-slate-200">{req.shopName}</p>
                       <p className="text-xs text-slate-500 mt-0.5">UID: {req.uid}</p>
-                      {verifiedUids.includes(req.uid) && (
-                        <span className="inline-flex items-center gap-1 mt-1 text-[9px] font-bold text-emerald-450 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded">
-                          <Sparkles size={8} className="animate-pulse text-violet-400" />
-                          Gemini OCR Verified
-                        </span>
-                      )}
                     </div>
                   </div>
                 </td>
@@ -163,27 +133,9 @@ export const VendorApprovals: React.FC = () => {
                 </td>
                 <td className="py-4 px-6">
                   {req.gstNumber ? (
-                    <div className="flex flex-col gap-1.5 items-start">
-                      <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-emerald-950/30 text-emerald-400 border border-emerald-900/30">
-                        GST: {req.gstNumber}
-                      </span>
-                      {verifiedUids.includes(req.uid) ? (
-                        <span className="text-[9px] text-slate-400">Match Validated</span>
-                      ) : aiVerifyingUid === req.uid ? (
-                        <span className="text-[9px] text-violet-400 flex items-center gap-1">
-                          <RefreshCw className="h-2.5 w-2.5 animate-spin" />
-                          AI checking...
-                        </span>
-                      ) : (
-                        <button
-                          onClick={() => handleAiVerify(req.uid)}
-                          className="flex items-center gap-1 rounded bg-slate-700 hover:bg-slate-750 text-slate-300 text-[9px] font-semibold py-0.5 px-2 border border-slate-600 transition-colors"
-                        >
-                          <Sparkles size={10} className="text-violet-400 animate-pulse" />
-                          AI Verify
-                        </button>
-                      )}
-                    </div>
+                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-emerald-950/30 text-emerald-400 border border-emerald-900/30">
+                      GST: {req.gstNumber}
+                    </span>
                   ) : (
                     <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-slate-750 text-slate-500 border border-slate-600">
                       Non-GST
@@ -216,7 +168,7 @@ export const VendorApprovals: React.FC = () => {
             {requests.length === 0 && (
               <tr>
                 <td colSpan={6} className="py-8 text-center text-slate-500">
-                  No registrations pending approvals.
+                  {isLoading ? 'Loading…' : 'No registrations pending approvals.'}
                 </td>
               </tr>
             )}

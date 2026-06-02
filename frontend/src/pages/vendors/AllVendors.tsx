@@ -1,84 +1,20 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Search, Eye, Power, AlertTriangle, Download, Plus } from 'lucide-react';
+import { fetchVendors, setVendorStatus, type AdminVendor } from '../../services/adminDataService';
 
-interface VendorListItem {
-  uid: string;
-  shopName: string;
-  ownerName: string;
-  phone: string;
-  city: string;
-  zoneName: string;
-  tier: 'premium' | 'normal';
-  status: 'active' | 'pending' | 'suspended' | 'blocked';
-  rating: number;
-  bookingsCount: number;
-  weeklyEarnings: number;
-  isGstRegistered: boolean;
-}
-
-const mockVendorsList: VendorListItem[] = [
-  {
-    uid: 'vendor_01',
-    shopName: 'Elite Unisex Salon',
-    ownerName: 'Venkatesh Prasad',
-    phone: '9884011223',
-    city: 'Chennai',
-    zoneName: 'Chennai Central',
-    tier: 'premium',
-    status: 'active',
-    rating: 4.8,
-    bookingsCount: 284,
-    weeklyEarnings: 42350,
-    isGstRegistered: true
-  },
-  {
-    uid: 'vendor_02',
-    shopName: 'Sparkles Ladies Spa',
-    ownerName: 'Priya Sundar',
-    phone: '9884011224',
-    city: 'Chennai',
-    zoneName: 'Chennai Central',
-    tier: 'normal',
-    status: 'active',
-    rating: 4.5,
-    bookingsCount: 142,
-    weeklyEarnings: 18900,
-    isGstRegistered: false
-  },
-  {
-    uid: 'vendor_03',
-    shopName: 'Gentlemens Groom Room',
-    ownerName: 'Dinesh Karthik',
-    phone: '9884011225',
-    city: 'Tiruchirappalli',
-    zoneName: 'Trichy East',
-    tier: 'normal',
-    status: 'suspended',
-    rating: 4.1,
-    bookingsCount: 68,
-    weeklyEarnings: 0,
-    isGstRegistered: false
-  },
-  {
-    uid: 'vendor_04',
-    shopName: 'Bridal Queen Salon',
-    ownerName: 'Anitha R',
-    phone: '9884011226',
-    city: 'Chennai',
-    zoneName: 'Chennai Central',
-    tier: 'premium',
-    status: 'blocked',
-    rating: 3.9,
-    bookingsCount: 94,
-    weeklyEarnings: 0,
-    isGstRegistered: true
-  }
-];
+type VendorListItem = AdminVendor;
 
 export const AllVendors: React.FC = () => {
   const navigate = useNavigate();
-  const [vendors, setVendors] = useState<VendorListItem[]>(mockVendorsList);
+  const qc = useQueryClient();
+  const { data: vendors = [], isLoading } = useQuery({ queryKey: ['adminVendors'], queryFn: fetchVendors });
+  const statusMut = useMutation({
+    mutationFn: ({ uid, status, reason }: { uid: string; status: AdminVendor['status']; reason?: string }) =>
+      setVendorStatus(uid, status, reason),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['adminVendors'] }),
+  });
   const [searchQuery, setSearchQuery] = useState('');
   
   // Filter States
@@ -95,18 +31,13 @@ export const AllVendors: React.FC = () => {
       setSuspendingVendor(vendor);
       setSuspendReason('');
     } else {
-      // Reactivate
-      setVendors(
-        vendors.map((v) => (v.uid === vendor.uid ? { ...v, status: 'active' as const } : v))
-      );
+      statusMut.mutate({ uid: vendor.uid, status: 'active' });
     }
   };
 
   const executeSuspend = () => {
     if (suspendingVendor && suspendReason.trim()) {
-      setVendors(
-        vendors.map((v) => (v.uid === suspendingVendor.uid ? { ...v, status: 'suspended' as const } : v))
-      );
+      statusMut.mutate({ uid: suspendingVendor.uid, status: 'suspended', reason: suspendReason.trim() });
       setSuspendingVendor(null);
     }
   };
@@ -246,6 +177,15 @@ export const AllVendors: React.FC = () => {
                   <div>
                     <span className="font-semibold text-slate-200 block">{vendor.shopName}</span>
                     <span className="text-[10px] text-slate-500 mt-0.5 block">{vendor.uid}</span>
+                    <span
+                      className={`mt-1 inline-block text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded ${
+                        vendor.isGstRegistered
+                          ? 'bg-emerald-950/30 text-emerald-400 border border-emerald-900/30'
+                          : 'bg-slate-700 text-slate-400 border border-slate-600'
+                      }`}
+                    >
+                      {vendor.isGstRegistered ? 'GST' : 'Non-GST'}
+                    </span>
                   </div>
                 </td>
                 <td className="py-4 px-6">
@@ -320,7 +260,7 @@ export const AllVendors: React.FC = () => {
             {filteredVendors.length === 0 && (
               <tr>
                 <td colSpan={9} className="py-8 text-center text-slate-500">
-                  No matching vendors found.
+                  {isLoading ? 'Loading vendors…' : 'No matching vendors found.'}
                 </td>
               </tr>
             )}

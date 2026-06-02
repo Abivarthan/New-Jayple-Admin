@@ -25,7 +25,13 @@ export interface CategoryAssets {
   genderTarget?: string;
   normalAssets: LibraryAsset[];
   premiumAssets: LibraryAsset[];
+  // Per-gender buckets ("separate collections per gender" model).
+  menAssets: LibraryAsset[];
+  womenAssets: LibraryAsset[];
+  unisexAssets: LibraryAsset[];
 }
+
+export type ImageGender = 'men' | 'women' | 'unisex';
 
 // ── Reads (categories + imageLibrary are public-read) ──
 export const fetchCategories = async (): Promise<Category[]> => {
@@ -54,6 +60,9 @@ export const fetchImageLibrary = async (): Promise<Record<string, CategoryAssets
       genderTarget: x.genderTarget as string | undefined,
       normalAssets: (x.normalAssets as LibraryAsset[]) || [],
       premiumAssets: (x.premiumAssets as LibraryAsset[]) || [],
+      menAssets: (x.menAssets as LibraryAsset[]) || [],
+      womenAssets: (x.womenAssets as LibraryAsset[]) || [],
+      unisexAssets: (x.unisexAssets as LibraryAsset[]) || [],
     };
   });
   return out;
@@ -72,9 +81,14 @@ export const deleteCategory = (slug: string) =>
 export const reorderCategories = (order: { slug: string; order: number }[]) =>
   _manageCategory({ action: 'reorder', order });
 
-/** Add an image to a category by uploading a base64 file to Firebase Storage (CF-side). */
-export const addLibraryImage = (category: string, fileBase64: string, contentType: string) =>
-  _manageImageLibrary({ action: 'addImage', category, fileBase64, contentType });
+/** Add an image to a category's gender bucket (CF uploads base64 → Storage).
+ *  Omit `gender` for non-gendered uploads (e.g. salon_shop_images) → normalAssets. */
+export const addLibraryImage = (
+  category: string,
+  fileBase64: string,
+  contentType: string,
+  gender?: ImageGender,
+) => _manageImageLibrary({ action: 'addImage', category, fileBase64, contentType, gender });
 export const removeLibraryImage = (category: string, assetId: string) =>
   _manageImageLibrary({ action: 'removeImage', category, assetId });
 export const setLibraryDefault = (category: string, assetId: string) =>

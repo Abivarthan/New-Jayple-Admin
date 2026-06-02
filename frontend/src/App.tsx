@@ -8,7 +8,7 @@ import { Login } from './pages/Login';
 import { Unauthorized } from './pages/Unauthorized';
 import { Dashboard } from './pages/Dashboard';
 import { PlatformConfig } from './pages/PlatformConfig';
-import { Zones } from './pages/Zones';
+import { ServiceRadius } from './pages/ServiceRadius';
 import { ImageLibrary } from './pages/ImageLibrary';
 import { Categories } from './pages/Categories';
 import { HomeContent } from './pages/HomeContent';
@@ -19,7 +19,6 @@ import { VendorApprovals } from './pages/vendors/VendorApprovals';
 import { VendorDetail } from './pages/vendors/VendorDetail';
 import { Users } from './pages/Users';
 import { Settlements } from './pages/Settlements';
-import { Waitlist } from './pages/Waitlist';
 import { HeroBanners } from './pages/content/HeroBanners';
 import { Promotions } from './pages/content/Promotions';
 import { StaticPages } from './pages/content/StaticPages';
@@ -62,7 +61,7 @@ const App: React.FC = () => {
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="dashboard" element={<Dashboard />} />
 
-              <Route path="zones" element={<Zones />} />
+              <Route path="service-radius" element={<ServiceRadius />} />
               <Route path="ui-config" element={<UIConfigEditor />} />
               <Route path="image-library" element={<ImageLibrary />} />
               <Route path="categories" element={<Categories />} />
@@ -110,7 +109,6 @@ const App: React.FC = () => {
                   </div>
                 }
               />
-              <Route path="waitlist" element={<Waitlist />} />
 
               {/* CMS Routes */}
               <Route path="content/hero-banners" element={<HeroBanners />} />

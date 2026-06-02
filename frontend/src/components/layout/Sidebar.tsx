@@ -17,7 +17,6 @@ import {
   Users,
   User,
   ShieldAlert,
-  ClipboardList,
   ChevronLeft,
   ChevronRight,
   LogOut
@@ -37,7 +36,7 @@ export const Sidebar: React.FC = () => {
 
   const menuItems: SidebarItem[] = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-    { name: 'Zones', path: '/zones', icon: MapPin, permission: 'zones' },
+    { name: 'Service Radius', path: '/service-radius', icon: MapPin, permission: 'zones' },
     { name: 'UI Config', path: '/ui-config', icon: Sliders, permission: 'uiconfig' },
     { name: 'Categories', path: '/categories', icon: Tag, permission: 'content' },
     { name: 'Image Library', path: '/image-library', icon: Image, permission: 'content' },
@@ -50,8 +49,7 @@ export const Sidebar: React.FC = () => {
     { name: 'Platform Config', path: '/platform-config', icon: Settings, permission: 'content' },
     { name: 'Analytics', path: '/analytics', icon: BarChart3, permission: 'analytics' },
     { name: 'Admin Users', path: '/admin-users', icon: Users, permission: 'admin-users' },
-    { name: 'Audit Log', path: '/audit-log', icon: ShieldAlert, permission: 'audit' },
-    { name: 'Waitlist', path: '/waitlist', icon: ClipboardList }
+    { name: 'Audit Log', path: '/audit-log', icon: ShieldAlert, permission: 'audit' }
   ];
 
   const filteredItems = menuItems.filter(

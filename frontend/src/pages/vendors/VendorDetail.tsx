@@ -1,9 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Store, ShieldCheck, Percent, Wallet, Calendar,
   Star, Check, RefreshCw, Landmark, AlertTriangle, ToggleLeft, ToggleRight
 } from 'lucide-react';
+import {
+  fetchVendorById,
+  fetchVendorBookings,
+  fetchVendorReviews,
+  fetchVendorServices,
+  updateVendorBasics,
+  setReviewFlag,
+} from '../../services/adminDataService';
 
 interface BookingLog {
   id: string;
@@ -24,69 +32,101 @@ interface ReviewItem {
   flagged: boolean;
 }
 
-const mockBookings: BookingLog[] = [
-  { id: 'BKG-01', customerName: 'Aditya Sen', services: ['Haircut & Beard trim'], dateTime: 'Today, 2:30 PM', amount: 500, status: 'CONFIRMED', paymentMethod: 'ONLINE' },
-  { id: 'BKG-02', customerName: 'Shruti Iyer', services: ['Hydra Facial', 'Waxing'], dateTime: 'Yesterday, 11:00 AM', amount: 2150, status: 'COMPLETED', paymentMethod: 'COD' },
-  { id: 'BKG-03', customerName: 'Vijay Joseph', services: ['Hair Coloring'], dateTime: '24 May, 4:00 PM', amount: 1500, status: 'CANCELLED', paymentMethod: 'ONLINE' }
-];
-
-const mockReviews: ReviewItem[] = [
-  { id: 'R-01', customerName: 'Shruti Iyer', rating: 5, comment: 'Excellent styling. Very professional staff and hygienic setup.', date: 'Yesterday', flagged: false },
-  { id: 'R-02', customerName: 'Karthik S', rating: 2, comment: 'Staff was late by 20 minutes. Styling was average.', date: '3 days ago', flagged: false }
-];
-
 export const VendorDetail: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
+
   const [activeSubTab, setActiveSubTab] = useState<'profile' | 'services' | 'finance' | 'bookings' | 'reviews'>('profile');
   const [loading, setLoading] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
 
-  // Profile Form States
+  // Profile Form States (loaded from Firestore)
   const [profile, setProfile] = useState({
-    shopName: 'Elite Unisex Salon',
-    ownerName: 'Venkatesh Prasad',
-    phone: '9884011223',
-    email: 'contact@elitesalon.in',
-    city: 'Chennai',
-    zoneName: 'Chennai Central',
-    address: '12, Cathedral Road, Chennai Central, Chennai - 600006',
-    tier: 'premium' as 'premium' | 'normal',
+    shopName: '',
+    ownerName: '',
+    phone: '',
+    email: '',
+    city: '',
+    zoneName: '',
+    address: '',
+    tier: 'normal' as 'premium' | 'normal',
     commissionRate: 15,
-    isGstRegistered: true,
-    gstNumber: '33AAAAA1111A1Z1'
+    isGstRegistered: false,
+    gstNumber: '',
   });
 
-  // Services Catalog States
-  const [services, setServices] = useState([
-    { id: 's_01', name: 'Haircut & Styling', category: 'haircut', price: 500, fakeDiscount: 10, isBestseller: true, isActive: true },
-    { id: 's_02', name: 'Hydra Facial Treatment', category: 'facial', price: 1800, fakeDiscount: 15, isBestseller: false, isActive: true },
-    { id: 's_03', name: 'Keratin Hair Therapy', category: 'haircare', price: 3500, fakeDiscount: 0, isBestseller: false, isActive: false }
-  ]);
+  const [services, setServices] = useState<
+    { id: string; name: string; category: string; price: number; fakeDiscount: number; isBestseller: boolean; isActive: boolean }[]
+  >([]);
+  const [bookings, setBookings] = useState<BookingLog[]>([]);
+  const [reviews, setReviews] = useState<ReviewItem[]>([]);
 
-  // Financial States
+  // Financial States (walletBalance loaded; COD counters are not yet aggregated)
   const [finances, setFinances] = useState({
-    walletBalance: 1250.00,
-    codCollected: 3200.00,
-    codThreshold: 5000.00,
-    isServiceBlocked: false
+    walletBalance: 0,
+    codCollected: 0,
+    codThreshold: 5000.0,
+    isServiceBlocked: false,
   });
 
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [walletAdjustAmount, setWalletAdjustAmount] = useState('');
   const [walletAdjustReason, setWalletAdjustReason] = useState('');
 
-  // Reviews removal state
-  const [reviews, setReviews] = useState<ReviewItem[]>(mockReviews);
+  // Load the real vendor + bookings + reviews + services.
+  useEffect(() => {
+    if (!id) return;
+    let alive = true;
+    (async () => {
+      const [v, bks, revs, svcs] = await Promise.all([
+        fetchVendorById(id),
+        fetchVendorBookings(id),
+        fetchVendorReviews(id),
+        fetchVendorServices(id),
+      ]);
+      if (!alive) return;
+      if (v) {
+        setProfile({
+          shopName: v.shopName,
+          ownerName: v.ownerName === '—' ? '' : v.ownerName,
+          phone: v.phone,
+          email: v.email ?? '',
+          city: v.city,
+          zoneName: v.zoneName,
+          address: v.address ?? '',
+          tier: v.tier,
+          commissionRate: v.commissionRate ?? 15,
+          isGstRegistered: v.isGstRegistered,
+          gstNumber: v.gstNumber ?? '',
+        });
+        setFinances((f) => ({ ...f, walletBalance: v.weeklyEarnings }));
+      }
+      setBookings(bks);
+      setReviews(revs);
+      setServices(svcs.map((sv) => ({ ...sv, fakeDiscount: 0, isBestseller: false })));
+    })();
+    return () => { alive = false; };
+  }, [id]);
 
   const handleProfileSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!id) return;
     setLoading(true);
-    await new Promise(r => setTimeout(r, 800));
-    setLoading(false);
-    setSaveSuccess('Vendor profile details updated successfully.');
-    setTimeout(() => setSaveSuccess(null), 3000);
+    try {
+      await updateVendorBasics(id, {
+        shopName: profile.shopName,
+        ownerName: profile.ownerName,
+        phone: profile.phone,
+        email: profile.email,
+        address: profile.address,
+      });
+      setSaveSuccess('Vendor profile details updated successfully.');
+    } catch (err) {
+      setSaveSuccess(err instanceof Error ? err.message : 'Save failed');
+    } finally {
+      setLoading(false);
+      setTimeout(() => setSaveSuccess(null), 3000);
+    }
   };
 
   const handleServiceToggle = (serviceId: string, field: 'isActive' | 'isBestseller') => {
@@ -119,10 +159,15 @@ export const VendorDetail: React.FC = () => {
     setTimeout(() => setSaveSuccess(null), 3000);
   };
 
-  const handleReviewFlag = (reviewId: string) => {
-    setReviews(
-      reviews.map((r) => (r.id === reviewId ? { ...r, flagged: !r.flagged } : r))
-    );
+  const handleReviewFlag = async (reviewId: string) => {
+    const current = reviews.find((r) => r.id === reviewId);
+    const next = !current?.flagged;
+    setReviews(reviews.map((r) => (r.id === reviewId ? { ...r, flagged: next } : r)));
+    try {
+      await setReviewFlag(reviewId, next);
+    } catch {
+      /* keep optimistic UI; flag may not persist if denied */
+    }
   };
 
   return (
@@ -467,7 +512,7 @@ export const VendorDetail: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800 text-xs text-slate-300">
-                  {mockBookings.map((b) => (
+                  {bookings.map((b) => (
                     <tr key={b.id} className="hover:bg-[#0f172a]/15">
                       <td className="py-3.5 px-5 font-semibold text-slate-200">{b.id}</td>
                       <td className="py-3.5 px-5">{b.customerName}</td>

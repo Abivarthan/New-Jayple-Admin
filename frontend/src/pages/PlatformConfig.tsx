@@ -1,5 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Save, RefreshCw, CheckCircle, Percent } from 'lucide-react';
+import { fetchAppFinancials, saveAppFinancials } from '../services/adminDataService';
+
+const num = (v: unknown, d: number): number => (typeof v === 'number' && isFinite(v) ? v : d);
+const bool = (v: unknown, d: boolean): boolean => (typeof v === 'boolean' ? v : d);
+const str = (v: unknown, d: string): string => (typeof v === 'string' && v ? v : d);
 
 export const PlatformConfig: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'tax' | 'discount' | 'vendor' | 'financial' | 'app'>('tax');
@@ -49,16 +54,103 @@ export const PlatformConfig: React.FC = () => {
     autoTimeoutWindow: 5
   });
 
+  // Load the real config (appConfig/financials) into the forms on mount.
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const f = await fetchAppFinancials();
+      if (!alive) return;
+      setTaxConfig({
+        // Canonical keys the customer FinancialConfig reads.
+        gstRegisteredTax: num(f.gstRegisteredTaxPercent, 18),
+        nonGstTax: num(f.nonGstTaxPercent, 5),
+        convenienceFee: num(f.convenienceFee, 9),
+        taxIncluded: bool(f.taxIncludedInPrice, true),
+        taxDisplayLabel: str(f.taxDisplayLabel, 'GST'),
+      });
+      setDiscountConfig({
+        defaultFakeDiscount: num(f.defaultFakeDiscount, 10),
+        minPercentForBadge: num(f.minPercentForBadge, 5),
+        maxAllowedDiscount: num(f.maxAllowedDiscount, 70),
+        badgeStyle: (f.badgeStyle === 'AMOUNT' ? 'AMOUNT' : 'PERCENT'),
+        showStrikethrough: bool(f.showStrikethrough, true),
+      });
+      setVendorConfig({
+        autoApproveVendors: bool(f.autoApproveVendors, false),
+        defaultCommission: num(f.platformCommissionPercent, 15),
+        defaultCodThreshold: num(f.codMaxCollectionThreshold, 5000),
+        walletBlockThreshold: num(f.vendorWalletBlockThreshold, -500),
+        slotLockDuration: num(f.slotLockTTLMinutes, 2),
+      });
+      setFinancialConfig({
+        cancellationWindow: num(f.cancellationFreeWindowMinutes, 120) / 60,
+        cancellationPenalty: num(f.cancellationPenaltyPercent, 25),
+        vendorCancelPenalty: num(f.vendorCancelPenaltyAmount, 100),
+        vendorCancelCompensation: num(f.vendorCancelCompensationAmount, 30),
+        welcomeBonus: num(f.welcomeBonusAmount, 50),
+        normalCashback: num(f.cashbackPercentNormal, 2),
+        minWeeklyPayout: num(f.vendorMinWeeklyPayout, 500),
+      });
+      setAppBehaviorConfig({
+        codEligibilityCompleted: num(f.codEligibilityCompleted, 1),
+        maxServicesPerBooking: num(f.maxServicesPerBooking, 10),
+        maxAdvanceBookingDays: num(f.maxAdvanceBookingDays, 30),
+        vendorRePingInterval: num(f.vendorRePingInterval, 5),
+        autoTimeoutWindow: num(f.autoTimeoutWindow, 5),
+      });
+    })();
+    return () => { alive = false; };
+  }, []);
+
   const handleSave = async (section: string) => {
     setLoading(true);
     setSavedMessage(null);
-    
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    
-    setLoading(false);
-    setSavedMessage(`Configuration settings for "${section}" published successfully.`);
-    setTimeout(() => setSavedMessage(null), 3000);
+    // Map the form state to the canonical appConfig/financials keys the Cloud
+    // Functions read (functions/config.js). Saved with merge so every tab's
+    // Save persists the full current config.
+    const patch: Record<string, unknown> = {
+      // Tax & fees — canonical keys the customer/vendor apps read.
+      convenienceFee: taxConfig.convenienceFee,
+      gstRegisteredTaxPercent: taxConfig.gstRegisteredTax,
+      nonGstTaxPercent: taxConfig.nonGstTax,
+      taxIncludedInPrice: taxConfig.taxIncluded,
+      taxDisplayLabel: taxConfig.taxDisplayLabel,
+      // Discount/badge
+      defaultFakeDiscount: discountConfig.defaultFakeDiscount,
+      minPercentForBadge: discountConfig.minPercentForBadge,
+      maxAllowedDiscount: discountConfig.maxAllowedDiscount,
+      badgeStyle: discountConfig.badgeStyle,
+      showStrikethrough: discountConfig.showStrikethrough,
+      // Vendor parameters
+      platformCommissionPercent: vendorConfig.defaultCommission,
+      codMaxCollectionThreshold: vendorConfig.defaultCodThreshold,
+      vendorWalletBlockThreshold: vendorConfig.walletBlockThreshold,
+      slotLockTTLMinutes: vendorConfig.slotLockDuration,
+      autoApproveVendors: vendorConfig.autoApproveVendors,
+      // Financial policies
+      cancellationFreeWindowMinutes: Math.round(financialConfig.cancellationWindow * 60),
+      cancellationPenaltyPercent: financialConfig.cancellationPenalty,
+      vendorCancelPenaltyAmount: financialConfig.vendorCancelPenalty,
+      vendorCancelCompensationAmount: financialConfig.vendorCancelCompensation,
+      welcomeBonusAmount: financialConfig.welcomeBonus,
+      cashbackPercentNormal: financialConfig.normalCashback,
+      vendorMinWeeklyPayout: financialConfig.minWeeklyPayout,
+      // App behavior
+      codEligibilityCompleted: appBehaviorConfig.codEligibilityCompleted,
+      maxServicesPerBooking: appBehaviorConfig.maxServicesPerBooking,
+      maxAdvanceBookingDays: appBehaviorConfig.maxAdvanceBookingDays,
+      vendorRePingInterval: appBehaviorConfig.vendorRePingInterval,
+      autoTimeoutWindow: appBehaviorConfig.autoTimeoutWindow,
+    };
+    try {
+      await saveAppFinancials(patch);
+      setSavedMessage(`Configuration settings for "${section}" saved live.`);
+    } catch (err) {
+      setSavedMessage(err instanceof Error ? err.message : 'Save failed');
+    } finally {
+      setLoading(false);
+      setTimeout(() => setSavedMessage(null), 3000);
+    }
   };
 
   return (

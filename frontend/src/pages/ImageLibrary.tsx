@@ -8,6 +8,7 @@ import {
   removeLibraryImage,
   setLibraryDefault,
   fileToBase64,
+  type ImageGender,
 } from '../services/catalogService';
 
 export const ImageLibrary: React.FC = () => {
@@ -16,6 +17,7 @@ export const ImageLibrary: React.FC = () => {
   const { data: library = {}, isLoading } = useQuery({ queryKey: ['imageLibrary'], queryFn: fetchImageLibrary });
 
   const [activeCategory, setActiveCategory] = useState<string>('');
+  const [gender, setGender] = useState<ImageGender>('unisex');
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<{ category: string; assetId: string } | null>(null);
@@ -23,7 +25,19 @@ export const ImageLibrary: React.FC = () => {
 
   // Default the active tab to the first category once loaded.
   const active = activeCategory || categories[0]?.slug || '';
-  const assets = library[active]?.normalAssets || [];
+  // Shop photos (salon_shop_images) are gender-agnostic → single pool.
+  const isShop = active === 'salon_shop_images';
+  const catAssets = library[active];
+  const assets = isShop
+    ? catAssets?.normalAssets || []
+    : gender === 'men'
+      ? catAssets?.menAssets || []
+      : gender === 'women'
+        ? catAssets?.womenAssets || []
+        // Unisex tab also surfaces legacy (un-bucketed) normalAssets so existing
+        // images stay visible/manageable. Removes/defaults work by id (CF scans
+        // every bucket), so mixing them here is safe.
+        : [...(catAssets?.unisexAssets || []), ...(catAssets?.normalAssets || [])];
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['imageLibrary'] });
 
@@ -44,7 +58,7 @@ export const ImageLibrary: React.FC = () => {
     setError(null);
     try {
       const base64 = await fileToBase64(file);
-      await addLibraryImage(active, base64, file.type || 'image/png');
+      await addLibraryImage(active, base64, file.type || 'image/png', isShop ? undefined : gender);
       invalidate();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Upload failed');
@@ -81,12 +95,37 @@ export const ImageLibrary: React.FC = () => {
         ))}
       </div>
 
+      {/* Gender sub-tabs — pick the bucket to manage. Hidden for shop images. */}
+      {active && !isShop && (
+        <div className="flex gap-2">
+          {(['men', 'women', 'unisex'] as ImageGender[]).map((g) => (
+            <button
+              key={g}
+              onClick={() => setGender(g)}
+              className={`rounded-lg px-4 py-1.5 text-xs font-semibold capitalize transition-all ${
+                gender === g
+                  ? 'bg-violet-600 text-white'
+                  : 'bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-600'
+              }`}
+            >
+              {g === 'unisex' ? 'Unisex / All' : `${g}'s`}
+            </button>
+          ))}
+        </div>
+      )}
+
       {active && (
         <div className="rounded-xl border border-slate-600 bg-slate-800 p-6 space-y-5">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400">Service Images</h3>
-              <p className="text-xs text-slate-500">Shown to vendors as the predefined image choices for this category.</p>
+              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400">
+                {isShop ? 'Shop Photos' : `${gender === 'unisex' ? 'Unisex / All' : gender + "'s"} Service Images`}
+              </h3>
+              <p className="text-xs text-slate-500">
+                {isShop
+                  ? 'Shown to vendors as the predefined shop-photo choices.'
+                  : 'Shown to vendors for services in this category + gender.'}
+              </p>
             </div>
             <button
               onClick={() => fileRef.current?.click()}
