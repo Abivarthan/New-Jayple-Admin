@@ -64,8 +64,19 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
     match /uiConfigs/{zoneId} {
-      allow read: if true;
+      allow read: if true;        // public read (customer home + global theme _global)
       allow write: if isAdmin();
+    }
+    // Dynamic UI config drafts + version history (admin-ui-config.js). Admin-only
+    // read; all writes go through the admin Cloud Functions (which use the admin
+    // SDK and bypass these rules), so direct client writes are denied.
+    match /uiConfigDrafts/{target} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    match /uiConfigVersions/{target}/history/{version} {
+      allow read: if isAdmin();
+      allow write: if false;
     }
     match /platformConfig/{docId} {
       allow read: if true;     // apps cache financial config
@@ -195,6 +206,14 @@ service cloud.firestore {
       allow read: if isSignedIn();
       allow write: if isOwner(userId) || isAdmin();
       match /notifications/{notificationId} {
+        allow read, write: if isOwner(userId);
+      }
+      // Liked Services — per-user favorites (pointer docs).
+      match /favorites/{serviceId} {
+        allow read, write: if isOwner(userId);
+      }
+      // Favorite Studios — per-user vendor/salon favorites.
+      match /favoriteVendors/{vendorId} {
         allow read, write: if isOwner(userId);
       }
     }
