@@ -25,6 +25,7 @@ import { StaticPages } from './pages/content/StaticPages';
 import { CMSSettings } from './pages/content/CMSSettings';
 import { Faqs } from './pages/content/Faqs';
 import { Announcements } from './pages/content/Announcements';
+import { ExploreDiscovery } from './pages/content/ExploreDiscovery';
 
 // Initialize TanStack Query Client
 const queryClient = new QueryClient({
@@ -130,6 +131,7 @@ const App: React.FC = () => {
               } />
               <Route path="content/faqs" element={<Faqs />} />
               <Route path="content/announcements" element={<Announcements />} />
+              <Route path="content/explore-discovery" element={<ExploreDiscovery />} />
             </Route>
 
             {/* Fallback Route */}

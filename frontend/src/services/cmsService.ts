@@ -49,6 +49,11 @@ export const fetchCmsSettings = async () => {
   return snapshot.exists() ? snapshot.data() : { version: 0 };
 };
 
+export const fetchExploreDiscovery = async () => {
+  const snapshot = await getDoc(doc(db, 'cms/exploreDiscovery/config/main'));
+  return snapshot.exists() ? snapshot.data() : null;
+};
+
 // Image upload (base64 → Firebase Storage via CF; returns { url })
 export const uploadCmsImage = httpsCallable<
   { fileBase64: string; contentType: string; folder?: string },
@@ -80,3 +85,5 @@ export const deleteAnnouncement = httpsCallable(functions, 'deleteAnnouncement')
 export const updateStaticPage = httpsCallable(functions, 'updateStaticPage');
 
 export const publishCms = httpsCallable(functions, 'publishCms');
+
+export const updateExploreDiscovery = httpsCallable(functions, 'updateExploreDiscovery');

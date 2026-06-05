@@ -132,6 +132,7 @@ export const Sidebar: React.FC = () => {
                   { name: 'Static Pages', path: '/content/static-pages' },
                   { name: 'FAQs', path: '/content/faqs' },
                   { name: 'Announcements', path: '/content/announcements' },
+                  { name: 'Explore Discovery', path: '/content/explore-discovery' },
                   { name: 'CMS Settings', path: '/content/settings' }
                 ].map(sub => (
                   <NavLink
