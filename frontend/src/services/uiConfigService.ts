@@ -23,6 +23,9 @@ export interface UiConfigDoc {
   sectionData?: Record<string, Record<string, unknown>>;
   // global default hero (applies to all zones unless a zone overrides):
   globalHero?: Record<string, unknown>;
+  // per-gender override blocks:
+  men?: Record<string, unknown>;
+  women?: Record<string, unknown>;
   // legacy freeform:
   sections?: UiSection[];
   themeOverride?: ThemeMap;
@@ -95,6 +98,8 @@ export const saveUiConfigDraft = httpsCallable<
     sectionVisibility?: Record<string, boolean>;
     sectionData?: Record<string, Record<string, unknown>>;
     globalHero?: Record<string, unknown>;
+    men?: Record<string, unknown>;
+    women?: Record<string, unknown>;
     sections?: UiSection[];
     themeOverride?: ThemeMap;
   },

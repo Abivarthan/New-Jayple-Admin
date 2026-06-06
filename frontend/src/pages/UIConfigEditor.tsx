@@ -165,6 +165,10 @@ export const UIConfigEditor: React.FC = () => {
   const [sectionData, setSectionData] = useState<Record<string, Record<string, unknown>>>({});
   const [globalHero, setGlobalHero] = useState<Record<string, unknown>>({});
   const [themeOverride, setThemeOverride] = useState<ThemeMap>({});
+  // Per-gender override blocks + active editing scope (All edits the base).
+  const [scope, setScope] = useState<'all' | 'men' | 'women'>('all');
+  const [men, setMen] = useState<Record<string, unknown>>({});
+  const [women, setWomen] = useState<Record<string, unknown>>({});
   const [versions, setVersions] = useState<VersionInfo[]>([]);
   const [tab, setTab] = useState<'theme' | 'hero' | 'template' | 'preview'>('theme');
   const [activeType, setActiveType] = useState<string | null>(null);
@@ -202,6 +206,9 @@ export const UIConfigEditor: React.FC = () => {
         setTheme({ ...DEFAULT_THEME });
         setGlobalHero({});
       }
+      setScope('all');
+      setMen((src?.men as Record<string, unknown>) || {});
+      setWomen((src?.women as Record<string, unknown>) || {});
       setVersions(vres);
       setTab(t === '_global' ? 'theme' : 'template');
       setActiveType(null);
@@ -217,9 +224,9 @@ export const UIConfigEditor: React.FC = () => {
 
   const draftPayload = useCallback(() => (
     isGlobal
-      ? { target, theme, globalHero }
-      : { target, templateId, sectionVisibility, sectionData, themeOverride }
-  ), [isGlobal, target, theme, globalHero, templateId, sectionVisibility, sectionData, themeOverride]);
+      ? { target, theme, globalHero, men, women }
+      : { target, templateId, sectionVisibility, sectionData, themeOverride, men, women }
+  ), [isGlobal, target, theme, globalHero, templateId, sectionVisibility, sectionData, themeOverride, men, women]);
 
   const onSaveDraft = async () => {
     setBusy(true);
@@ -267,15 +274,49 @@ export const UIConfigEditor: React.FC = () => {
   const patchSectionData = (type: string, patch: Record<string, unknown>) =>
     setSectionData({ ...sectionData, [type]: { ...(sectionData[type] || {}), ...patch } });
 
-  // Effective theme used by the preview (global edits the theme; a zone previews
-  // the default theme + its override — approximate, since the real global theme
-  // is published separately).
-  const previewTheme: ThemeMap = isGlobal ? theme : { ...DEFAULT_THEME, ...themeOverride };
-  const previewSections: UiSection[] = (isGlobal ? templateById('marketplace') : templateById(templateId))
+  // ── Scope-aware editing bindings: 'all' edits the base; 'men'/'women' edit
+  //    that gender block (base shown as the inherited default). ──
+  const gObj: Record<string, unknown> | null =
+    scope === 'men' ? men : scope === 'women' ? women : null;
+  const setGObj = (patch: Record<string, unknown>) =>
+    scope === 'men' ? setMen({ ...men, ...patch }) : setWomen({ ...women, ...patch });
+
+  const sTheme: ThemeMap = scope === 'all' ? theme : ((gObj?.theme as ThemeMap) || {});
+  const sThemeBase: ThemeMap = scope === 'all' ? theme : { ...DEFAULT_THEME, ...theme };
+  const setSTheme = (k: string, v: unknown) => scope === 'all'
+    ? setTheme({ ...theme, [k]: v })
+    : setGObj({ theme: { ...((gObj?.theme as ThemeMap) || {}), [k]: v } });
+
+  const sHero: Record<string, unknown> = scope === 'all' ? globalHero : ((gObj?.globalHero as Record<string, unknown>) || {});
+  const setSHero = (patch: Record<string, unknown>) => scope === 'all'
+    ? setGlobalHero({ ...globalHero, ...patch })
+    : setGObj({ globalHero: { ...((gObj?.globalHero as Record<string, unknown>) || {}), ...patch } });
+
+  const sTemplateId: string = scope === 'all' ? templateId : ((gObj?.templateId as string) || templateId);
+  const setSTemplateId = (id: string) => scope === 'all' ? setTemplateId(id) : setGObj({ templateId: id });
+  const sVis: Record<string, boolean> = scope === 'all' ? sectionVisibility : ((gObj?.sectionVisibility as Record<string, boolean>) || {});
+  const toggleSVis = (type: string) => scope === 'all'
+    ? toggleVisibility(type)
+    : setGObj({ sectionVisibility: { ...sVis, [type]: sVis[type] === false } });
+  const sData: Record<string, Record<string, unknown>> = scope === 'all' ? sectionData : ((gObj?.sectionData as Record<string, Record<string, unknown>>) || {});
+  const patchSData = (type: string, patch: Record<string, unknown>) => scope === 'all'
+    ? patchSectionData(type, patch)
+    : setGObj({ sectionData: { ...sData, [type]: { ...(sData[type] || {}), ...patch } } });
+
+  const sThemeOverride: ThemeMap = scope === 'all' ? themeOverride : ((gObj?.themeOverride as ThemeMap) || {});
+  const setSThemeOverride = (k: string, v: unknown) => scope === 'all'
+    ? setThemeOverride({ ...themeOverride, [k]: v })
+    : setGObj({ themeOverride: { ...sThemeOverride, [k]: v } });
+
+  // Preview reflects the active scope (base ⊕ gender block).
+  const previewTheme: ThemeMap = isGlobal
+    ? (scope === 'all' ? theme : { ...theme, ...sTheme })
+    : { ...DEFAULT_THEME, ...themeOverride, ...(scope !== 'all' ? sThemeOverride : {}) };
+  const previewSections: UiSection[] = (isGlobal ? templateById('marketplace') : templateById(sTemplateId))
     .sections.map((type) => ({
       type,
-      enabled: isGlobal ? true : sectionVisibility[type] !== false,
-      data: (isGlobal ? (type === 'hero' ? globalHero : {}) : sectionData[type]) || {},
+      enabled: isGlobal ? true : sVis[type] !== false,
+      data: (isGlobal ? (type === 'hero' ? sHero : {}) : sData[type]) || {},
     }));
 
   return (
@@ -294,6 +335,23 @@ export const UIConfigEditor: React.FC = () => {
             {zones.map((z) => <option key={z.id} value={z.id}>📍 {z.name}</option>)}
           </select>
         </div>
+      </div>
+
+      {/* Audience scope: All = base config; Men/Women override it for that
+          audience (shown when the customer's gender filter matches). */}
+      <div className="flex items-center gap-3">
+        <span className="text-sm text-slate-400 font-semibold">Audience:</span>
+        <div className="inline-flex rounded-lg border border-slate-700 bg-slate-800 p-1">
+          {(['all', 'men', 'women'] as const).map((s) => (
+            <button key={s} onClick={() => setScope(s)}
+              className={`px-4 py-1.5 text-sm font-semibold rounded-md capitalize transition-colors ${scope === s ? 'bg-violet-600 text-white' : 'text-slate-300 hover:text-white'}`}>
+              {s === 'all' ? 'All (base)' : s}
+            </button>
+          ))}
+        </div>
+        {scope !== 'all' && (
+          <span className="text-xs text-slate-500">Editing the <b className="text-slate-300 capitalize">{scope}</b> override — only changed fields override the base.</span>
+        )}
       </div>
 
       {/* Alerts */}
@@ -344,22 +402,22 @@ export const UIConfigEditor: React.FC = () => {
             {tab === 'theme' && (
               <ThemeEditor
                 isGlobal={isGlobal}
-                value={isGlobal ? theme : themeOverride}
-                base={isGlobal ? theme : { ...DEFAULT_THEME, ...themeOverride }}
-                onChange={(k, v) => (isGlobal ? setTheme({ ...theme, [k]: v }) : setThemeOverride({ ...themeOverride, [k]: v }))}
+                value={isGlobal ? sTheme : sThemeOverride}
+                base={isGlobal ? sThemeBase : { ...DEFAULT_THEME, ...themeOverride }}
+                onChange={(k, v) => (isGlobal ? setSTheme(k, v) : setSThemeOverride(k, v))}
               />
             )}
             {tab === 'hero' && isGlobal && (
               <div className="rounded-xl border border-slate-700 bg-slate-800 p-5">
-                <HeroEditor data={globalHero} onPatch={(p) => setGlobalHero({ ...globalHero, ...p })} />
-                <p className="text-xs text-slate-500 mt-4 border-t border-slate-700 pt-3">This hero (video / GIF / image) is the default for <span className="text-slate-300">every zone</span>. A specific zone can still override it from its Template → Hero section.</p>
+                <HeroEditor data={sHero} onPatch={(p) => setSHero(p)} />
+                <p className="text-xs text-slate-500 mt-4 border-t border-slate-700 pt-3">{scope === 'all' ? 'Default hero for every zone (video / GIF / image). A zone can override it.' : `${scope.toUpperCase()} audience hero — overrides the base hero only for ${scope} users.`}</p>
               </div>
             )}
             {tab === 'template' && !isGlobal && (
               <TemplateEditor
-                templateId={templateId} setTemplateId={setTemplateId}
-                sectionVisibility={sectionVisibility} toggleVisibility={toggleVisibility}
-                sectionData={sectionData} patchSectionData={patchSectionData}
+                templateId={sTemplateId} setTemplateId={setSTemplateId}
+                sectionVisibility={sVis} toggleVisibility={toggleSVis}
+                sectionData={sData} patchSectionData={patchSData}
                 activeType={activeType} setActiveType={setActiveType}
               />
             )}
