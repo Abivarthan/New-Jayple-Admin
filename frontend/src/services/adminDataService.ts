@@ -514,6 +514,16 @@ const _runWeeklySettlements = httpsCallable<Record<string, never>, { processed: 
 );
 export const runSettlements = () => _runWeeklySettlements({});
 
+// Zero the canonical vendor wallet ledger (vendors/{id}/wallet/main) once
+// finance has actually paid out / written off the balance. Server-side
+// (verifyAdmin) — records a settlement + a manual_settlement txn.
+const _settleVendorWallet = httpsCallable<
+  { vendorId: string; note?: string },
+  { ok: boolean; balanceBefore: number; balanceAfter: number; settlementId?: string }
+>(functions, 'settleVendorWallet');
+export const settleVendorWallet = (vendorId: string, note?: string) =>
+  _settleVendorWallet({ vendorId, note });
+
 export const markSettlementPaid = async (
   vendorId: string,
   settlementId: string,
@@ -524,6 +534,13 @@ export const markSettlementPaid = async (
     paymentTxnId,
     processedAt: serverTimestamp(),
   });
+  // Now that the payout is recorded, zero the canonical wallet ledger so the
+  // vendor's balance returns to 0 (scenario 6).
+  try {
+    await _settleVendorWallet({ vendorId, note: `Settlement ${settlementId} marked paid` });
+  } catch (e) {
+    console.error('[markSettlementPaid] settleVendorWallet failed:', e);
+  }
 };
 
 // ══════════════════════════════════════════════════════════════

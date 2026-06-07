@@ -115,7 +115,18 @@ service cloud.firestore {
     match /vendors/{vendorId} {
       allow read: if true;
       allow create: if isOwner(vendorId);
-      allow update: if isOwner(vendorId) || isSignedIn();
+      // A vendor may update only their OWN profile, and NEVER the financial /
+      // status / verification fields (those are server/admin-controlled — the
+      // canonical balance lives in the wallet/main subcollection, write:false).
+      // (Previously `|| isSignedIn()` let ANY signed-in user write any vendor's
+      //  money — a critical hole.)
+      allow update: if isAdmin()
+        || (isOwner(vendorId)
+            && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+                 'pendingPayout', 'walletBalance', 'totalEarnings', 'totalCommissionPaid',
+                 'commissionPercent', 'status', 'isServiceBlocked', 'serviceBlockReason',
+                 'isApproved', 'approvalStatus', 'isVerified', 'bankVerified', 'earningsSettled'
+               ]));
       allow delete: if isAdmin();
 
       match /services/{serviceId} {
