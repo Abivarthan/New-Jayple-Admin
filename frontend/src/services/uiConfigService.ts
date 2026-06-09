@@ -14,6 +14,20 @@ export interface UiSection {
   data?: Record<string, unknown>;
 }
 
+/// v3 SDUI: one ordered, targetable, parameterized section descriptor in the
+/// explicit `feed[]`. Field names MUST match the Flutter `HomeSection.fromMap`
+/// contract exactly (type/id/order/visible/themed/layout/targeting/data).
+export interface FeedSection {
+  type: string;
+  id?: string;
+  order?: number;
+  visible?: boolean;
+  themed?: boolean;
+  layout?: Record<string, unknown>;
+  targeting?: Record<string, unknown>;
+  data?: Record<string, unknown>;
+}
+
 export interface UiConfigDoc {
   version?: number;
   theme?: ThemeMap;
@@ -26,6 +40,8 @@ export interface UiConfigDoc {
   // per-gender override blocks:
   men?: Record<string, unknown>;
   women?: Record<string, unknown>;
+  // v3 SDUI explicit ordered feed (source of truth when non-empty):
+  feed?: FeedSection[];
   // legacy freeform:
   sections?: UiSection[];
   themeOverride?: ThemeMap;
@@ -100,6 +116,7 @@ export const saveUiConfigDraft = httpsCallable<
     globalHero?: Record<string, unknown>;
     men?: Record<string, unknown>;
     women?: Record<string, unknown>;
+    feed?: FeedSection[];
     sections?: UiSection[];
     themeOverride?: ThemeMap;
   },

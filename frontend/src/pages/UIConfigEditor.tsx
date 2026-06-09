@@ -10,8 +10,9 @@ import {
   saveUiConfigDraft, publishUiConfig, getUiConfigVersions, rollbackUiConfig, seedGlobalUiTheme,
   backfillVendorOffers, uploadCmsImage, uploadUiConfigFile,
 } from '../services/uiConfigService';
-import type { ThemeMap, UiSection, VersionInfo } from '../services/uiConfigService';
+import type { ThemeMap, UiSection, FeedSection, VersionInfo } from '../services/uiConfigService';
 import { fileToBase64 } from '../services/catalogService';
+import { ArrowUp, ArrowDown, Layers, Crosshair, SlidersHorizontal } from 'lucide-react';
 
 // Customer-supported section types (must match home_screen.dart _renderSection).
 const SECTION_CATALOG: { type: string; label: string }[] = [
@@ -30,6 +31,31 @@ const SECTION_CATALOG: { type: string; label: string }[] = [
   { type: 'vendorList', label: 'Vendor List' },
 ];
 const sectionLabel = (t: string) => SECTION_CATALOG.find((s) => s.type === t)?.label || t;
+
+// ── SDUI feed composer (v3) helpers ─────────────────────────────────────────
+// Type-keyed default for `themed` — these sections paint on the gradient TOP
+// zone, so a composed descriptor MUST default them true or the unified blue top
+// breaks (the app splits top/body by this flag). Everything else flows in body.
+const THEMED_TYPES = new Set(['hero', 'cashback', 'queueBanner']);
+const defaultThemed = (type: string) => THEMED_TYPES.has(type);
+
+// Bounded layout enums — MUST mirror Flutter `section_layout.dart`.
+const PADDING_OPTS = ['normal', 'none', 'tight', 'roomy'] as const;
+const DIVIDER_OPTS = ['none', 'line'] as const;
+const HEIGHT_OPTS = ['', 'sm', 'md', 'lg', 'xl', 'fullbleed'] as const; // '' = default (hero self-sizes)
+const GENDER_OPTS = ['men', 'women', 'all'] as const;
+
+let _feedSeq = 0;
+const newFeedSection = (type: string, order: number): FeedSection => ({
+  type,
+  id: `${type}_${Date.now()}_${_feedSeq++}`,
+  order,
+  visible: true,
+  themed: defaultThemed(type),
+  layout: {},
+  targeting: {},
+  data: {},
+});
 
 // Predefined templates — MUST mirror lib/features/home/home_templates.dart.
 const TEMPLATES: { id: string; label: string; desc: string; sections: string[] }[] = [
@@ -165,6 +191,11 @@ export const UIConfigEditor: React.FC = () => {
   const [sectionData, setSectionData] = useState<Record<string, Record<string, unknown>>>({});
   const [globalHero, setGlobalHero] = useState<Record<string, unknown>>({});
   const [themeOverride, setThemeOverride] = useState<ThemeMap>({});
+  // v3 SDUI explicit feed (per-zone). Non-empty → it is the source of truth and
+  // the template picker/visibility toggles are ignored by the app (modal).
+  const [feed, setFeed] = useState<FeedSection[]>([]);
+  const [layoutMode, setLayoutMode] = useState<'template' | 'feed'>('template');
+  const [feedSel, setFeedSel] = useState<number | null>(null);
   // Per-gender override blocks + active editing scope (All edits the base).
   const [scope, setScope] = useState<'all' | 'men' | 'women'>('all');
   const [men, setMen] = useState<Record<string, unknown>>({});
@@ -198,6 +229,8 @@ export const UIConfigEditor: React.FC = () => {
         setSectionVisibility({});
         setSectionData({});
         setThemeOverride({});
+        setFeed([]);
+        setLayoutMode('template');
       } else {
         setTemplateId((src?.templateId as string) || 'marketplace');
         setSectionVisibility((src?.sectionVisibility as Record<string, boolean>) || {});
@@ -205,7 +238,12 @@ export const UIConfigEditor: React.FC = () => {
         setThemeOverride((src?.themeOverride as ThemeMap) || {});
         setTheme({ ...DEFAULT_THEME });
         setGlobalHero({});
+        const loadedFeed = Array.isArray(src?.feed) ? (src!.feed as FeedSection[]) : [];
+        setFeed(loadedFeed);
+        // Modal: a saved non-empty feed IS the live layout → open in feed mode.
+        setLayoutMode(loadedFeed.length > 0 ? 'feed' : 'template');
       }
+      setFeedSel(null);
       setScope('all');
       setMen((src?.men as Record<string, unknown>) || {});
       setWomen((src?.women as Record<string, unknown>) || {});
@@ -222,11 +260,15 @@ export const UIConfigEditor: React.FC = () => {
   useEffect(() => { fetchZones().then(setZones).catch(() => setZones([])); }, []);
   useEffect(() => { load(target); }, [target, load]);
 
-  const draftPayload = useCallback(() => (
-    isGlobal
-      ? { target, theme, globalHero, men, women }
-      : { target, templateId, sectionVisibility, sectionData, themeOverride, men, women }
-  ), [isGlobal, target, theme, globalHero, templateId, sectionVisibility, sectionData, themeOverride, men, women]);
+  const draftPayload = useCallback(() => {
+    if (isGlobal) return { target, theme, globalHero, men, women };
+    // Modal: feed mode persists the explicit feed (order = array position);
+    // template mode persists an empty feed so the app falls back to the preset.
+    const outFeed: FeedSection[] = layoutMode === 'feed'
+      ? feed.map((s, i) => ({ ...s, order: i }))
+      : [];
+    return { target, templateId, sectionVisibility, sectionData, themeOverride, men, women, feed: outFeed };
+  }, [isGlobal, target, theme, globalHero, templateId, sectionVisibility, sectionData, themeOverride, men, women, layoutMode, feed]);
 
   const onSaveDraft = async () => {
     setBusy(true);
@@ -312,12 +354,14 @@ export const UIConfigEditor: React.FC = () => {
   const previewTheme: ThemeMap = isGlobal
     ? (scope === 'all' ? theme : { ...theme, ...sTheme })
     : { ...DEFAULT_THEME, ...themeOverride, ...(scope !== 'all' ? sThemeOverride : {}) };
-  const previewSections: UiSection[] = (isGlobal ? templateById('marketplace') : templateById(sTemplateId))
-    .sections.map((type) => ({
-      type,
-      enabled: isGlobal ? true : sVis[type] !== false,
-      data: (isGlobal ? (type === 'hero' ? sHero : {}) : sData[type]) || {},
-    }));
+  const previewSections: UiSection[] = (!isGlobal && layoutMode === 'feed')
+    ? feed.map((s) => ({ type: s.type, enabled: s.visible !== false, data: (s.data as Record<string, unknown>) || {} }))
+    : (isGlobal ? templateById('marketplace') : templateById(sTemplateId))
+        .sections.map((type) => ({
+          type,
+          enabled: isGlobal ? true : sVis[type] !== false,
+          data: (isGlobal ? (type === 'hero' ? sHero : {}) : sData[type]) || {},
+        }));
 
   return (
     <div className="space-y-6">
@@ -414,12 +458,45 @@ export const UIConfigEditor: React.FC = () => {
               </div>
             )}
             {tab === 'template' && !isGlobal && (
-              <TemplateEditor
-                templateId={sTemplateId} setTemplateId={setSTemplateId}
-                sectionVisibility={sVis} toggleVisibility={toggleSVis}
-                sectionData={sData} patchSectionData={patchSData}
-                activeType={activeType} setActiveType={setActiveType}
-              />
+              <div className="space-y-5">
+                {/* Layout mode (modal): Template preset vs Custom feed. A non-empty
+                    custom feed is the app's source of truth — the template picker
+                    below is ignored while in feed mode. */}
+                <div className="rounded-xl border border-slate-700 bg-slate-800 p-4">
+                  <div className="flex items-center gap-2 mb-2"><Layers size={15} className="text-violet-400" /><h3 className="text-sm font-bold uppercase tracking-wider text-slate-400">Layout mode</h3></div>
+                  <div className="inline-flex rounded-lg border border-slate-700 bg-[#0f172a] p-1">
+                    {(['template', 'feed'] as const).map((m) => (
+                      <button key={m} onClick={() => { setLayoutMode(m); setFeedSel(null); }}
+                        className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-colors ${layoutMode === m ? 'bg-violet-600 text-white' : 'text-slate-300 hover:text-white'}`}>
+                        {m === 'template' ? 'Template preset' : 'Custom feed (advanced)'}
+                      </button>
+                    ))}
+                  </div>
+                  {scope !== 'all' && layoutMode === 'feed' && (
+                    <p className="text-[11px] text-amber-400/90 mt-2">Custom feed edits the <b>base</b> layout (all audiences). Per-gender feed authoring is a separate follow-up — the Men/Women scope here still applies to theme/hero.</p>
+                  )}
+                  <p className="text-[11px] text-slate-500 mt-2">
+                    {layoutMode === 'feed'
+                      ? 'Custom feed is LIVE for this zone — full control of order, visibility, per-section layout & targeting. Switch back to Template preset (then Save) to discard it.'
+                      : 'Using a predefined template. Switch to Custom feed for drag-style reordering, per-section targeting & layout params.'}
+                  </p>
+                </div>
+
+                {layoutMode === 'template' ? (
+                  <TemplateEditor
+                    templateId={sTemplateId} setTemplateId={setSTemplateId}
+                    sectionVisibility={sVis} toggleVisibility={toggleSVis}
+                    sectionData={sData} patchSectionData={patchSData}
+                    activeType={activeType} setActiveType={setActiveType}
+                  />
+                ) : (
+                  <FeedComposer
+                    feed={feed} setFeed={setFeed}
+                    sel={feedSel} setSel={setFeedSel}
+                    zones={zones}
+                  />
+                )}
+              </div>
             )}
             {tab === 'preview' && (
               <PreviewPane theme={previewTheme} sections={previewSections} device={device} setDevice={setDevice} />
@@ -718,6 +795,185 @@ const CashbackEditor: React.FC<{ data: Record<string, unknown>; onPatch: (p: Rec
         <input ref={fileRef} type="file" accept="image/*" onChange={onUpload} className="hidden" />
       </div>
       <TextField label="Lottie URL (optional, used if no image)" value={str(data.lottieUrl)} onChange={(v) => onPatch({ lottieUrl: v })} />
+    </div>
+  );
+};
+
+// ════════════════════════════════════════════════════════════════════════════
+// Feed Composer (v3 SDUI) — author the explicit ordered feed: add/remove/reorder
+// sections, set per-section visibility/themed, bounded layout params, targeting
+// predicates, and content (reusing the per-type data editors).
+// ════════════════════════════════════════════════════════════════════════════
+const cleanObj = (o: Record<string, unknown>): Record<string, unknown> => {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(o)) {
+    if (v === undefined || v === null || v === '') continue;
+    if (Array.isArray(v) && v.length === 0) continue;
+    if (typeof v === 'object' && !Array.isArray(v) && Object.keys(v as object).length === 0) continue;
+    out[k] = v;
+  }
+  return out;
+};
+type PatchAt = (i: number, p: Partial<FeedSection>) => void;
+const patchTarget = (i: number, cur: FeedSection, patchAt: PatchAt, key: string, val: unknown) =>
+  patchAt(i, { targeting: cleanObj({ ...(cur.targeting || {}), [key]: val }) });
+const schedStr = (sched: unknown, key: 'start' | 'end') => {
+  const s = sched && typeof sched === 'object' ? (sched as Record<string, unknown>)[key] : undefined;
+  return typeof s === 'string' ? s : '';
+};
+const patchSchedule = (i: number, cur: FeedSection, patchAt: PatchAt, key: 'start' | 'end', val: string) => {
+  const prev: Record<string, unknown> =
+    cur.targeting?.schedule && typeof cur.targeting.schedule === 'object'
+      ? { ...(cur.targeting.schedule as Record<string, unknown>) }
+      : {};
+  if (val) prev[key] = val; else delete prev[key];
+  const schedule = Object.keys(prev).length ? prev : undefined;
+  patchAt(i, { targeting: cleanObj({ ...(cur.targeting || {}), schedule }) });
+};
+
+const LayoutSelect: React.FC<{ label: string; value: string; opts: string[]; labels?: Record<string, string>; onChange: (v: string) => void }> = ({ label, value, opts, labels, onChange }) => (
+  <div>
+    <label className="block text-xs text-slate-400 mb-1.5">{label}</label>
+    <select value={value} onChange={(e) => onChange(e.target.value)} className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2 px-3 text-sm text-slate-200 outline-none focus:border-violet-500 capitalize">
+      {opts.map((o) => <option key={o} value={o}>{labels?.[o] ?? (o === '' ? 'Default' : o)}</option>)}
+    </select>
+  </div>
+);
+
+const ChipMultiSelect: React.FC<{ label: string; all: string[]; value: string[]; labelFor?: (v: string) => string; onChange: (v: string[]) => void }> = ({ label, all, value, labelFor, onChange }) => (
+  <div>
+    <label className="block text-xs text-slate-400 mb-1.5">{label}</label>
+    <div className="flex flex-wrap gap-1.5">
+      {all.map((o) => {
+        const on = value.includes(o);
+        return (
+          <button key={o} onClick={() => onChange(on ? value.filter((x) => x !== o) : [...value, o])}
+            className={`px-2.5 py-1 rounded-full text-xs font-semibold border transition-colors capitalize ${on ? 'border-violet-500 bg-violet-600/20 text-violet-200' : 'border-slate-600 bg-[#0f172a] text-slate-400 hover:text-slate-200'}`}>
+            {labelFor ? labelFor(o) : o}
+          </button>
+        );
+      })}
+    </div>
+  </div>
+);
+
+const ScheduleField: React.FC<{ label: string; value: string; onChange: (v: string) => void }> = ({ label, value, onChange }) => (
+  <div>
+    <label className="block text-xs text-slate-400 mb-1.5">{label}</label>
+    <input type="datetime-local" value={value} onChange={(e) => onChange(e.target.value)}
+      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2 px-3 text-sm text-slate-200 outline-none focus:border-violet-500" />
+  </div>
+);
+
+const FeedComposer: React.FC<{
+  feed: FeedSection[]; setFeed: (f: FeedSection[]) => void;
+  sel: number | null; setSel: (i: number | null) => void;
+  zones: { id: string; name: string }[];
+}> = ({ feed, setFeed, sel, setSel, zones }) => {
+  const [addType, setAddType] = useState(SECTION_CATALOG[0].type);
+
+  const addSection = () => { const next = [...feed, newFeedSection(addType, feed.length)]; setFeed(next); setSel(next.length - 1); };
+  const removeAt = (i: number) => { setFeed(feed.filter((_, j) => j !== i)); setSel(null); };
+  const move = (i: number, dir: -1 | 1) => {
+    const j = i + dir; if (j < 0 || j >= feed.length) return;
+    const next = [...feed]; [next[i], next[j]] = [next[j], next[i]]; setFeed(next); setSel(j);
+  };
+  const patchAt: PatchAt = (i, patch) => setFeed(feed.map((s, j) => (j === i ? { ...s, ...patch } : s)));
+
+  const cur = sel !== null ? feed[sel] : null;
+  const lay = (cur?.layout || {}) as Record<string, unknown>;
+  const tgt = (cur?.targeting || {}) as Record<string, unknown>;
+
+  return (
+    <div className="grid gap-6 md:grid-cols-2">
+      {/* Section list + add */}
+      <div className="rounded-xl border border-slate-700 bg-slate-800 p-5 space-y-3 h-fit">
+        <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400">Feed — order & visibility</h3>
+        {feed.length === 0 && <p className="text-xs text-slate-500">Empty feed. Add sections below to compose the home, top to bottom.</p>}
+        {feed.map((s, i) => {
+          const visible = s.visible !== false;
+          const targeted = !!s.targeting && Object.keys(s.targeting).length > 0;
+          return (
+            <div key={s.id || i} className={`flex items-center gap-1.5 rounded-lg border p-2.5 ${sel === i ? 'border-violet-500 bg-violet-600/5' : 'border-slate-700 bg-[#0f172a]/30'}`}>
+              <span className="text-[10px] text-slate-500 w-4 text-center shrink-0">{i + 1}</span>
+              <button onClick={() => setSel(i)} className="text-left flex-1 min-w-0">
+                <p className="text-sm font-semibold text-slate-200 truncate">{sectionLabel(s.type)}</p>
+                <p className="text-[11px] text-slate-500 truncate">{visible ? '🟢' : '🔴'}{s.themed ? ' · themed' : ''}{targeted ? ' · 🎯' : ''}</p>
+              </button>
+              <button onClick={() => move(i, -1)} disabled={i === 0} className="p-1 text-slate-400 hover:text-violet-300 disabled:opacity-30"><ArrowUp size={14} /></button>
+              <button onClick={() => move(i, 1)} disabled={i === feed.length - 1} className="p-1 text-slate-400 hover:text-violet-300 disabled:opacity-30"><ArrowDown size={14} /></button>
+              <button onClick={() => patchAt(i, { visible: !visible })} className="p-1">{visible ? <ToggleRight className="h-5 w-5 text-violet-500" /> : <ToggleLeft className="h-5 w-5 text-slate-600" />}</button>
+              <button onClick={() => removeAt(i)} className="p-1 text-slate-500 hover:text-rose-400"><Trash2 size={14} /></button>
+            </div>
+          );
+        })}
+        <div className="flex gap-2 pt-2 border-t border-slate-700">
+          <select value={addType} onChange={(e) => setAddType(e.target.value)} className="flex-1 rounded-lg border border-slate-600 bg-[#0f172a] py-2 px-2 text-xs text-slate-200 outline-none focus:border-violet-500">
+            {SECTION_CATALOG.map((s) => <option key={s.type} value={s.type}>{s.label}</option>)}
+          </select>
+          <button onClick={addSection} className="flex items-center gap-1 rounded-lg bg-violet-600 hover:bg-violet-500 text-white font-semibold py-2 px-3 text-xs"><Plus size={13} /> Add</button>
+        </div>
+        <p className="text-[11px] text-slate-500">Use ▲▼ to reorder; renders top→bottom. Themed sections paint on the blue top zone.</p>
+      </div>
+
+      {/* Per-section panel */}
+      <div className="rounded-xl border border-slate-700 bg-slate-800 p-5 space-y-5">
+        {cur === null || sel === null ? (
+          <p className="text-sm text-slate-500">Select a section to edit its placement, layout, targeting & content.</p>
+        ) : (
+          <>
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="text-base font-bold text-slate-200">{sectionLabel(cur.type)}</h3>
+              <label className="flex items-center gap-2 text-xs text-slate-400 shrink-0">
+                <input type="checkbox" checked={!!cur.themed} onChange={(e) => patchAt(sel, { themed: e.target.checked })} />
+                Themed (blue top)
+              </label>
+            </div>
+
+            {/* Layout params */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500"><SlidersHorizontal size={13} /> Layout</div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <LayoutSelect label="Vertical spacing" value={str(lay.padding, 'normal')} opts={[...PADDING_OPTS]} onChange={(v) => patchAt(sel, { layout: { ...lay, padding: v } })} />
+                <LayoutSelect label="Divider after" value={str(lay.divider, 'none')} opts={[...DIVIDER_OPTS]} onChange={(v) => patchAt(sel, { layout: { ...lay, divider: v } })} />
+                {cur.type === 'hero' && (
+                  <LayoutSelect label="Hero height" value={str(lay.height, '')} opts={[...HEIGHT_OPTS]} labels={{ '': 'Default (banner)' }} onChange={(v) => patchAt(sel, { layout: cleanObj({ ...lay, height: v }) })} />
+                )}
+                {cur.type === 'popularServices' && (
+                  <>
+                    <NumberField label="Chip size (px)" value={num(lay.iconSize, 58)} onChange={(v) => patchAt(sel, { layout: { ...lay, iconSize: v } })} />
+                    <NumberField label="Chip spacing (px)" value={num(lay.spacing, 12)} onChange={(v) => patchAt(sel, { layout: { ...lay, spacing: v } })} />
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Targeting predicates */}
+            <div className="space-y-3 border-t border-slate-700 pt-4">
+              <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500"><Crosshair size={13} /> Targeting <span className="normal-case font-normal text-slate-600">· empty = always show</span></div>
+              <ChipMultiSelect label="Genders" all={[...GENDER_OPTS]} value={arr(tgt.genders)} onChange={(v) => patchTarget(sel, cur, patchAt, 'genders', v)} />
+              {zones.length > 0 && (
+                <ChipMultiSelect label="Zones" all={zones.map((z) => z.id)} labelFor={(id) => zones.find((z) => z.id === id)?.name || id} value={arr(tgt.zones)} onChange={(v) => patchTarget(sel, cur, patchAt, 'zones', v)} />
+              )}
+              <TextField label="Segments (comma-separated)" value={arr(tgt.segments).join(', ')} onChange={(v) => patchTarget(sel, cur, patchAt, 'segments', v.split(',').map((x) => x.trim()).filter(Boolean))} placeholder="vip, new, lapsed" />
+              <div className="grid gap-3 sm:grid-cols-2">
+                <ScheduleField label="Show from" value={schedStr(tgt.schedule, 'start')} onChange={(v) => patchSchedule(sel, cur, patchAt, 'start', v)} />
+                <ScheduleField label="Show until" value={schedStr(tgt.schedule, 'end')} onChange={(v) => patchSchedule(sel, cur, patchAt, 'end', v)} />
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <TextField label="Min app version" value={str(tgt.minAppVersion)} onChange={(v) => patchTarget(sel, cur, patchAt, 'minAppVersion', v)} placeholder="1.2.0" />
+                <TextField label="Max app version" value={str(tgt.maxAppVersion)} onChange={(v) => patchTarget(sel, cur, patchAt, 'maxAppVersion', v)} placeholder="" />
+              </div>
+            </div>
+
+            {/* Content — reuse the existing per-type data editors */}
+            <div className="space-y-3 border-t border-slate-700 pt-4">
+              <div className="text-xs font-bold uppercase tracking-wider text-slate-500">Content</div>
+              <SectionDataEditor section={{ type: cur.type, data: (cur.data as Record<string, unknown>) || {} }} onPatch={(p) => patchAt(sel, { data: { ...(cur.data || {}), ...p } })} />
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 };
