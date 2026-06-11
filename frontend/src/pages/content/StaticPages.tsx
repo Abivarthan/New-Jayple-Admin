@@ -53,7 +53,7 @@ export const StaticPages: React.FC = () => {
       setSuccessMsg('Page updated successfully!');
       await refetch();
       setTimeout(() => setSuccessMsg(''), 3000);
-    } catch (e) {
+    } catch {
       alert('Failed to save page');
     } finally {
       setIsSaving(false);

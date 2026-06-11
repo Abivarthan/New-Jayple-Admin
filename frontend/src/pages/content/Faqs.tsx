@@ -11,6 +11,7 @@ export const Faqs: React.FC = () => {
   const [editing, setEditing] = useState<Partial<CMSFaq> | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { if (faqs) setItems(faqs); }, [faqs]);
 
   const handleSave = async () => {

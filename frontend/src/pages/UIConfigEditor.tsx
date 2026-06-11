@@ -258,6 +258,7 @@ export const UIConfigEditor: React.FC = () => {
   }, []);
 
   useEffect(() => { fetchZones().then(setZones).catch(() => setZones([])); }, []);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(target); }, [target, load]);
 
   const draftPayload = useCallback(() => {

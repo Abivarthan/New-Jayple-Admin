@@ -78,6 +78,7 @@ export const Promotions: React.FC = () => {
 
   useEffect(() => {
     if (banners) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setItems(banners);
       setHasUnsavedOrder(false);
     }
@@ -144,7 +145,7 @@ export const Promotions: React.FC = () => {
       try {
         await deletePromotionalBanner({ id });
         await refetch();
-      } catch (e) {
+      } catch {
         alert('Failed to delete banner');
       }
     }

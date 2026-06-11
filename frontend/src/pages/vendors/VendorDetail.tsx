@@ -323,7 +323,7 @@ export const VendorDetail: React.FC = () => {
                   <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Vendor Tier</label>
                   <select
                     value={profile.tier}
-                    onChange={(e) => setProfile({ ...profile, tier: e.target.value as any })}
+                    onChange={(e) => setProfile({ ...profile, tier: e.target.value as 'premium' | 'normal' })}
                     className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 px-3 text-xs text-slate-400 outline-none focus:border-violet-500"
                   >
                     <option value="normal">Normal</option>

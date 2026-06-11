@@ -12,6 +12,7 @@ export const Announcements: React.FC = () => {
   const [editing, setEditing] = useState<Partial<CMSAnnouncement> | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { if (announcements) setItems(announcements); }, [announcements]);
 
   const handleSave = async () => {

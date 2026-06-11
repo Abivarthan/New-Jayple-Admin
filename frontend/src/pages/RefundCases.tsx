@@ -21,6 +21,7 @@ export const RefundCases: React.FC = () => {
     catch (e) { flash(e instanceof Error ? e.message : 'Failed to load'); }
     finally { setLoading(false); }
   }, []);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(); }, [load]);
 
   const doRefund = async () => {

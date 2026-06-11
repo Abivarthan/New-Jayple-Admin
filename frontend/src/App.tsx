@@ -6,41 +6,16 @@ import { ProtectedRoute } from './components/layout/ProtectedRoute';
 import { DashboardLayout } from './components/layout/DashboardLayout';
 import { Login } from './pages/Login';
 import { Unauthorized } from './pages/Unauthorized';
-import { Dashboard } from './pages/Dashboard';
-import { PlatformConfig } from './pages/PlatformConfig';
-import { ServiceRadius } from './pages/ServiceRadius';
-import { ImageLibrary } from './pages/ImageLibrary';
-import { Categories } from './pages/Categories';
-import { HomeContent } from './pages/HomeContent';
-import { UIConfigEditor } from './pages/UIConfigEditor';
-import { Analytics } from './pages/Analytics';
-import { AllVendors } from './pages/vendors/AllVendors';
-import { VendorApprovals } from './pages/vendors/VendorApprovals';
-import { VendorDetail } from './pages/vendors/VendorDetail';
-import { Users } from './pages/Users';
-import { Settlements } from './pages/Settlements';
-import { RefundCases } from './pages/RefundCases';
-import { BookingMonitor } from './pages/BookingMonitor';
-import { AutoAcceptedReview } from './pages/AutoAcceptedReview';
-import { DelayedServices } from './pages/DelayedServices';
-import { FraudFlags } from './pages/FraudFlags';
-import { CallWorkflow } from './pages/CallWorkflow';
-import { HeroBanners } from './pages/content/HeroBanners';
-import { Promotions } from './pages/content/Promotions';
-import { StaticPages } from './pages/content/StaticPages';
-import { CMSSettings } from './pages/content/CMSSettings';
-import { Faqs } from './pages/content/Faqs';
-import { Announcements } from './pages/content/Announcements';
-import { ExploreDiscovery } from './pages/content/ExploreDiscovery';
+import { moduleRoutes } from './router/moduleRoutes';
 
-// Initialize TanStack Query Client
+// ── TanStack Query Client ──────────────────────────────────────────────────────
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
       retry: 1,
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      gcTime: 1000 * 60 * 10,   // 10 minutes
+      staleTime: 1000 * 60 * 5,  // 5 minutes
+      gcTime: 1000 * 60 * 10,    // 10 minutes
     },
   },
 });
@@ -51,11 +26,11 @@ const App: React.FC = () => {
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            {/* Public Routes */}
+            {/* ── Public Routes ── */}
             <Route path="/login" element={<Login />} />
             <Route path="/unauthorized" element={<Unauthorized />} />
 
-            {/* Guarded Admin Dashboard Routes */}
+            {/* ── Protected Admin Routes ── */}
             <Route
               path="/"
               element={
@@ -64,89 +39,20 @@ const App: React.FC = () => {
                 </ProtectedRoute>
               }
             >
-              {/* Default Index Route */}
+              {/* Default redirect → dashboard */}
               <Route index element={<Navigate to="/dashboard" replace />} />
-              <Route path="dashboard" element={<Dashboard />} />
 
-              <Route path="service-radius" element={<ServiceRadius />} />
-              <Route path="ui-config" element={<UIConfigEditor />} />
-              <Route path="image-library" element={<ImageLibrary />} />
-              <Route path="categories" element={<Categories />} />
-              <Route path="home-content" element={<HomeContent />} />
-              <Route path="vendors" element={<AllVendors />} />
-              <Route path="vendors/approvals" element={<VendorApprovals />} />
-              <Route path="vendors/:id" element={<VendorDetail />} />
-              <Route path="users" element={<Users />} />
-              <Route
-                path="bookings"
-                element={
-                  <div className="p-6 bg-slate-800 rounded-xl border border-slate-600">
-                    <h2 className="text-xl font-bold text-slate-100 mb-2">Bookings</h2>
-                    <p className="text-slate-400 text-sm">Customer booking management dashboard placeholder. Implementation under construction.</p>
-                  </div>
-                }
-              />
-              <Route path="settlements" element={<Settlements />} />
-              <Route path="refund-cases" element={<RefundCases />} />
-              <Route path="booking-monitor" element={<BookingMonitor />} />
-              <Route path="auto-accepted" element={<AutoAcceptedReview />} />
-              <Route path="delayed-services" element={<DelayedServices />} />
-              <Route path="fraud-flags" element={<FraudFlags />} />
-              <Route path="call-workflow" element={<CallWorkflow />} />
-              <Route
-                path="promotions"
-                element={
-                  <div className="p-6 bg-slate-800 rounded-xl border border-slate-600">
-                    <h2 className="text-xl font-bold text-slate-100 mb-2">Promotions & Combo Packages</h2>
-                    <p className="text-slate-400 text-sm">Voucher and bundle deal configurator placeholder. Implementation under construction.</p>
-                  </div>
-                }
-              />
-              <Route path="platform-config" element={<PlatformConfig />} />
-              <Route path="analytics" element={<Analytics />} />
-              <Route
-                path="admin-users"
-                element={
-                  <div className="p-6 bg-slate-800 rounded-xl border border-slate-600">
-                    <h2 className="text-xl font-bold text-slate-100 mb-2">Admin User Management</h2>
-                    <p className="text-slate-400 text-sm">Create/Deactivate admin accounts interface. Implementation under construction.</p>
-                  </div>
-                }
-              />
-              <Route
-                path="audit-log"
-                element={
-                  <div className="p-6 bg-slate-800 rounded-xl border border-slate-600">
-                    <h2 className="text-xl font-bold text-slate-100 mb-2">Audit Logs</h2>
-                    <p className="text-slate-400 text-sm">Write-only operation history viewer. Implementation under construction.</p>
-                  </div>
-                }
-              />
-
-              {/* CMS Routes */}
-              <Route path="content/hero-banners" element={<HeroBanners />} />
-              <Route path="content/promotions" element={<Promotions />} />
-              <Route path="content/static-pages" element={<StaticPages />} />
-              <Route path="content/settings" element={<CMSSettings />} />
-              
-              <Route path="content/referral-banner" element={
-                <div className="p-6 bg-slate-800 rounded-xl border border-slate-600 m-8">
-                  <h2 className="text-xl font-bold text-slate-100 mb-2">Referral Banner CMS</h2>
-                  <p className="text-slate-400 text-sm">Implementation pending.</p>
-                </div>
-              } />
-              <Route path="content/cashback-banner" element={
-                <div className="p-6 bg-slate-800 rounded-xl border border-slate-600 m-8">
-                  <h2 className="text-xl font-bold text-slate-100 mb-2">Cashback Banner CMS</h2>
-                  <p className="text-slate-400 text-sm">Implementation pending.</p>
-                </div>
-              } />
-              <Route path="content/faqs" element={<Faqs />} />
-              <Route path="content/announcements" element={<Announcements />} />
-              <Route path="content/explore-discovery" element={<ExploreDiscovery />} />
+              {/* All module routes (lazy-loaded, grouped by feature module) */}
+              {moduleRoutes.map((route) => (
+                <Route
+                  key={route.path as string}
+                  path={route.path as string}
+                  element={route.element}
+                />
+              ))}
             </Route>
 
-            {/* Fallback Route */}
+            {/* ── Fallback ── */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AuthProvider>

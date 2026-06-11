@@ -17,7 +17,7 @@ export const CMSSettings: React.FC = () => {
         await refetch();
         setPublishSuccess(true);
         setTimeout(() => setPublishSuccess(false), 5000);
-      } catch (e) {
+      } catch {
         alert('Failed to publish CMS updates.');
       } finally {
         setIsPublishing(false);

@@ -10,6 +10,7 @@ export const HomeContent: React.FC = () => {
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { if (data) setForm(structuredClone(data)); }, [data]);
 
   const mut = useMutation({

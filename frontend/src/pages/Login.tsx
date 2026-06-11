@@ -35,8 +35,8 @@ export const Login: React.FC = () => {
       });
       
       setError('Superadmin seeded successfully! You can now log in.');
-    } catch (err: any) {
-      setError(err.message || 'Error seeding admin');
+    } catch (err: unknown) {
+      setError((err as Error).message || 'Error seeding admin');
     }
     setLoading(false);
   };
@@ -51,12 +51,13 @@ export const Login: React.FC = () => {
       // AuthStateChanged in AuthContext will handle state reload and verification.
       // We navigate to 'from' page if successful.
       navigate(from, { replace: true });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+      const authErr = err as { code?: string; message?: string };
+      if (authErr.code === 'auth/user-not-found' || authErr.code === 'auth/wrong-password' || authErr.code === 'auth/invalid-credential') {
         setError('Invalid login credentials. Please try again.');
       } else {
-        setError(err.message || 'An error occurred during authentication.');
+        setError(authErr.message || 'An error occurred during authentication.');
       }
       setLoading(false);
     }

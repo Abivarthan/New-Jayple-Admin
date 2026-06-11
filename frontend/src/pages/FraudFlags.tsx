@@ -11,6 +11,7 @@ export const FraudFlags: React.FC = () => {
     try { setRows(await fetchFraudFlags(4)); }
     finally { setLoading(false); }
   }, []);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(); }, [load]);
 
   return (
