@@ -19,6 +19,12 @@ import { VendorApprovals } from './pages/vendors/VendorApprovals';
 import { VendorDetail } from './pages/vendors/VendorDetail';
 import { Users } from './pages/Users';
 import { Settlements } from './pages/Settlements';
+import { RefundCases } from './pages/RefundCases';
+import { BookingMonitor } from './pages/BookingMonitor';
+import { AutoAcceptedReview } from './pages/AutoAcceptedReview';
+import { DelayedServices } from './pages/DelayedServices';
+import { FraudFlags } from './pages/FraudFlags';
+import { CallWorkflow } from './pages/CallWorkflow';
 import { HeroBanners } from './pages/content/HeroBanners';
 import { Promotions } from './pages/content/Promotions';
 import { StaticPages } from './pages/content/StaticPages';
@@ -81,6 +87,12 @@ const App: React.FC = () => {
                 }
               />
               <Route path="settlements" element={<Settlements />} />
+              <Route path="refund-cases" element={<RefundCases />} />
+              <Route path="booking-monitor" element={<BookingMonitor />} />
+              <Route path="auto-accepted" element={<AutoAcceptedReview />} />
+              <Route path="delayed-services" element={<DelayedServices />} />
+              <Route path="fraud-flags" element={<FraudFlags />} />
+              <Route path="call-workflow" element={<CallWorkflow />} />
               <Route
                 path="promotions"
                 element={

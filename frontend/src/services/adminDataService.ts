@@ -33,6 +33,244 @@ function toMillis(v: unknown): number | null {
 }
 
 // ══════════════════════════════════════════════════════════════
+// REFUND CASES — vendor-rejected bookings awaiting MANUAL refund.
+// (Vendor reject leaves the booking at refundStatus='pending_admin' with an
+//  online/card portion the admin pays manually + a wallet portion credited
+//  by markRefundProcessed when the admin marks it done.)
+// ══════════════════════════════════════════════════════════════
+export interface RefundCase {
+  id: string;
+  customerName: string;
+  customerPhone: string;
+  customerId: string;
+  vendorName: string;
+  vendorPhone: string;
+  vendorId: string;
+  serviceNames: string;
+  slotDate: string;
+  slotTime: string;
+  servicePrice: number;
+  convenienceFee: number;
+  refundOnlineAmount: number;
+  refundWalletAmount: number;
+  refundAmount: number;
+  refundStatus: string; // 'pending_admin' | 'refunded'
+  rejectedAt: number | null;
+}
+
+export async function fetchRefundCases(): Promise<RefundCase[]> {
+  const snap = await getDocs(query(
+    collection(db, 'bookings'),
+    where('refundStatus', 'in', ['pending_admin', 'refunded']),
+  ));
+  const rows: RefundCase[] = snap.docs.map((d) => {
+    const x = d.data() as Record<string, unknown>;
+    const services = Array.isArray(x.services) ? (x.services as Record<string, unknown>[]) : [];
+    const serviceNames = services.map((sv) => s(sv.serviceName) || s(sv.name)).filter(Boolean).join(', ');
+    return {
+      id: d.id,
+      customerName: s(x.customerName) || s(x.userName) || 'Customer',
+      customerPhone: s(x.customerPhone) || s(x.userPhone),
+      customerId: s(x.userId) || s(x.customerId),
+      vendorName: s(x.shopName) || s(x.vendorName) || 'Salon',
+      vendorPhone: s(x.vendorPhone),
+      vendorId: s(x.vendorId),
+      serviceNames: serviceNames || 'services',
+      slotDate: s(x.slotDate) || s(x.scheduledDate),
+      slotTime: s(x.slotTime) || s(x.startTime),
+      servicePrice: n(x.servicePrice),
+      convenienceFee: n(x.convenienceFee),
+      refundOnlineAmount: n(x.refundOnlineAmount),
+      refundWalletAmount: n(x.refundWalletAmount),
+      refundAmount: n(x.refundAmount),
+      refundStatus: s(x.refundStatus, 'pending_admin'),
+      rejectedAt: toMillis(x.rejectedAt),
+    };
+  });
+  rows.sort((a, c) => {
+    if (a.refundStatus !== c.refundStatus) return a.refundStatus === 'pending_admin' ? -1 : 1;
+    return (c.rejectedAt || 0) - (a.rejectedAt || 0);
+  });
+  return rows;
+}
+
+const _markRefundProcessed = httpsCallable<{ bookingId: string }, { ok: boolean; walletCredited?: number }>(
+  functions, 'markRefundProcessed',
+);
+export async function markRefundProcessed(bookingId: string): Promise<{ ok: boolean; walletCredited?: number }> {
+  const res = await _markRefundProcessed({ bookingId });
+  return res.data;
+}
+
+// ══════════════════════════════════════════════════════════════
+// BOOKING MONITOR + AUTO-ACCEPTED REVIEW
+// ══════════════════════════════════════════════════════════════
+export interface AdminBooking {
+  id: string;
+  customerName: string;
+  customerPhone: string;
+  vendorName: string;
+  vendorPhone: string;
+  serviceNames: string;
+  slotDate: string;
+  slotTime: string;
+  status: string;
+  paymentMethod: string;
+  totalAmount: number;
+  onlineAmount: number;
+  cashAmount: number;
+  walletUsed: number;
+  autoAccepted: boolean;
+  adminReviewed: boolean;
+  rescheduled: boolean;
+  callStatus: string;
+  oneHourAlert: boolean;
+  createdAt: number | null;
+}
+
+function mapBooking(id: string, x: Record<string, unknown>): AdminBooking {
+  const services = Array.isArray(x.services) ? (x.services as Record<string, unknown>[]) : [];
+  const serviceNames = services.map((sv) => s(sv.serviceName) || s(sv.name)).filter(Boolean).join(', ');
+  const conv = n(x.convenienceFee);
+  const total = n(x.totalAmount);
+  const service = n(x.servicePrice) || Math.max(0, total - conv);
+  const walletUsed = n(x.walletDiscount) || n(x.walletDiscountAmount);
+  const isCod = s(x.paymentMethod) === 'cod' || s(x.paymentMethod) === 'cash';
+  return {
+    id,
+    customerName: s(x.customerName) || s(x.userName) || 'Customer',
+    customerPhone: s(x.customerPhone) || s(x.userPhone),
+    vendorName: s(x.shopName) || s(x.vendorName) || 'Salon',
+    vendorPhone: s(x.vendorPhone),
+    serviceNames: serviceNames || 'services',
+    slotDate: s(x.slotDate) || s(x.scheduledDate),
+    slotTime: s(x.slotTime) || s(x.startTime),
+    status: s(x.status, 'unknown'),
+    paymentMethod: s(x.paymentMethod, '—'),
+    totalAmount: total,
+    onlineAmount: isCod ? conv : Math.max(0, total - walletUsed),
+    cashAmount: isCod ? Math.max(0, service - walletUsed) : 0,
+    walletUsed,
+    autoAccepted: b(x.autoAccepted),
+    adminReviewed: b(x.adminReviewed),
+    rescheduled: b(x.rescheduled) || n(x.rescheduleCount) > 0,
+    callStatus: s(x.callStatus, 'pending'),
+    oneHourAlert: b(x.oneHourAlert),
+    createdAt: toMillis(x.createdAt),
+  };
+}
+
+// ── Admin booking actions (cancel / reschedule / call-status) ──
+const _adminCancelBooking = httpsCallable<{ bookingId: string; reason?: string }, { ok?: boolean; refundAmount?: number }>(
+  functions, 'adminCancelBooking');
+export async function adminCancelBooking(bookingId: string, reason?: string) {
+  return (await _adminCancelBooking({ bookingId, reason })).data;
+}
+const _rescheduleBookingFn = httpsCallable<{ bookingId: string; newSlotDate: string; newSlotTime: string }, { bookingId?: string }>(
+  functions, 'rescheduleBooking');
+export async function adminRescheduleBooking(bookingId: string, newSlotDate: string, newSlotTime: string) {
+  return (await _rescheduleBookingFn({ bookingId, newSlotDate, newSlotTime })).data;
+}
+const _setBookingCallStatus = httpsCallable<{ bookingId: string; callStatus: string; callStage?: string; note?: string }, { ok: boolean }>(
+  functions, 'setBookingCallStatus');
+export async function setBookingCallStatus(bookingId: string, callStatus: string, callStage?: string, note?: string) {
+  return (await _setBookingCallStatus({ bookingId, callStatus, callStage, note })).data;
+}
+
+// Call workflow: confirmed bookings (post-confirmation calls + 1-hour-before alerts).
+export async function fetchCallWorkflow(): Promise<AdminBooking[]> {
+  const snap = await getDocs(query(collection(db, 'bookings'), where('status', '==', 'confirmed')));
+  const rows = snap.docs.map((d) => mapBooking(d.id, d.data() as Record<string, unknown>));
+  // 1-hour-alert + not-yet-called first; then newest.
+  rows.sort((a, c) => {
+    const ap = (a.oneHourAlert ? 0 : 1) + (a.callStatus === 'pending' ? 0 : 2);
+    const cp = (c.oneHourAlert ? 0 : 1) + (c.callStatus === 'pending' ? 0 : 2);
+    if (ap !== cp) return ap - cp;
+    return (c.createdAt || 0) - (a.createdAt || 0);
+  });
+  return rows;
+}
+
+export async function fetchBookingsMonitor(max = 200): Promise<AdminBooking[]> {
+  const snap = await getDocs(query(
+    collection(db, 'bookings'), orderBy('createdAt', 'desc'), limit(max),
+  ));
+  return snap.docs.map((d) => mapBooking(d.id, d.data() as Record<string, unknown>));
+}
+
+export async function fetchAutoAcceptedReview(): Promise<AdminBooking[]> {
+  const snap = await getDocs(query(
+    collection(db, 'bookings'), where('autoAccepted', '==', true),
+  ));
+  const rows = snap.docs.map((d) => mapBooking(d.id, d.data() as Record<string, unknown>));
+  // unreviewed first, newest first
+  rows.sort((a, c) => {
+    if (a.adminReviewed !== c.adminReviewed) return a.adminReviewed ? 1 : -1;
+    return (c.createdAt || 0) - (a.createdAt || 0);
+  });
+  return rows;
+}
+
+const _confirmAutoAccepted = httpsCallable<{ bookingId: string }, { ok: boolean }>(
+  functions, 'confirmAutoAcceptedBooking',
+);
+export async function confirmAutoAccepted(bookingId: string): Promise<{ ok: boolean }> {
+  return (await _confirmAutoAccepted({ bookingId })).data;
+}
+
+// ── Delayed services (confirmed, slot+grace passed, service not started) ──
+function slotMillis(date: string, time: string): number | null {
+  if (!date || !time) return null;
+  const t = Date.parse(`${date}T${time.length === 5 ? time + ':00' : time}+05:30`);
+  return isNaN(t) ? null : t;
+}
+export async function fetchDelayedServices(graceMin = 15): Promise<AdminBooking[]> {
+  const snap = await getDocs(query(collection(db, 'bookings'), where('status', '==', 'confirmed')));
+  const now = Date.now();
+  return snap.docs
+    .map((d) => ({ raw: d.data() as Record<string, unknown>, b: mapBooking(d.id, d.data() as Record<string, unknown>) }))
+    .filter(({ raw, b: bk }) => {
+      const sm = slotMillis(bk.slotDate, bk.slotTime);
+      const started = !!raw.startedAt || raw.otpVerified === true;
+      return sm != null && !started && now > sm + graceMin * 60000;
+    })
+    .map(({ b: bk }) => bk)
+    .sort((a, c) => (slotMillis(a.slotDate, a.slotTime) || 0) - (slotMillis(c.slotDate, c.slotTime) || 0));
+}
+
+// ── Fraud flags: vendors with >50% last-minute cancellations this week ──
+export interface FraudFlag {
+  vendorId: string;
+  vendorName: string;
+  totalBookings: number;
+  lastMinuteCancels: number;
+  ratio: number;
+}
+export async function fetchFraudFlags(minSample = 4): Promise<FraudFlag[]> {
+  const weekStart = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const snap = await getDocs(query(collection(db, 'bookings'), orderBy('createdAt', 'desc'), limit(1500)));
+  const agg = new Map<string, { name: string; total: number; lmc: number }>();
+  snap.docs.forEach((d) => {
+    const x = d.data() as Record<string, unknown>;
+    const created = toMillis(x.createdAt);
+    if (created == null || created < weekStart) return;
+    const vid = s(x.vendorId); if (!vid) return;
+    const e = agg.get(vid) || { name: s(x.shopName) || s(x.vendorName) || 'Salon', total: 0, lmc: 0 };
+    e.total += 1;
+    if (s(x.status) === 'cancelled' && b(x.lastMinuteCancel)) e.lmc += 1;
+    agg.set(vid, e);
+  });
+  const flags: FraudFlag[] = [];
+  agg.forEach((e, vid) => {
+    const ratio = e.total > 0 ? e.lmc / e.total : 0;
+    if (e.total >= minSample && ratio > 0.5) {
+      flags.push({ vendorId: vid, vendorName: e.name, totalBookings: e.total, lastMinuteCancels: e.lmc, ratio });
+    }
+  });
+  return flags.sort((a, c) => c.ratio - a.ratio);
+}
+
+// ══════════════════════════════════════════════════════════════
 // VENDORS
 // ══════════════════════════════════════════════════════════════
 export interface AdminVendor {
