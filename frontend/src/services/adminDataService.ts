@@ -102,6 +102,17 @@ export async function markRefundProcessed(bookingId: string): Promise<{ ok: bool
   return res.data;
 }
 
+// One-shot maintenance: recompute every vendor's rating + reviewCount from their
+// reviews subcollection (heals data that predates the aggregateVendorRating
+// trigger). Idempotent — safe to re-run.
+const _recomputeAllVendorRatings = httpsCallable<Record<string, never>, { ok: boolean; vendorsProcessed: number }>(
+  functions, 'recomputeAllVendorRatings',
+);
+export async function recomputeAllVendorRatings(): Promise<{ ok: boolean; vendorsProcessed: number }> {
+  const res = await _recomputeAllVendorRatings({});
+  return res.data;
+}
+
 // ══════════════════════════════════════════════════════════════
 // BOOKING MONITOR + AUTO-ACCEPTED REVIEW
 // ══════════════════════════════════════════════════════════════
@@ -283,13 +294,26 @@ export interface AdminVendor {
   tier: 'premium' | 'normal';
   status: 'active' | 'pending' | 'suspended' | 'blocked';
   rating: number;
+  reviewCount: number;
   bookingsCount: number;
-  weeklyEarnings: number;
+  weeklyEarnings: number; // canonical wallet balance (vendors/{id}/wallet/main.balance)
   isGstRegistered: boolean;
   email?: string;
   address?: string;
   gstNumber?: string;
   commissionRate?: number;
+}
+
+// Canonical vendor wallet balance lives at vendors/{id}/wallet/main.balance.
+// The legacy `pendingPayout` field on the vendor doc is NO LONGER maintained by
+// the money engine — always read the ledger so admin matches the vendor app.
+async function fetchWalletBalance(vendorId: string): Promise<number> {
+  try {
+    const w = await getDoc(doc(db, 'vendors', vendorId, 'wallet', 'main'));
+    return w.exists() ? n((w.data() as Record<string, unknown>).balance) : 0;
+  } catch {
+    return 0;
+  }
 }
 
 function normVendorStatus(x: Record<string, unknown>): AdminVendor['status'] {
@@ -303,23 +327,27 @@ function normVendorStatus(x: Record<string, unknown>): AdminVendor['status'] {
 
 export const fetchVendors = async (): Promise<AdminVendor[]> => {
   const snap = await getDocs(collection(db, 'vendors'));
-  return snap.docs.map((d) => {
-    const x = d.data() as Record<string, unknown>;
-    return {
-      uid: d.id,
-      shopName: s(x.shopName) || s(x.businessName) || s(x.name) || 'Unnamed Shop',
-      ownerName: s(x.ownerName) || s(x.name) || '—',
-      phone: s(x.phone) || s(x.phoneNumber),
-      city: s(x.city) || s(x.area),
-      zoneName: s(x.zoneName) || s(x.city) || '—',
-      tier: b(x.isBridalCertified) ? 'premium' : 'normal',
-      status: normVendorStatus(x),
-      rating: n(x.rating),
-      bookingsCount: n(x.completedBookings) || n(x.bookingsCount),
-      weeklyEarnings: n((x.pendingPayout as number)) || 0,
-      isGstRegistered: b(x.isGstRegistered) || !!s(x.gstNumber),
-    };
-  });
+  return Promise.all(
+    snap.docs.map(async (d) => {
+      const x = d.data() as Record<string, unknown>;
+      const walletBalance = await fetchWalletBalance(d.id);
+      return {
+        uid: d.id,
+        shopName: s(x.shopName) || s(x.businessName) || s(x.name) || 'Unnamed Shop',
+        ownerName: s(x.ownerName) || s(x.name) || '—',
+        phone: s(x.phone) || s(x.phoneNumber),
+        city: s(x.city) || s(x.area),
+        zoneName: s(x.zoneName) || s(x.city) || '—',
+        tier: b(x.isBridalCertified) ? 'premium' : 'normal',
+        status: normVendorStatus(x),
+        rating: n(x.rating) || n(x.avgRating),
+        reviewCount: n(x.reviewCount) || n(x.totalReviewCount) || n(x.totalReviews),
+        bookingsCount: n(x.completedBookings) || n(x.bookingsCount),
+        weeklyEarnings: walletBalance,
+        isGstRegistered: b(x.isGstRegistered) || !!s(x.gstNumber),
+      };
+    }),
+  );
 };
 
 /** Admin status override. Writes to the vendor doc (rules: isAdmin). */
@@ -398,6 +426,7 @@ export const fetchVendorById = async (uid: string): Promise<AdminVendor | null> 
   const d = await getDoc(doc(db, 'vendors', uid));
   if (!d.exists()) return null;
   const x = d.data() as Record<string, unknown>;
+  const walletBalance = await fetchWalletBalance(uid);
   return {
     uid: d.id,
     shopName: s(x.shopName) || s(x.businessName) || s(x.name) || 'Unnamed Shop',
@@ -407,9 +436,10 @@ export const fetchVendorById = async (uid: string): Promise<AdminVendor | null> 
     zoneName: s(x.zoneName) || s(x.city) || '—',
     tier: b(x.isBridalCertified) ? 'premium' : 'normal',
     status: normVendorStatus(x),
-    rating: n(x.rating),
+    rating: n(x.rating) || n(x.avgRating),
+    reviewCount: n(x.reviewCount) || n(x.totalReviewCount) || n(x.totalReviews),
     bookingsCount: n(x.completedBookings) || n(x.bookingsCount),
-    weeklyEarnings: n(x.pendingPayout as number),
+    weeklyEarnings: walletBalance,
     isGstRegistered: b(x.isGstRegistered) || !!s(x.gstNumber),
     email: s(x.email),
     address: s(x.address) || s(x.formattedAddress),

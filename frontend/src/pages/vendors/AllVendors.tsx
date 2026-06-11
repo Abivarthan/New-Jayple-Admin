@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search, Eye, Power, AlertTriangle, Download, Plus } from 'lucide-react';
-import { fetchVendors, setVendorStatus, type AdminVendor } from '../../services/adminDataService';
+import { Search, Eye, Power, AlertTriangle, Download, Plus, RefreshCw } from 'lucide-react';
+import { fetchVendors, setVendorStatus, recomputeAllVendorRatings, type AdminVendor } from '../../services/adminDataService';
 
 type VendorListItem = AdminVendor;
 
@@ -25,6 +25,13 @@ export const AllVendors: React.FC = () => {
 
   const [suspendingVendor, setSuspendingVendor] = useState<VendorListItem | null>(null);
   const [suspendReason, setSuspendReason] = useState('');
+
+  // One-shot: heal historical rating/reviewCount aggregates from the reviews
+  // subcollections (the trigger only fires on new review writes).
+  const syncRatingsMut = useMutation({
+    mutationFn: recomputeAllVendorRatings,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['adminVendors'] }),
+  });
 
   const handleToggleStatus = (vendor: VendorListItem) => {
     if (vendor.status === 'active') {
@@ -76,6 +83,15 @@ export const AllVendors: React.FC = () => {
           >
             <Plus size={16} />
             Onboarding Approvals
+          </button>
+          <button
+            onClick={() => syncRatingsMut.mutate()}
+            disabled={syncRatingsMut.isPending}
+            title="Recompute every vendor's rating & review count from their reviews"
+            className="flex items-center gap-2 rounded-lg border border-slate-600 bg-slate-700 hover:bg-slate-750 text-slate-200 px-4 py-2.5 text-sm font-semibold transition-colors disabled:opacity-50"
+          >
+            <RefreshCw size={16} className={syncRatingsMut.isPending ? 'animate-spin' : ''} />
+            {syncRatingsMut.isPending ? 'Syncing…' : 'Sync Ratings'}
           </button>
           <button className="flex items-center gap-2 rounded-lg border border-slate-600 bg-slate-700 hover:bg-slate-750 text-slate-200 px-4 py-2.5 text-sm font-semibold transition-colors">
             <Download size={16} />
@@ -208,6 +224,9 @@ export const AllVendors: React.FC = () => {
                 </td>
                 <td className="py-4 px-6 text-center font-bold text-slate-200">
                   ⭐ {vendor.rating.toFixed(1)}
+                  <span className="block text-[10px] font-normal text-slate-500">
+                    {vendor.reviewCount} {vendor.reviewCount === 1 ? 'review' : 'reviews'}
+                  </span>
                 </td>
                 <td className="py-4 px-6 text-center font-medium">{vendor.bookingsCount}</td>
                 <td className="py-4 px-6 text-right font-semibold text-slate-200">

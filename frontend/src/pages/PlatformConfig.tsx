@@ -36,11 +36,20 @@ export const PlatformConfig: React.FC = () => {
     slotLockDuration: 2
   });
 
+  // Booking money model v2 — the SAME keys the Cloud Functions read
+  // (functions/config.js). These are the live, dynamic financial controls; the
+  // retired v1 keys (cancellationFreeWindowMinutes / cancellationPenaltyPercent /
+  // vendorCancelPenaltyAmount / vendorCancelCompensationAmount) are no longer
+  // read by the booking engine and have been removed.
   const [financialConfig, setFinancialConfig] = useState({
-    cancellationWindow: 2,
-    cancellationPenalty: 25,
-    vendorCancelPenalty: 100,
-    vendorCancelCompensation: 30,
+    cancelFullRefundWindowMin: 60,    // >= this many min before slot → 100% service refund, no vendor comp
+    lateCancelRefundPercent: 75,      // < full-refund window → refund this % of service to wallet
+    lateCancelVendorCompPercent: 5,   // vendor compensation on a late cancel = this % of service
+    rejectVendorPenaltyPercent: 5,    // vendor reject penalty = this % of service (debited from wallet)
+    autoAcceptSeconds: 60,            // unanswered pending booking auto-accepts after this
+    serviceGracePeriodMin: 15,        // grace after slot start before delayed-service handling
+    lastMinuteWindowMin: 15,          // <= this many min before slot counts as "last-minute"
+    noShowPenaltyPercent: 25,         // no-show penalty = this % of service
     welcomeBonus: 50,
     normalCashback: 2,
     minWeeklyPayout: 500
@@ -83,10 +92,14 @@ export const PlatformConfig: React.FC = () => {
         slotLockDuration: num(f.slotLockTTLMinutes, 2),
       });
       setFinancialConfig({
-        cancellationWindow: num(f.cancellationFreeWindowMinutes, 120) / 60,
-        cancellationPenalty: num(f.cancellationPenaltyPercent, 25),
-        vendorCancelPenalty: num(f.vendorCancelPenaltyAmount, 100),
-        vendorCancelCompensation: num(f.vendorCancelCompensationAmount, 30),
+        cancelFullRefundWindowMin: num(f.cancelFullRefundWindowMin, 60),
+        lateCancelRefundPercent: num(f.lateCancelRefundPercent, 75),
+        lateCancelVendorCompPercent: num(f.lateCancelVendorCompPercent, 5),
+        rejectVendorPenaltyPercent: num(f.rejectVendorPenaltyPercent, 5),
+        autoAcceptSeconds: num(f.autoAcceptSeconds, 60),
+        serviceGracePeriodMin: num(f.serviceGracePeriodMin, 15),
+        lastMinuteWindowMin: num(f.lastMinuteWindowMin, 15),
+        noShowPenaltyPercent: num(f.noShowPenaltyPercent, 25),
         welcomeBonus: num(f.welcomeBonusAmount, 50),
         normalCashback: num(f.cashbackPercentNormal, 2),
         minWeeklyPayout: num(f.vendorMinWeeklyPayout, 500),
@@ -127,11 +140,15 @@ export const PlatformConfig: React.FC = () => {
       vendorWalletBlockThreshold: vendorConfig.walletBlockThreshold,
       slotLockTTLMinutes: vendorConfig.slotLockDuration,
       autoApproveVendors: vendorConfig.autoApproveVendors,
-      // Financial policies
-      cancellationFreeWindowMinutes: Math.round(financialConfig.cancellationWindow * 60),
-      cancellationPenaltyPercent: financialConfig.cancellationPenalty,
-      vendorCancelPenaltyAmount: financialConfig.vendorCancelPenalty,
-      vendorCancelCompensationAmount: financialConfig.vendorCancelCompensation,
+      // Financial policies — booking money model v2 (keys read by functions/config.js)
+      cancelFullRefundWindowMin: financialConfig.cancelFullRefundWindowMin,
+      lateCancelRefundPercent: financialConfig.lateCancelRefundPercent,
+      lateCancelVendorCompPercent: financialConfig.lateCancelVendorCompPercent,
+      rejectVendorPenaltyPercent: financialConfig.rejectVendorPenaltyPercent,
+      autoAcceptSeconds: financialConfig.autoAcceptSeconds,
+      serviceGracePeriodMin: financialConfig.serviceGracePeriodMin,
+      lastMinuteWindowMin: financialConfig.lastMinuteWindowMin,
+      noShowPenaltyPercent: financialConfig.noShowPenaltyPercent,
       welcomeBonusAmount: financialConfig.welcomeBonus,
       cashbackPercentNormal: financialConfig.normalCashback,
       vendorMinWeeklyPayout: financialConfig.minWeeklyPayout,
@@ -519,25 +536,27 @@ export const PlatformConfig: React.FC = () => {
 
               <div className="grid gap-6 sm:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Cancellation Timeframe Window</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Full-Refund Window</label>
+                  <p className="text-[11px] text-slate-500 mb-2">Cancel ≥ this many minutes before the slot → 100% service refund (no vendor compensation).</p>
                   <div className="relative">
                     <input
                       type="number"
-                      value={financialConfig.cancellationWindow}
-                      onChange={(e) => setFinancialConfig({ ...financialConfig, cancellationWindow: parseInt(e.target.value) || 0 })}
+                      value={financialConfig.cancelFullRefundWindowMin}
+                      onChange={(e) => setFinancialConfig({ ...financialConfig, cancelFullRefundWindowMin: parseInt(e.target.value) || 0 })}
                       className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-4 pr-16 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
                     />
-                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 text-sm">hours</span>
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 text-sm">min</span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Customer Cancellation Penalty %</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Late-Cancel Refund %</label>
+                  <p className="text-[11px] text-slate-500 mb-2">Inside the full-refund window → refund this % of the service price to the customer wallet.</p>
                   <div className="relative">
                     <input
                       type="number"
-                      value={financialConfig.cancellationPenalty}
-                      onChange={(e) => setFinancialConfig({ ...financialConfig, cancellationPenalty: parseInt(e.target.value) || 0 })}
+                      value={financialConfig.lateCancelRefundPercent}
+                      onChange={(e) => setFinancialConfig({ ...financialConfig, lateCancelRefundPercent: parseInt(e.target.value) || 0 })}
                       className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-4 pr-12 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
                     />
                     <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 text-sm">%</span>
@@ -545,28 +564,100 @@ export const PlatformConfig: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Vendor Late Cancel Penalty</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Late-Cancel Vendor Compensation %</label>
+                  <p className="text-[11px] text-slate-500 mb-2">Credited to the vendor wallet when a customer cancels late, as % of service price.</p>
                   <div className="relative">
-                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 text-sm">₹</span>
                     <input
                       type="number"
-                      value={financialConfig.vendorCancelPenalty}
-                      onChange={(e) => setFinancialConfig({ ...financialConfig, vendorCancelPenalty: parseInt(e.target.value) || 0 })}
-                      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-8 pr-4 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                      value={financialConfig.lateCancelVendorCompPercent}
+                      onChange={(e) => setFinancialConfig({ ...financialConfig, lateCancelVendorCompPercent: parseInt(e.target.value) || 0 })}
+                      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-4 pr-12 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
                     />
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 text-sm">%</span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Customer Compensation Payout</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Vendor Reject Penalty %</label>
+                  <p className="text-[11px] text-slate-500 mb-2">Debited from the vendor wallet when a vendor rejects a booking, as % of service price.</p>
                   <div className="relative">
-                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 text-sm">₹</span>
                     <input
                       type="number"
-                      value={financialConfig.vendorCancelCompensation}
-                      onChange={(e) => setFinancialConfig({ ...financialConfig, vendorCancelCompensation: parseInt(e.target.value) || 0 })}
-                      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-8 pr-4 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                      value={financialConfig.rejectVendorPenaltyPercent}
+                      onChange={(e) => setFinancialConfig({ ...financialConfig, rejectVendorPenaltyPercent: parseInt(e.target.value) || 0 })}
+                      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-4 pr-12 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
                     />
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 text-sm">%</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Auto-Accept Timeout</label>
+                  <p className="text-[11px] text-slate-500 mb-2">An unanswered pending booking auto-accepts after this many seconds.</p>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={financialConfig.autoAcceptSeconds}
+                      onChange={(e) => setFinancialConfig({ ...financialConfig, autoAcceptSeconds: parseInt(e.target.value) || 0 })}
+                      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-4 pr-16 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                    />
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 text-sm">sec</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Service Grace Period</label>
+                  <p className="text-[11px] text-slate-500 mb-2">Grace after the slot start before delayed-service handling kicks in.</p>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={financialConfig.serviceGracePeriodMin}
+                      onChange={(e) => setFinancialConfig({ ...financialConfig, serviceGracePeriodMin: parseInt(e.target.value) || 0 })}
+                      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-4 pr-16 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                    />
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 text-sm">min</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Last-Minute Window</label>
+                  <p className="text-[11px] text-slate-500 mb-2">A cancel ≤ this many minutes before the slot is treated as last-minute (fraud window).</p>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={financialConfig.lastMinuteWindowMin}
+                      onChange={(e) => setFinancialConfig({ ...financialConfig, lastMinuteWindowMin: parseInt(e.target.value) || 0 })}
+                      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-4 pr-16 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                    />
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 text-sm">min</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">No-Show Penalty %</label>
+                  <p className="text-[11px] text-slate-500 mb-2">Penalty as % of service price when a customer no-shows.</p>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={financialConfig.noShowPenaltyPercent}
+                      onChange={(e) => setFinancialConfig({ ...financialConfig, noShowPenaltyPercent: parseInt(e.target.value) || 0 })}
+                      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-4 pr-12 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                    />
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 text-sm">%</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Customer Cashback %</label>
+                  <p className="text-[11px] text-slate-500 mb-2">Wallet cashback credited on a normal completed booking.</p>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={financialConfig.normalCashback}
+                      onChange={(e) => setFinancialConfig({ ...financialConfig, normalCashback: parseInt(e.target.value) || 0 })}
+                      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-4 pr-12 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                    />
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 text-sm">%</span>
                   </div>
                 </div>
 
