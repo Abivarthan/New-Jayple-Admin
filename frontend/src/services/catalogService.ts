@@ -13,6 +13,8 @@ export interface Category {
   genderTarget: 'unisex' | 'men' | 'women';
   order: number;
   isActive: boolean;
+  subCategories?: string[]; // Array of sub-category slugs
+  services?: string[]; // Array of service IDs
 }
 
 export interface LibraryAsset {
@@ -46,6 +48,8 @@ export const fetchCategories = async (): Promise<Category[]> => {
       genderTarget: (x.genderTarget as Category['genderTarget']) || 'unisex',
       order: typeof x.order === 'number' ? (x.order as number) : 0,
       isActive: x.isActive !== false,
+      subCategories: Array.isArray(x.subCategories) ? x.subCategories as string[] : [],
+      services: Array.isArray(x.services) ? x.services as string[] : [],
     } as Category;
   });
   return list.sort((a, b) => a.order - b.order);

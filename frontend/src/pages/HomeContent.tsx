@@ -24,7 +24,7 @@ export const HomeContent: React.FC = () => {
   });
 
   if (isLoading || !form) {
-    return <div className="p-8 text-slate-400 text-sm">Loading…</div>;
+    return <div className="p-8 text-gray-500 text-sm">Loading…</div>;
   }
 
   const setCard = (i: number, k: keyof HC['offerCards'][number], v: string) => {
@@ -37,13 +37,13 @@ export const HomeContent: React.FC = () => {
     <div className="space-y-6 max-w-3xl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-100">Home Content</h1>
-          <p className="text-sm text-slate-400">Offer cards + cashback &amp; referral copy. Saves live to the customer home.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Home Content</h1>
+          <p className="text-sm text-gray-500">Offer cards + cashback &amp; referral copy. Saves live to the customer home.</p>
         </div>
         <button
           onClick={() => mut.mutate(form)}
           disabled={mut.isPending}
-          className="flex items-center gap-2 rounded-lg bg-violet-600 hover:bg-violet-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+          className="flex items-center gap-2 rounded-lg bg-black text-white hover:bg-gray-900 px-4 py-2 text-sm font-semibold text-gray-900 disabled:opacity-50"
         >
           <Save size={16} /> {mut.isPending ? 'Saving…' : 'Save & Publish'}
         </button>
@@ -59,8 +59,8 @@ export const HomeContent: React.FC = () => {
       {/* Offer cards */}
       <Section title="Offer Cards">
         {form.offerCards.slice(0, 2).map((c, i) => (
-          <div key={i} className="rounded-xl border border-slate-600 bg-[#0f172a] p-4 space-y-3">
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
+          <div key={i} className="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-3">
+            <p className="text-xs font-bold uppercase tracking-wider text-gray-500">
               {i === 0 ? 'Left tile (gift image)' : 'Right tile (gift animation)'}
             </p>
             <div className="grid grid-cols-2 gap-3">
@@ -98,15 +98,15 @@ export const HomeContent: React.FC = () => {
 };
 
 const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
-  <div className="rounded-xl border border-slate-600 bg-slate-800 p-5 space-y-4">
-    <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400">{title}</h2>
+  <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
+    <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500">{title}</h2>
     {children}
   </div>
 );
 
 const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
   <div>
-    <label className="mb-1.5 block text-xs font-medium text-slate-400">{label}</label>
+    <label className="mb-1.5 block text-xs font-medium text-gray-500">{label}</label>
     {children}
   </div>
 );
@@ -115,6 +115,6 @@ const Input: React.FC<{ value: string; onChange: (v: string) => void; mono?: boo
   <input
     value={value}
     onChange={(e) => onChange(e.target.value)}
-    className={`w-full rounded-lg border border-slate-600 bg-[#0f172a] px-3 py-2 text-sm text-slate-100 outline-none focus:border-violet-500 ${mono ? 'font-mono' : ''}`}
+    className={`w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 outline-none focus:border-black ${mono ? 'font-mono' : ''}`}
   />
 );

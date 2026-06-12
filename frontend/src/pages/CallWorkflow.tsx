@@ -1,123 +1,205 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { RefreshCw, Phone, Clock, PhoneCall, CheckCircle2, XCircle, CalendarClock, Store } from 'lucide-react';
-import {
-  fetchCallWorkflow, setBookingCallStatus, adminCancelBooking, adminRescheduleBooking, type AdminBooking,
-} from '../services/adminDataService';
-
-const callBadge = (st: string): [string, string] => {
-  switch (st) {
-    case 'reached_confirmed': return ['Confirmed on call', 'bg-emerald-500/10 text-emerald-400'];
-    case 'no_answer': return ['No answer', 'bg-amber-500/10 text-amber-400'];
-    case 'customer_cancel': return ['Wants cancel', 'bg-rose-500/10 text-rose-400'];
-    case 'customer_reschedule': return ['Wants reschedule', 'bg-sky-500/10 text-sky-400'];
-    default: return ['Not called', 'bg-slate-600/30 text-slate-400'];
-  }
-};
+import toast from 'react-hot-toast';
+import { fetchCallWorkflow, setBookingCallStatus, adminCancelBooking, adminRescheduleBooking, type AdminBooking } from '../services/adminDataService';
+import { StatusBadge } from '../shared/components/feedback/StatusBadge';
+import { RescheduleDrawer } from '../modules/bookings/components/RescheduleDrawer';
+import { ConfirmModal } from '../shared/components/feedback/ConfirmModal';
 
 export const CallWorkflow: React.FC = () => {
   const [rows, setRows] = useState<AdminBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [toast, setToast] = useState<string | null>(null);
-  const flash = (m: string) => { setToast(m); setTimeout(() => setToast(null), 4000); };
+
+  const [rescheduleBooking, setRescheduleBooking] = useState<AdminBooking | null>(null);
+  
+  const [confirmConfig, setConfirmConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    isDestructive: boolean;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    isDestructive: false,
+    onConfirm: () => {},
+  });
 
   const load = useCallback(async () => {
     setLoading(true);
-    try { setRows(await fetchCallWorkflow()); }
-    catch (e) { flash(e instanceof Error ? e.message : 'Failed to load'); }
-    finally { setLoading(false); }
+    try { 
+      setRows(await fetchCallWorkflow()); 
+    } catch (e) { 
+      toast.error(e instanceof Error ? e.message : 'Failed to load bookings'); 
+    } finally { 
+      setLoading(false); 
+    }
   }, []);
+
   useEffect(() => { load(); }, [load]);
 
-  const run = async (id: string, fn: () => Promise<unknown>, ok: string) => {
+  const run = async (id: string, fn: () => Promise<unknown>, okMsg: string) => {
     setBusyId(id);
-    try { await fn(); flash(ok); await load(); }
-    catch (e) { flash(e instanceof Error ? e.message : 'Failed'); }
-    finally { setBusyId(null); }
+    try { 
+      await fn(); 
+      toast.success(okMsg); 
+      await load(); 
+    } catch (e) { 
+      toast.error(e instanceof Error ? e.message : 'Action failed'); 
+    } finally { 
+      setBusyId(null); 
+    }
   };
 
   const mark = (r: AdminBooking, status: string) =>
-    run(r.id, () => setBookingCallStatus(r.id, status, r.oneHourAlert ? 'one_hour_before' : 'post_confirmation'), 'Saved.');
+    run(r.id, () => setBookingCallStatus(r.id, status, r.oneHourAlert ? 'one_hour_before' : 'post_confirmation'), 'Booking status updated.');
+
   const cancel = (r: AdminBooking) => {
-    if (!window.confirm(`Cancel ${r.customerName}'s booking? Refund follows the standard tier (≥1hr 100% / <1hr 75% + 5% comp).`)) return;
-    run(r.id, async () => { await adminCancelBooking(r.id, 'Cancelled by admin (call workflow)'); await setBookingCallStatus(r.id, 'customer_cancel'); }, 'Cancelled.');
+    setConfirmConfig({
+      isOpen: true,
+      title: 'Cancel Booking',
+      message: `Cancel ${r.customerName}'s booking? Refund follows the standard tier (≥1hr 100% / <1hr 75% + 5% comp).`,
+      isDestructive: true,
+      onConfirm: () => {
+        run(r.id, async () => { 
+          await adminCancelBooking(r.id, 'Cancelled by admin (call workflow)'); 
+          await setBookingCallStatus(r.id, 'customer_cancel'); 
+        }, 'Booking cancelled successfully.');
+      }
+    });
   };
-  const reschedule = (r: AdminBooking) => {
-    const date = window.prompt('New date (YYYY-MM-DD):', r.slotDate); if (!date) return;
-    const time = window.prompt('New time (HH:MM):', r.slotTime); if (!time) return;
-    run(r.id, async () => { await adminRescheduleBooking(r.id, date.trim(), time.trim()); await setBookingCallStatus(r.id, 'customer_reschedule'); }, 'Rescheduled.');
+
+  const handleRescheduleConfirm = async (date: string, time: string, note?: string) => {
+    if (!rescheduleBooking) return;
+    const r = rescheduleBooking;
+    await run(r.id, async () => { 
+      await adminRescheduleBooking(r.id, date.trim(), time.trim()); 
+      await setBookingCallStatus(r.id, 'customer_reschedule'); 
+    }, 'Booking rescheduled successfully.');
   };
 
   const alerts = rows.filter((r) => r.oneHourAlert).length;
 
   return (
     <div className="space-y-6 pb-12">
-      {toast && (
-        <div className="fixed top-4 right-4 z-50 flex items-center gap-3 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-4 text-emerald-400 text-sm shadow-xl">
-          <span>{toast}</span>
-        </div>
-      )}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-100">Call Workflow</h1>
-          <p className="text-sm text-slate-400">Confirmed bookings to call — confirm with the customer, and on the 1-hour-before alert
-            confirm / cancel / reschedule as they ask.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Call Workflow</h1>
+          <p className="text-base text-gray-500 mt-1">
+            Confirmed bookings to call — confirm with the customer, and manage their requests.
+          </p>
         </div>
-        <button onClick={load} disabled={loading}
-          className="flex items-center gap-2 rounded-lg border border-slate-600 bg-slate-700 hover:bg-slate-600 text-slate-200 px-4 py-2.5 text-sm font-semibold disabled:opacity-50">
-          <RefreshCw size={15} className={loading ? 'animate-spin' : ''} /> Refresh
+        <button 
+          onClick={load} 
+          disabled={loading}
+          className="flex items-center gap-2 rounded-xl bg-white border border-gray-300 hover:bg-gray-50 text-black px-4 py-2 font-medium disabled:opacity-50 transition-colors"
+        >
+          <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Refresh
         </button>
       </div>
 
-      <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.06] px-4 py-3 text-sm text-amber-300 flex items-center gap-2">
-        <Clock size={15} /> <b>{alerts}</b> booking{alerts === 1 ? '' : 's'} within the 1-hour pre-slot window
+      <div className="rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800 flex items-center gap-2 font-medium">
+        <Clock size={16} /> <b>{alerts}</b> booking{alerts === 1 ? '' : 's'} within the 1-hour pre-slot window
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
         {rows.map((r) => {
-          const [label, cls] = callBadge(r.callStatus);
           return (
-            <div key={r.id} className={`rounded-xl border p-5 bg-slate-800 ${r.oneHourAlert ? 'border-amber-500/40' : 'border-slate-700'}`}>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-bold text-slate-500">#{r.id.slice(-6).toUpperCase()} · {r.slotDate} {r.slotTime}</span>
+            <div key={r.id} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between space-y-4">
+              
+              {/* Top Row: ID, Badges */}
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold text-gray-500">#{r.id.slice(-6).toUpperCase()}</span>
                 <div className="flex items-center gap-2">
-                  {r.oneHourAlert && <span className="text-[10px] text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full font-semibold flex items-center gap-1"><Clock size={9} />1 hr</span>}
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${cls}`}>{label}</span>
+                  {r.oneHourAlert && (
+                    <span className="text-xs text-orange-800 bg-orange-100 border border-orange-200 px-2.5 py-0.5 rounded-full font-semibold flex items-center gap-1">
+                      <Clock size={10} /> 1 hr
+                    </span>
+                  )}
+                  <StatusBadge status={r.callStatus} />
                 </div>
               </div>
-              <div className="font-semibold text-slate-200">{r.customerName}</div>
-              {r.customerPhone && (
-                <a href={`tel:${r.customerPhone}`} className="inline-flex items-center gap-1.5 mt-1 text-sm text-violet-400 font-semibold">
-                  <Phone size={13} /> Call {r.customerPhone}
-                </a>
-              )}
-              <div className="text-xs text-slate-500 mt-1 flex items-center gap-1.5"><Store size={11} />{r.vendorName} · {r.serviceNames} · ₹{r.totalAmount}</div>
 
-              <div className="grid grid-cols-2 gap-2 mt-4">
-                <button onClick={() => mark(r, 'reached_confirmed')} disabled={busyId === r.id}
-                  className="flex items-center justify-center gap-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold py-2 disabled:opacity-50">
-                  <CheckCircle2 size={12} /> Confirmed
+              {/* Middle Row: Customer details */}
+              <div className="space-y-3">
+                <div className="flex flex-col">
+                  <span className="text-lg font-bold text-gray-900">{r.customerName}</span>
+                  {r.customerPhone && (
+                    <a href={`tel:${r.customerPhone}`} className="inline-flex items-center gap-1.5 mt-1 text-sm text-gray-900 font-semibold hover:underline w-fit">
+                      <Phone size={14} /> {r.customerPhone}
+                    </a>
+                  )}
+                </div>
+                
+                <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                  <div className="text-sm text-gray-500 flex flex-col">
+                    <span className="font-semibold text-gray-900 truncate max-w-[200px]">{r.serviceNames}</span>
+                    <span className="flex items-center gap-1.5 mt-0.5"><Store size={12} /> {r.vendorName}</span>
+                  </div>
+                  <span className="text-lg font-bold text-gray-900">₹{r.totalAmount}</span>
+                </div>
+              </div>
+
+              {/* Bottom Row: Actions */}
+              <div className="grid grid-cols-4 gap-2 pt-2">
+                <button 
+                  onClick={() => mark(r, 'reached_confirmed')} 
+                  disabled={busyId === r.id}
+                  className="flex flex-col items-center justify-center gap-1.5 rounded-xl bg-black text-white hover:bg-gray-900 py-3 disabled:opacity-50 transition-colors"
+                >
+                  <CheckCircle2 size={16} />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">Confirm</span>
                 </button>
-                <button onClick={() => mark(r, 'no_answer')} disabled={busyId === r.id}
-                  className="flex items-center justify-center gap-1 rounded-lg border border-slate-600 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold py-2 disabled:opacity-50">
-                  <PhoneCall size={12} /> No answer
+                <button 
+                  onClick={() => mark(r, 'no_answer')} 
+                  disabled={busyId === r.id}
+                  className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-gray-300 bg-white text-gray-900 hover:bg-gray-50 py-3 disabled:opacity-50 transition-colors"
+                >
+                  <PhoneCall size={16} />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">No Answer</span>
                 </button>
-                <button onClick={() => reschedule(r)} disabled={busyId === r.id}
-                  className="flex items-center justify-center gap-1 rounded-lg border border-sky-600/40 bg-sky-600/10 hover:bg-sky-600/20 text-sky-300 text-xs font-semibold py-2 disabled:opacity-50">
-                  <CalendarClock size={12} /> Reschedule
+                <button 
+                  onClick={() => setRescheduleBooking(r)} 
+                  disabled={busyId === r.id}
+                  className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-gray-300 bg-white text-gray-900 hover:bg-gray-50 py-3 disabled:opacity-50 transition-colors"
+                >
+                  <CalendarClock size={16} />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">Reschedule</span>
                 </button>
-                <button onClick={() => cancel(r)} disabled={busyId === r.id}
-                  className="flex items-center justify-center gap-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold py-2 disabled:opacity-50">
-                  <XCircle size={12} /> Cancel
+                <button 
+                  onClick={() => cancel(r)} 
+                  disabled={busyId === r.id}
+                  className="flex flex-col items-center justify-center gap-1.5 rounded-xl bg-red-600 text-white hover:bg-red-700 py-3 disabled:opacity-50 transition-colors"
+                >
+                  <XCircle size={16} />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">Cancel</span>
                 </button>
               </div>
+
             </div>
           );
         })}
         {rows.length === 0 && (
-          <div className="md:col-span-2 py-10 text-center text-slate-500">{loading ? 'Loading…' : 'No confirmed bookings to call.'}</div>
+          <div className="md:col-span-2 lg:col-span-2 py-16 text-center text-gray-500 bg-white rounded-2xl border border-gray-200">
+            {loading ? 'Loading...' : 'No confirmed bookings to call.'}
+          </div>
         )}
       </div>
+
+      <RescheduleDrawer 
+        isOpen={!!rescheduleBooking} 
+        booking={rescheduleBooking} 
+        onClose={() => setRescheduleBooking(null)} 
+        onConfirm={handleRescheduleConfirm} 
+      />
+
+      <ConfirmModal 
+        {...confirmConfig} 
+        onCancel={() => setConfirmConfig(prev => ({ ...prev, isOpen: false }))} 
+      />
+
     </div>
   );
 };

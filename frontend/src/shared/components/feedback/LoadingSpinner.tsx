@@ -25,19 +25,19 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
     <div className={cn('flex flex-col items-center justify-center gap-4', className)}>
       <div
         className={cn(
-          'animate-spin rounded-full border-violet-500 border-t-transparent',
+          'animate-spin rounded-full border-black border-t-transparent',
           sizeMap[size],
         )}
       />
       {message && (
-        <p className="text-sm font-medium text-slate-400 animate-pulse">{message}</p>
+        <p className="text-sm font-medium text-gray-500 animate-pulse">{message}</p>
       )}
     </div>
   );
 
   if (fullScreen) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-[#0f172a] text-slate-200">
+      <div className="flex h-screen w-screen items-center justify-center bg-gray-50 text-gray-900">
         {spinner}
       </div>
     );

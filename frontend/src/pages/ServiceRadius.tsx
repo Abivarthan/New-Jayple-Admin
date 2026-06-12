@@ -54,13 +54,13 @@ export const ServiceRadius: React.FC = () => {
     }
   };
 
-  if (loading) return <div className="p-8 text-slate-400 text-sm">Loading…</div>;
+  if (loading) return <div className="p-8 text-gray-500 text-sm">Loading…</div>;
 
   return (
     <div className="p-8 max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-100">Service Radius</h1>
-        <p className="text-sm text-slate-400 mt-1">
+        <h1 className="text-2xl font-bold tracking-tight text-gray-900">Service Radius</h1>
+        <p className="text-sm text-gray-500 mt-1">
           Controls how far a shop can be from a customer and still appear in their app. Applies platform-wide
           (customer home list + service-availability gate).
         </p>
@@ -76,20 +76,20 @@ export const ServiceRadius: React.FC = () => {
         </div>
       )}
 
-      <div className="rounded-xl border border-slate-600 bg-slate-800 p-6 space-y-6">
+      <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-6">
         <div className="flex items-center gap-3">
-          <div className="rounded-full bg-violet-600/10 text-violet-400 border border-violet-500/20 p-2.5">
+          <div className="rounded-full bg-black text-white text-black font-semibold border border-black p-2.5">
             <MapPin size={20} />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-slate-100">Visibility radius</h2>
-            <p className="text-xs text-slate-400">Shops within this distance of the customer are shown.</p>
+            <h2 className="text-lg font-bold text-gray-900">Visibility radius</h2>
+            <p className="text-xs text-gray-500">Shops within this distance of the customer are shown.</p>
           </div>
         </div>
 
         <div className="flex items-end gap-4">
           <div className="flex-1">
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">
               Radius (kilometers)
             </label>
             <input
@@ -99,12 +99,12 @@ export const ServiceRadius: React.FC = () => {
               step={0.5}
               value={radius}
               onChange={(e) => setRadius(Number(e.target.value))}
-              className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 px-4 text-slate-200 outline-none focus:border-violet-500"
+              className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-4 text-gray-900 outline-none focus:border-black"
             />
           </div>
           <div className="text-right">
-            <div className="text-3xl font-bold text-slate-100">{radius}</div>
-            <div className="text-xs text-slate-500">km</div>
+            <div className="text-3xl font-bold text-gray-900">{radius}</div>
+            <div className="text-xs text-gray-500">km</div>
           </div>
         </div>
 
@@ -117,17 +117,17 @@ export const ServiceRadius: React.FC = () => {
           onChange={(e) => setRadius(Number(e.target.value))}
           className="w-full accent-violet-500"
         />
-        <div className="flex justify-between text-[10px] text-slate-500">
+        <div className="flex justify-between text-[10px] text-gray-500">
           <span>1 km</span>
           <span>25 km</span>
           <span>50 km</span>
         </div>
 
-        <div className="flex justify-end pt-2 border-t border-slate-600">
+        <div className="flex justify-end pt-2 border-t border-gray-200">
           <button
             onClick={save}
             disabled={saving}
-            className="flex items-center gap-2 rounded-lg bg-violet-600 hover:bg-violet-500 px-5 py-2 text-sm font-semibold text-white disabled:opacity-50"
+            className="flex items-center gap-2 rounded-lg bg-black text-white hover:bg-gray-900 px-5 py-2 text-sm font-semibold text-gray-900 disabled:opacity-50"
           >
             <Save size={16} /> {saving ? 'Saving…' : 'Save Radius'}
           </button>

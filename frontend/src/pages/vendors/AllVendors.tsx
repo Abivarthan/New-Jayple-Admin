@@ -1,13 +1,27 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search, Eye, Power, AlertTriangle, Download, Plus, RefreshCw } from 'lucide-react';
-import { fetchVendors, setVendorStatus, recomputeAllVendorRatings, type AdminVendor } from '../../services/adminDataService';
+import { 
+  Search, Eye, Power, AlertTriangle, Download, RefreshCw, X,
+  Briefcase, MapPin, Phone, Mail, FileText, CheckCircle, Clock, Check, Store
+} from 'lucide-react';
+import toast from 'react-hot-toast';
+import { 
+  fetchVendors, 
+  setVendorStatus, 
+  recomputeAllVendorRatings, 
+  fetchVendorBookings,
+  fetchVendorServices,
+  type AdminVendor,
+  type AdminVendorBooking,
+  type AdminVendorService
+} from '../../services/adminDataService';
 
-type VendorListItem = AdminVendor;
+interface VendorDrawerData extends AdminVendor {
+  bookings?: AdminVendorBooking[];
+  services?: AdminVendorService[];
+}
 
 export const AllVendors: React.FC = () => {
-  const navigate = useNavigate();
   const qc = useQueryClient();
   const { data: vendors = [], isLoading } = useQuery({ queryKey: ['adminVendors'], queryFn: fetchVendors });
   const statusMut = useMutation({
@@ -15,25 +29,26 @@ export const AllVendors: React.FC = () => {
       setVendorStatus(uid, status, reason),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['adminVendors'] }),
   });
+  
   const [searchQuery, setSearchQuery] = useState('');
   
   // Filter States
-  const [filterZone, setFilterZone] = useState('ALL');
-  const [filterTier, setFilterTier] = useState('ALL');
+  const [filterCity, setFilterCity] = useState('ALL');
   const [filterStatus, setFilterStatus] = useState('ALL');
-  const [filterGst, setFilterGst] = useState('ALL');
 
-  const [suspendingVendor, setSuspendingVendor] = useState<VendorListItem | null>(null);
+  const [suspendingVendor, setSuspendingVendor] = useState<AdminVendor | null>(null);
   const [suspendReason, setSuspendReason] = useState('');
 
-  // One-shot: heal historical rating/reviewCount aggregates from the reviews
-  // subcollections (the trigger only fires on new review writes).
+  // Drawer states
+  const [selectedVendor, setSelectedVendor] = useState<VendorDrawerData | null>(null);
+  const [drawerTab, setDrawerTab] = useState<'business' | 'location' | 'services' | 'bookings' | 'finance' | 'documents'>('business');
+
   const syncRatingsMut = useMutation({
     mutationFn: recomputeAllVendorRatings,
     onSuccess: () => qc.invalidateQueries({ queryKey: ['adminVendors'] }),
   });
 
-  const handleToggleStatus = (vendor: VendorListItem) => {
+  const handleToggleStatus = (vendor: AdminVendor) => {
     if (vendor.status === 'active') {
       setSuspendingVendor(vendor);
       setSuspendReason('');
@@ -45,7 +60,24 @@ export const AllVendors: React.FC = () => {
   const executeSuspend = () => {
     if (suspendingVendor && suspendReason.trim()) {
       statusMut.mutate({ uid: suspendingVendor.uid, status: 'suspended', reason: suspendReason.trim() });
+      toast.success('Vendor suspended successfully');
       setSuspendingVendor(null);
+    }
+  };
+
+  const openVendorDrawer = async (vendor: AdminVendor) => {
+    setSelectedVendor(vendor);
+    setDrawerTab('business');
+    try {
+      const [bookings, services] = await Promise.all([
+        fetchVendorBookings(vendor.uid),
+        fetchVendorServices(vendor.uid)
+      ]);
+      setSelectedVendor((prev) => prev && prev.uid === vendor.uid ? {
+        ...prev, bookings, services
+      } : prev);
+    } catch (e) {
+      console.error("Error fetching vendor details", e);
     }
   };
 
@@ -54,57 +86,47 @@ export const AllVendors: React.FC = () => {
     const matchesSearch =
       v.shopName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       v.ownerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      v.phone.includes(searchQuery);
+      v.phone.includes(searchQuery) ||
+      (v.email && v.email.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    const matchesZone = filterZone === 'ALL' || v.zoneName === filterZone;
-    const matchesTier = filterTier === 'ALL' || v.tier === filterTier.toLowerCase();
+    const matchesCity = filterCity === 'ALL' || v.city === filterCity;
     const matchesStatus = filterStatus === 'ALL' || v.status === filterStatus.toLowerCase();
-    const matchesGst =
-      filterGst === 'ALL' ||
-      (filterGst === 'GST' && v.isGstRegistered) ||
-      (filterGst === 'NON-GST' && !v.isGstRegistered);
 
-    return matchesSearch && matchesZone && matchesTier && matchesStatus && matchesGst;
+    return matchesSearch && matchesCity && matchesStatus;
   });
 
+  const cities = Array.from(new Set(vendors.map(v => v.city).filter(Boolean))).sort();
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative min-h-screen pb-12">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-100">All Registered Vendors</h1>
-          <p className="text-sm text-slate-400">Search, monitor, suspend, or override platform status parameters for merchants.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Vendors List</h1>
+          <p className="text-sm text-gray-500">Search and monitor active vendors across cities.</p>
         </div>
 
         <div className="flex items-center gap-3">
           <button
-            onClick={() => navigate('/vendors/approvals')}
-            className="flex items-center gap-2 rounded-lg bg-violet-600 hover:bg-violet-500 active:bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white transition-all shadow-lg shadow-violet-600/10"
-          >
-            <Plus size={16} />
-            Onboarding Approvals
-          </button>
-          <button
             onClick={() => syncRatingsMut.mutate()}
             disabled={syncRatingsMut.isPending}
-            title="Recompute every vendor's rating & review count from their reviews"
-            className="flex items-center gap-2 rounded-lg border border-slate-600 bg-slate-700 hover:bg-slate-750 text-slate-200 px-4 py-2.5 text-sm font-semibold transition-colors disabled:opacity-50"
+            title="Recompute every vendor's rating"
+            className="flex items-center gap-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-gray-900 px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-50"
           >
             <RefreshCw size={16} className={syncRatingsMut.isPending ? 'animate-spin' : ''} />
-            {syncRatingsMut.isPending ? 'Syncing…' : 'Sync Ratings'}
+            {syncRatingsMut.isPending ? 'Syncing…' : 'Sync Data'}
           </button>
-          <button className="flex items-center gap-2 rounded-lg border border-slate-600 bg-slate-700 hover:bg-slate-750 text-slate-200 px-4 py-2.5 text-sm font-semibold transition-colors">
+          <button className="flex items-center gap-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-gray-900 px-4 py-2 text-sm font-semibold transition-colors">
             <Download size={16} />
-            Export CSV
+            Export
           </button>
         </div>
       </div>
 
       {/* Filter Options grid */}
-      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-6 bg-slate-800 p-4 rounded-xl border border-slate-600">
-        {/* Search */}
-        <div className="relative md:col-span-2">
-          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
+      <div className="grid gap-4 sm:grid-cols-3 bg-white p-4 rounded-xl border border-gray-200">
+        <div className="relative">
+          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
             <Search size={16} />
           </span>
           <input
@@ -112,174 +134,96 @@ export const AllVendors: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by shop name, owner, phone..."
-            className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2 pl-9 pr-4 text-xs text-slate-200 placeholder-slate-500 outline-none focus:border-violet-500 transition-colors"
+            className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pl-9 pr-4 text-xs text-gray-900 placeholder-slate-500 outline-none focus:border-black transition-colors"
           />
         </div>
 
-        {/* Zone */}
         <div>
           <select
-            value={filterZone}
-            onChange={(e) => setFilterZone(e.target.value)}
-            className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 px-3 text-xs text-slate-400 outline-none focus:border-violet-500"
+            value={filterCity}
+            onChange={(e) => setFilterCity(e.target.value)}
+            className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-3 text-xs text-gray-500 outline-none focus:border-black"
           >
-            <option value="ALL">All Zones</option>
-            <option value="Chennai Central">Chennai Central</option>
-            <option value="Trichy East">Trichy East</option>
+            <option value="ALL">All Cities</option>
+            {cities.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
 
-        {/* Tier */}
-        <div>
-          <select
-            value={filterTier}
-            onChange={(e) => setFilterTier(e.target.value)}
-            className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 px-3 text-xs text-slate-400 outline-none focus:border-violet-500"
-          >
-            <option value="ALL">All Tiers</option>
-            <option value="PREMIUM">Premium</option>
-            <option value="NORMAL">Normal</option>
-          </select>
-        </div>
-
-        {/* Status */}
         <div>
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 px-3 text-xs text-slate-400 outline-none focus:border-violet-500"
+            className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-3 text-xs text-gray-500 outline-none focus:border-black"
           >
             <option value="ALL">All Statuses</option>
             <option value="ACTIVE">Active</option>
+            <option value="PENDING">Pending Approval</option>
             <option value="SUSPENDED">Suspended</option>
-            <option value="BLOCKED">Blocked</option>
-          </select>
-        </div>
-
-        {/* GST */}
-        <div>
-          <select
-            value={filterGst}
-            onChange={(e) => setFilterGst(e.target.value)}
-            className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 px-3 text-xs text-slate-400 outline-none focus:border-violet-500"
-          >
-            <option value="ALL">All Tax Statuses</option>
-            <option value="GST">GST Registered</option>
-            <option value="NON-GST">Non-GST</option>
           </select>
         </div>
       </div>
 
       {/* Vendors Table */}
-      <div className="overflow-x-auto rounded-xl border border-slate-600 bg-slate-800">
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-slate-600 text-slate-400 text-xs font-semibold uppercase bg-[#0f172a]/20">
-              <th className="py-4 px-6">Shop Name</th>
-              <th className="py-4 px-6">Owner details</th>
-              <th className="py-4 px-6">Zone</th>
-              <th className="py-4 px-6">Tier</th>
-              <th className="py-4 px-6 text-center">Rating</th>
-              <th className="py-4 px-6 text-center">Bookings</th>
-              <th className="py-4 px-6 text-right">Weekly Net</th>
+            <tr className="border-b border-gray-200 bg-gray-50 text-gray-600 text-sm font-semibold">
+              <th className="py-4 px-6">Vendor Details</th>
+              <th className="py-4 px-6">Owner Info</th>
+              <th className="py-4 px-6">Service Category</th>
+              <th className="py-4 px-6">Location</th>
+              <th className="py-4 px-6 text-center">Active Bookings</th>
               <th className="py-4 px-6">Status</th>
               <th className="py-4 px-6 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800 text-sm text-slate-350">
-            {filteredVendors.map((vendor) => (
-              <tr key={vendor.uid} className="hover:bg-[#0f172a]/10 transition-colors">
+          <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
+            {filteredVendors.map((v) => (
+              <tr key={v.uid} className="hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => openVendorDrawer(v)}>
                 <td className="py-4 px-6">
-                  <div>
-                    <span className="font-semibold text-slate-200 block">{vendor.shopName}</span>
-                    <span className="text-[10px] text-slate-500 mt-0.5 block">{vendor.uid}</span>
-                    <span
-                      className={`mt-1 inline-block text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded ${
-                        vendor.isGstRegistered
-                          ? 'bg-emerald-950/30 text-emerald-400 border border-emerald-900/30'
-                          : 'bg-slate-700 text-slate-400 border border-slate-600'
-                      }`}
-                    >
-                      {vendor.isGstRegistered ? 'GST' : 'Non-GST'}
-                    </span>
-                  </div>
+                  <span className="font-bold text-gray-900 block text-base">{v.shopName}</span>
+                  <span className="text-xs font-medium text-gray-500 mt-1 block">ID: {v.uid.slice(-6).toUpperCase()}</span>
                 </td>
                 <td className="py-4 px-6">
-                  <div>
-                    <p className="text-slate-300">{vendor.ownerName}</p>
-                    <p className="text-xs text-slate-400 mt-0.5">+91 {vendor.phone}</p>
-                  </div>
-                </td>
-                <td className="py-4 px-6 text-xs">{vendor.zoneName}</td>
-                <td className="py-4 px-6">
-                  <span
-                    className={`text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded ${
-                      vendor.tier === 'premium'
-                        ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                        : 'bg-slate-700 text-slate-400 border border-slate-750'
-                    }`}
-                  >
-                    {vendor.tier}
-                  </span>
-                </td>
-                <td className="py-4 px-6 text-center font-bold text-slate-200">
-                  ⭐ {vendor.rating.toFixed(1)}
-                  <span className="block text-[10px] font-normal text-slate-500">
-                    {vendor.reviewCount} {vendor.reviewCount === 1 ? 'review' : 'reviews'}
-                  </span>
-                </td>
-                <td className="py-4 px-6 text-center font-medium">{vendor.bookingsCount}</td>
-                <td className="py-4 px-6 text-right font-semibold text-slate-200">
-                  ₹{vendor.weeklyEarnings.toLocaleString()}
+                  <span className="block text-gray-900 font-bold">{v.ownerName}</span>
+                  <span className="text-xs font-medium text-gray-500 block mt-0.5">+{v.phone}</span>
+                  {v.alternatePhone && <span className="text-xs font-medium text-gray-500 block">Alt: +{v.alternatePhone}</span>}
+                  {v.email && <span className="text-xs font-medium text-gray-900 block mt-0.5">{v.email}</span>}
                 </td>
                 <td className="py-4 px-6">
-                  <span
-                    className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold ${
-                      vendor.status === 'active'
-                        ? 'bg-emerald-500/10 text-emerald-400'
-                        : vendor.status === 'suspended'
-                        ? 'bg-amber-500/10 text-amber-400'
-                        : 'bg-rose-500/10 text-rose-400'
-                    }`}
-                  >
-                    <span className={`h-1.5 w-1.5 rounded-full ${
-                      vendor.status === 'active'
-                        ? 'bg-emerald-500'
-                        : vendor.status === 'suspended'
-                        ? 'bg-amber-500'
-                        : 'bg-rose-500'
-                    }`} />
-                    <span className="capitalize">{vendor.status}</span>
+                  <span className="inline-flex px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-800 border border-gray-200">{v.primaryCategory}</span>
+                </td>
+                <td className="py-4 px-6">
+                  <span className="block text-gray-900 font-medium">{v.city}</span>
+                  <span className="text-xs font-medium text-gray-500 block mt-0.5">{v.area}</span>
+                </td>
+                <td className="py-4 px-6 text-center">
+                  <span className={`font-bold text-base ${v.ongoingBookings > 0 ? 'text-amber-500' : 'text-gray-500'}`}>{v.ongoingBookings}</span>
+                </td>
+                <td className="py-4 px-6">
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${
+                    v.status === 'active' ? 'bg-green-100 text-green-800 border border-green-200' :
+                    v.status === 'suspended' || v.status === 'blocked' ? 'bg-red-100 text-red-800 border border-red-200' :
+                    'bg-orange-100 text-orange-800 border border-orange-200'
+                  }`}>
+                    {v.status}
                   </span>
                 </td>
                 <td className="py-4 px-6 text-right">
-                  <div className="flex items-center justify-end gap-2">
-                    <button
-                      onClick={() => navigate(`/vendors/${vendor.uid}`)}
-                      className="rounded p-1.5 text-slate-400 hover:bg-slate-700 hover:text-slate-200 transition-colors"
-                      title="View Full Profile Details"
-                    >
-                      <Eye size={15} />
-                    </button>
-                    <button
-                      onClick={() => handleToggleStatus(vendor)}
-                      className={`rounded p-1.5 transition-colors ${
-                        vendor.status === 'active'
-                          ? 'text-amber-500 hover:bg-amber-950/20'
-                          : 'text-emerald-500 hover:bg-emerald-950/20'
-                      }`}
-                      title={vendor.status === 'active' ? 'Suspend Account' : 'Reactivate Account'}
-                    >
-                      <Power size={15} />
-                    </button>
-                  </div>
+                  <button onClick={(e) => { e.stopPropagation(); openVendorDrawer(v); }} className="flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-sm font-semibold text-gray-900 px-4 py-2 ml-auto transition-colors" title="View Details">
+                    <Eye size={16} /> View
+                  </button>
                 </td>
               </tr>
             ))}
             {filteredVendors.length === 0 && (
               <tr>
-                <td colSpan={9} className="py-8 text-center text-slate-500">
-                  {isLoading ? 'Loading vendors…' : 'No matching vendors found.'}
+                <td colSpan={7} className="py-16 text-center">
+                  <div className="flex flex-col items-center justify-center text-gray-500">
+                    <Store size={48} className="text-gray-300 mb-4" />
+                    <p className="text-lg font-medium text-gray-900">{isLoading ? 'Loading vendors…' : 'No vendors matched the criteria.'}</p>
+                    <p className="text-sm mt-1">Try adjusting your filters or search query.</p>
+                  </div>
                 </td>
               </tr>
             )}
@@ -287,49 +231,309 @@ export const AllVendors: React.FC = () => {
         </table>
       </div>
 
-      {/* Suspend Vendor Action Dialog */}
-      {suspendingVendor && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-2xl border border-slate-600 bg-slate-800 p-6 shadow-2xl space-y-6">
-            <div className="flex items-center gap-3 text-amber-455">
-              <AlertTriangle className="h-6 w-6 text-amber-500" />
-              <h3 className="text-lg font-bold text-slate-100">Suspend Vendor Account</h3>
+      {/* Slide-out Drawer */}
+      {selectedVendor && (
+        <>
+          <div className="fixed inset-0 z-45 bg-black/60 backdrop-blur-sm transition-opacity" onClick={() => setSelectedVendor(null)} />
+          <div className="fixed inset-y-0 right-0 z-50 w-full max-w-2xl bg-white border-l border-gray-200 shadow-2xl overflow-y-auto transform transition-all duration-300 ease-out flex flex-col">
+            
+            {/* Header */}
+            <div className="p-6 border-b border-gray-200 bg-white flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="rounded-full bg-gray-100 border border-gray-200 p-3 text-gray-900 font-semibold">
+                  <Store size={24} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-xl font-bold text-gray-900">{selectedVendor.shopName}</h2>
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${
+                      selectedVendor.status === 'active' ? 'bg-green-100 text-green-800 border border-green-200' :
+                      'bg-orange-100 text-orange-800 border border-orange-200'
+                    }`}>
+                      {selectedVendor.status}
+                    </span>
+                  </div>
+                  <span className="text-sm font-medium text-gray-500 mt-1 block">ID: {selectedVendor.uid}</span>
+                </div>
+              </div>
+              <button onClick={() => setSelectedVendor(null)} className="rounded-lg border border-gray-200 bg-white p-2 text-gray-500 hover:text-gray-900 transition-colors">
+                <X size={16} />
+              </button>
             </div>
 
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Confirm suspending <span className="text-slate-200 font-semibold">{suspendingVendor.shopName}</span>. 
-              This will block them from receiving new client bookings and hide their card from search listings.
-            </p>
-
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Reason for Suspension</label>
-              <textarea
-                required
-                value={suspendReason}
-                onChange={(e) => setSuspendReason(e.target.value)}
-                placeholder="e.g. Multiple booking cancellations or customer support complaints."
-                className="w-full h-24 rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 px-3 text-slate-200 outline-none focus:border-violet-500 placeholder-slate-650 resize-none text-sm"
-              />
+            {/* Tabs */}
+            <div className="flex gap-2 border-b border-gray-200 px-6 bg-gray-50/50 overflow-x-auto scrollbar-hide">
+              {(['business', 'location', 'services', 'bookings', 'finance', 'documents'] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setDrawerTab(tab)}
+                  className={`flex shrink-0 items-center gap-2 py-4 px-3 text-sm font-bold border-b-2 capitalize transition-all ${
+                    drawerTab === tab ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-900'
+                  }`}
+                >
+                  {tab === 'business' && <Briefcase size={16} />}
+                  {tab === 'location' && <MapPin size={16} />}
+                  {tab === 'services' && <CheckCircle size={16} />}
+                  {tab === 'bookings' && <Clock size={16} />}
+                  {tab === 'finance' && <FileText size={16} />}
+                  {tab === 'documents' && <Check size={16} />}
+                  {tab}
+                </button>
+              ))}
             </div>
 
-            <div className="flex items-center justify-end gap-3">
-              <button
-                onClick={() => setSuspendingVendor(null)}
-                className="rounded-lg border border-slate-700 bg-[#0f172a]/20 text-slate-400 hover:bg-slate-700 hover:text-slate-200 text-xs font-semibold py-2 px-4 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={executeSuspend}
-                disabled={!suspendReason.trim()}
-                className="rounded-lg bg-amber-600 hover:bg-amber-500 active:bg-amber-700 text-xs font-semibold text-white py-2 px-4 transition-colors disabled:opacity-50"
-              >
-                Confirm Suspension
-              </button>
+            {/* Body */}
+            <div className="flex-1 p-6 space-y-6 overflow-y-auto">
+              
+              {/* Business Info Tab */}
+              {drawerTab === 'business' && (
+                <div className="space-y-6">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                      <span className="text-xs uppercase font-bold text-gray-500 block mb-2">Business Name</span>
+                      <span className="text-base font-semibold text-gray-900">{selectedVendor.shopName}</span>
+                    </div>
+                    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                      <span className="text-xs uppercase font-bold text-gray-500 block mb-2">Owner Name</span>
+                      <span className="text-base font-semibold text-gray-900">{selectedVendor.ownerName}</span>
+                    </div>
+                    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                      <span className="text-xs uppercase font-bold text-gray-500 block mb-2">Primary Mobile</span>
+                      <span className="text-base font-semibold text-gray-900 flex items-center gap-2"><Phone size={16} className="text-gray-400"/> +{selectedVendor.phone}</span>
+                    </div>
+                    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                      <span className="text-xs uppercase font-bold text-gray-500 block mb-2">Alternate Mobile</span>
+                      <span className="text-base font-semibold text-gray-900 flex items-center gap-2"><Phone size={16} className="text-gray-400"/> {selectedVendor.alternatePhone ? `+${selectedVendor.alternatePhone}` : 'Not Provided'}</span>
+                    </div>
+                    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm sm:col-span-2">
+                      <span className="text-xs uppercase font-bold text-gray-500 block mb-2">Email Address</span>
+                      <span className="text-base font-semibold text-gray-900 flex items-center gap-2"><Mail size={16} className="text-gray-400"/> {selectedVendor.email || 'Not Provided'}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Location Info Tab */}
+              {drawerTab === 'location' && (
+                <div className="space-y-6">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm sm:col-span-2">
+                      <span className="text-xs uppercase font-bold text-gray-500 block mb-2">Full Address</span>
+                      <span className="text-base font-semibold text-gray-900">{selectedVendor.address || 'Address not provided'}</span>
+                    </div>
+                    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                      <span className="text-xs uppercase font-bold text-gray-500 block mb-2">City</span>
+                      <span className="text-base font-semibold text-gray-900">{selectedVendor.city || 'N/A'}</span>
+                    </div>
+                    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                      <span className="text-xs uppercase font-bold text-gray-500 block mb-2">State</span>
+                      <span className="text-base font-semibold text-gray-900">{selectedVendor.state || 'N/A'}</span>
+                    </div>
+                    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                      <span className="text-xs uppercase font-bold text-gray-500 block mb-2">Pincode</span>
+                      <span className="text-base font-semibold text-gray-900">{selectedVendor.pincode || 'N/A'}</span>
+                    </div>
+                    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                      <span className="text-xs uppercase font-bold text-gray-500 block mb-2">Coordinates</span>
+                      <span className="text-sm font-mono text-gray-800">{selectedVendor.latitude}, {selectedVendor.longitude}</span>
+                    </div>
+                  </div>
+                  
+                  {/* Map Preview Placeholder */}
+                  <div className="w-full h-48 rounded-xl border border-gray-200 bg-gray-50/50 flex items-center justify-center overflow-hidden relative">
+                    <MapPin size={32} className="text-gray-400 z-10" />
+                    <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #94a3b8 1px, transparent 1px)', backgroundSize: '16px 16px' }} />
+                    <span className="absolute bottom-4 right-4 text-[10px] text-gray-500">Google Map Preview Area</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Services Info Tab */}
+              {drawerTab === 'services' && (
+                <div className="space-y-4">
+                  <div className="rounded-xl border border-gray-200 bg-gray-50/30 p-4 mb-6">
+                    <span className="text-[10px] uppercase font-bold text-gray-500 block mb-1">Primary Category</span>
+                    <span className="text-sm font-medium text-gray-900">{selectedVendor.primaryCategory}</span>
+                  </div>
+
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-gray-600">Offered Services ({selectedVendor.services?.length || 0})</h3>
+                  <div className="space-y-2">
+                    {selectedVendor.services?.map(s => (
+                      <div key={s.id} className="flex items-center justify-between p-3 rounded-lg border border-gray-200 bg-white">
+                        <div>
+                          <span className="text-sm font-semibold text-gray-900 block">{s.name}</span>
+                          <span className="text-[10px] text-gray-500">{s.category}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-sm font-bold text-gray-900 block">₹{s.price}</span>
+                          <span className={`text-[10px] font-bold uppercase ${s.isActive ? 'text-emerald-400' : 'text-gray-500'}`}>{s.isActive ? 'Active' : 'Hidden'}</span>
+                        </div>
+                      </div>
+                    ))}
+                    {(!selectedVendor.services || selectedVendor.services.length === 0) && (
+                      <div className="text-center py-6 text-xs text-gray-500 italic">No services listed yet.</div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Bookings Stats Tab */}
+              {drawerTab === 'bookings' && (
+                <div className="space-y-6">
+                  <div className="grid gap-4 sm:grid-cols-4">
+                    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                      <span className="text-xs uppercase font-bold text-gray-500 block mb-1">Total Lifetime</span>
+                      <span className="text-2xl font-bold text-gray-900">{selectedVendor.bookingsCount}</span>
+                    </div>
+                    <div className="rounded-xl border border-green-200 bg-green-50 p-5">
+                      <span className="text-xs uppercase font-bold text-green-700 block mb-1">Completed</span>
+                      <span className="text-2xl font-bold text-green-800">{selectedVendor.completedBookings}</span>
+                    </div>
+                    <div className="rounded-xl border border-red-200 bg-red-50 p-5">
+                      <span className="text-xs uppercase font-bold text-red-700 block mb-1">Cancelled</span>
+                      <span className="text-2xl font-bold text-red-800">{selectedVendor.cancelledBookings}</span>
+                    </div>
+                    <div className="rounded-xl border border-amber-200 bg-amber-50 p-5">
+                      <span className="text-xs uppercase font-bold text-amber-700 block mb-1">Ongoing</span>
+                      <span className="text-2xl font-bold text-amber-800">{selectedVendor.ongoingBookings}</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-gray-900 mb-4">Recent Booking Logs</h3>
+                    <div className="space-y-4">
+                      {selectedVendor.bookings?.map(b => (
+                        <div key={b.id} className="flex items-center justify-between p-4 rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow">
+                          <div>
+                            <span className="text-sm font-bold text-gray-900 block">{b.customerName}</span>
+                            <span className="text-xs font-medium text-gray-500 mt-1">{b.dateTime} · ID: {b.id.slice(-6).toUpperCase()}</span>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-base font-bold text-gray-900 block">₹{b.amount}</span>
+                            <span className={`text-[10px] font-bold uppercase mt-1 inline-block px-2 py-0.5 rounded-full ${b.status === 'COMPLETED' ? 'bg-green-100 text-green-800' : b.status === 'CANCELLED' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}>{b.status}</span>
+                          </div>
+                        </div>
+                      ))}
+                      {(!selectedVendor.bookings || selectedVendor.bookings.length === 0) && (
+                        <div className="text-center py-6 text-sm text-gray-500 italic">No bookings found.</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Financial Info Tab */}
+              {drawerTab === 'finance' && (
+                <div className="space-y-6">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+                      <span className="text-xs uppercase font-bold text-gray-500 block mb-2">Total Lifetime Earnings</span>
+                      <span className="text-3xl font-bold text-gray-900">₹{selectedVendor.totalEarnings.toLocaleString()}</span>
+                    </div>
+                    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+                      <span className="text-xs uppercase font-bold text-gray-500 block mb-2">Platform Commission Rate</span>
+                      <span className="text-3xl font-bold text-black font-semibold">{selectedVendor.commissionRate}%</span>
+                    </div>
+                    <div className="rounded-xl border border-green-200 bg-green-50 p-6">
+                      <span className="text-xs uppercase font-bold text-green-700 block mb-2">Total Settlements Paid</span>
+                      <span className="text-3xl font-bold text-green-800">₹{selectedVendor.totalSettlementsPaid.toLocaleString()}</span>
+                      <span className="text-xs font-medium text-green-700 block mt-2">Last Settled: {selectedVendor.lastSettlementDate ? new Date(selectedVendor.lastSettlementDate).toLocaleDateString() : 'Never'}</span>
+                    </div>
+                    <div className="rounded-xl border border-amber-200 bg-amber-50 p-6">
+                      <span className="text-xs uppercase font-bold text-amber-700 block mb-2">Pending Settlement Amount</span>
+                      <span className="text-3xl font-bold text-amber-800">₹{selectedVendor.pendingSettlement.toLocaleString()}</span>
+                      <span className="text-xs font-medium text-amber-700 block mt-2">To be paid in next cycle</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Documents Tab */}
+              {drawerTab === 'documents' && (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between p-5 rounded-xl border border-gray-200 bg-white shadow-sm">
+                    <span className="text-base font-semibold text-gray-900">KYC Verification Status</span>
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
+                      selectedVendor.documents?.verificationStatus === 'verified' ? 'bg-green-100 text-green-800 border border-green-200' :
+                      selectedVendor.documents?.verificationStatus === 'rejected' ? 'bg-red-100 text-red-800 border border-red-200' :
+                      'bg-orange-100 text-orange-800 border border-orange-200'
+                    }`}>
+                      {selectedVendor.documents?.verificationStatus || 'PENDING'}
+                    </span>
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-6 space-y-4">
+                      <h4 className="text-sm font-bold uppercase tracking-wider text-gray-900">GST Document</h4>
+                      {selectedVendor.documents?.gst ? (
+                        <>
+                          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm font-mono text-gray-900">{selectedVendor.documents.gst}</div>
+                          <button className="text-sm text-black font-semibold hover:text-black font-semibold flex items-center gap-1.5"><Eye size={16}/> View Uploaded File</button>
+                        </>
+                      ) : <span className="text-sm text-gray-500 italic">Not uploaded</span>}
+                    </div>
+
+                    <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-6 space-y-4">
+                      <h4 className="text-sm font-bold uppercase tracking-wider text-gray-900">PAN Card</h4>
+                      {selectedVendor.documents?.pan ? (
+                        <>
+                          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm font-mono text-gray-900">{selectedVendor.documents.pan}</div>
+                          <button className="text-sm text-black font-semibold hover:text-black font-semibold flex items-center gap-1.5"><Eye size={16}/> View Uploaded File</button>
+                        </>
+                      ) : <span className="text-sm text-gray-500 italic">Not uploaded</span>}
+                    </div>
+
+                    <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-6 space-y-4 sm:col-span-2">
+                      <h4 className="text-sm font-bold uppercase tracking-wider text-gray-900">Business/Trade License</h4>
+                      {selectedVendor.documents?.license ? (
+                        <>
+                          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm font-mono text-gray-900">{selectedVendor.documents.license}</div>
+                          <button className="text-sm text-black font-semibold hover:text-black font-semibold flex items-center gap-1.5"><Eye size={16}/> View Uploaded File</button>
+                        </>
+                      ) : <span className="text-sm text-gray-500 italic">Not uploaded</span>}
+                    </div>
+                  </div>
+
+                  {/* Override Actions */}
+                  <div className="border-t border-gray-200 pt-8 mt-8">
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-gray-900 mb-4">Admin Overrides</h3>
+                    <div className="flex gap-3">
+                      {selectedVendor.status === 'active' ? (
+                        <button onClick={() => setSuspendingVendor(selectedVendor)} className="px-5 py-2.5 bg-red-600 text-white rounded-lg text-sm font-bold transition-colors hover:bg-red-700">
+                          Suspend Vendor Account
+                        </button>
+                      ) : (
+                        <button onClick={() => handleToggleStatus(selectedVendor)} className="px-5 py-2.5 bg-black text-white rounded-lg text-sm font-bold transition-colors hover:bg-gray-900">
+                          Re-activate Account
+                        </button>
+                      )}
+                    </div>
+
+                    {suspendingVendor?.uid === selectedVendor.uid && (
+                      <div className="mt-6 p-6 rounded-xl border border-red-200 bg-red-50 space-y-4">
+                        <label className="block text-sm font-bold uppercase text-gray-900">Reason for suspension (required)</label>
+                        <input
+                          type="text"
+                          value={suspendReason}
+                          onChange={(e) => setSuspendReason(e.target.value)}
+                          placeholder="e.g. Repeated customer complaints"
+                          className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                        />
+                        <div className="flex gap-3 justify-end pt-2">
+                          <button onClick={() => setSuspendingVendor(null)} className="px-4 py-2 text-sm font-semibold text-gray-600 hover:text-gray-900 bg-white border border-gray-300 rounded-lg">Cancel</button>
+                          <button onClick={executeSuspend} disabled={!suspendReason.trim()} className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-bold disabled:opacity-50 transition-colors">Confirm Suspension</button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
             </div>
           </div>
-        </div>
+        </>
       )}
+
     </div>
   );
 };

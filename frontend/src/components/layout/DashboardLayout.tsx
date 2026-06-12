@@ -5,7 +5,7 @@ import { TopBar } from './TopBar';
 
 export const DashboardLayout: React.FC = () => {
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#0f172a] text-slate-100">
+    <div className="flex h-screen w-screen overflow-hidden bg-white text-black">
       {/* Navigation Sidebar */}
       <Sidebar />
 
@@ -15,7 +15,7 @@ export const DashboardLayout: React.FC = () => {
         <TopBar />
 
         {/* Dynamic Page Views */}
-        <main className="flex-1 overflow-y-auto p-6 bg-[#0f172a]">
+        <main className="flex-1 overflow-y-auto p-6 bg-white text-black">
           <Outlet />
         </main>
       </div>

@@ -58,8 +58,8 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ value, onChange, l
 
   return (
     <div className="w-full">
-      {label && <label className="block text-sm font-medium text-slate-300 mb-2">{label}</label>}
-      {recommendedSize && <p className="text-xs text-slate-500 mb-2">Recommended: {recommendedSize}</p>}
+      {label && <label className="block text-sm font-medium text-gray-800 mb-2">{label}</label>}
+      {recommendedSize && <p className="text-xs text-gray-500 mb-2">Recommended: {recommendedSize}</p>}
       
       {error && (
         <div className="mb-3 text-sm text-rose-500 bg-rose-500/10 p-2 rounded border border-rose-500/20">
@@ -68,13 +68,13 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ value, onChange, l
       )}
 
       {value ? (
-        <div className="relative group rounded-lg overflow-hidden border border-slate-600 bg-slate-800 aspect-video flex items-center justify-center">
+        <div className="relative group rounded-lg overflow-hidden border border-gray-200 bg-white aspect-video flex items-center justify-center">
           <img src={value} alt="Uploaded preview" className="max-w-full max-h-full object-contain" />
           <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
             <button
               type="button"
               onClick={handleRemove}
-              className="p-2 bg-rose-600 rounded-full text-white hover:bg-rose-500 transition-colors shadow-lg"
+              className="p-2 bg-rose-600 rounded-full text-gray-900 hover:bg-rose-500 transition-colors shadow-lg"
             >
               <X size={20} />
             </button>
@@ -83,22 +83,22 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ value, onChange, l
       ) : (
         <div 
           onClick={() => fileInputRef.current?.click()}
-          className={`relative rounded-lg border-2 border-dashed border-slate-600 bg-slate-800/50 hover:bg-slate-700/50 transition-colors aspect-video flex flex-col items-center justify-center cursor-pointer overflow-hidden ${isUploading ? 'pointer-events-none' : ''}`}
+          className={`relative rounded-lg border-2 border-dashed border-gray-200 bg-white hover:bg-gray-100 transition-colors aspect-video flex flex-col items-center justify-center cursor-pointer overflow-hidden ${isUploading ? 'pointer-events-none' : ''}`}
         >
           {isUploading ? (
             <div className="flex flex-col items-center w-full px-8">
               <div className="w-full bg-slate-700 rounded-full h-2 mb-2">
                 <div className="bg-violet-500 h-2 rounded-full transition-all duration-300" style={{ width: `${progress}%` }}></div>
               </div>
-              <span className="text-sm text-slate-400">Uploading... {progress}%</span>
+              <span className="text-sm text-gray-500">Uploading... {progress}%</span>
             </div>
           ) : (
             <>
-              <div className="p-4 bg-slate-700 rounded-full text-slate-400 mb-3">
+              <div className="p-4 bg-slate-700 rounded-full text-gray-500 mb-3">
                 <UploadCloud size={24} />
               </div>
-              <p className="text-sm text-slate-300 font-medium">Click to upload image</p>
-              <p className="text-xs text-slate-500 mt-1">PNG, JPG or WEBP (max. 5MB)</p>
+              <p className="text-sm text-gray-800 font-medium">Click to upload image</p>
+              <p className="text-xs text-gray-500 mt-1">PNG, JPG or WEBP (max. 5MB)</p>
             </>
           )}
         </div>

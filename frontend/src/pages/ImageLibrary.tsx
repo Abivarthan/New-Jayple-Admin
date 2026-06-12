@@ -71,23 +71,23 @@ export const ImageLibrary: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-100">Image Library</h1>
-        <p className="text-sm text-slate-400">Centralised service imagery. Uploads are stored in Firebase Storage and served to the vendor &amp; customer apps.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-gray-900">Image Library</h1>
+        <p className="text-sm text-gray-500">Centralised service imagery. Uploads are stored in Firebase Storage and served to the vendor &amp; customer apps.</p>
       </div>
 
       {error && <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-400">{error}</div>}
 
       {/* Category tabs (from the live categories collection) */}
-      <div className="flex gap-2 overflow-x-auto pb-2 border-b border-slate-600 scrollbar-thin">
-        {categories.length === 0 && <span className="text-sm text-slate-500">No categories yet — create some in Categories.</span>}
+      <div className="flex gap-2 overflow-x-auto pb-2 border-b border-gray-200 scrollbar-thin">
+        {categories.length === 0 && <span className="text-sm text-gray-500">No categories yet — create some in Categories.</span>}
         {categories.map((cat) => (
           <button
             key={cat.slug}
             onClick={() => setActiveCategory(cat.slug)}
             className={`whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all ${
               active === cat.slug
-                ? 'bg-violet-600/20 text-violet-400 border border-violet-500/30'
-                : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200 border border-transparent'
+                ? 'bg-black text-white text-black font-semibold border border-black'
+                : 'text-gray-500 hover:bg-white hover:text-gray-900 border border-transparent'
             }`}
           >
             {cat.name}
@@ -104,8 +104,8 @@ export const ImageLibrary: React.FC = () => {
               onClick={() => setGender(g)}
               className={`rounded-lg px-4 py-1.5 text-xs font-semibold capitalize transition-all ${
                 gender === g
-                  ? 'bg-violet-600 text-white'
-                  : 'bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-600'
+                  ? 'bg-black text-white text-gray-900'
+                  : 'bg-white text-gray-500 hover:text-gray-900 border border-gray-200'
               }`}
             >
               {g === 'unisex' ? 'Unisex / All' : `${g}'s`}
@@ -115,13 +115,13 @@ export const ImageLibrary: React.FC = () => {
       )}
 
       {active && (
-        <div className="rounded-xl border border-slate-600 bg-slate-800 p-6 space-y-5">
+        <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-5">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500">
                 {isShop ? 'Shop Photos' : `${gender === 'unisex' ? 'Unisex / All' : gender + "'s"} Service Images`}
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-gray-500">
                 {isShop
                   ? 'Shown to vendors as the predefined shop-photo choices.'
                   : 'Shown to vendors for services in this category + gender.'}
@@ -130,7 +130,7 @@ export const ImageLibrary: React.FC = () => {
             <button
               onClick={() => fileRef.current?.click()}
               disabled={uploading}
-              className="flex items-center gap-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded-lg bg-black text-white hover:bg-gray-900 text-gray-900 px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-50"
             >
               <Upload size={14} /> {uploading ? 'Uploading…' : 'Upload Image'}
             </button>
@@ -138,21 +138,21 @@ export const ImageLibrary: React.FC = () => {
           </div>
 
           {isLoading ? (
-            <div className="py-8 text-center text-slate-400 text-sm">Loading…</div>
+            <div className="py-8 text-center text-gray-500 text-sm">Loading…</div>
           ) : assets.length === 0 ? (
-            <div className="py-10 flex flex-col items-center text-slate-500">
+            <div className="py-10 flex flex-col items-center text-gray-500">
               <ImageOff size={28} className="mb-2" />
               <p className="text-sm">No images yet. Upload one to make it available to vendors.</p>
             </div>
           ) : (
             <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
               {assets.map((asset) => (
-                <div key={asset.id} className="group relative rounded-xl border border-slate-600 bg-[#0f172a] p-2">
-                  <div className="aspect-square w-full rounded-lg overflow-hidden bg-slate-800">
+                <div key={asset.id} className="group relative rounded-xl border border-gray-200 bg-gray-50 p-2">
+                  <div className="aspect-square w-full rounded-lg overflow-hidden bg-white">
                     <img src={asset.url} alt="" className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-200" />
                   </div>
                   {asset.isDefault && (
-                    <span className="absolute top-4 left-4 rounded-full bg-violet-600 p-1 text-white shadow-md">
+                    <span className="absolute top-4 left-4 rounded-full bg-black text-white p-1 text-gray-900 shadow-md">
                       <Star size={12} fill="white" />
                     </span>
                   )}
@@ -161,7 +161,7 @@ export const ImageLibrary: React.FC = () => {
                       onClick={() => !asset.isDefault && defaultMut.mutate({ category: active, assetId: asset.id })}
                       disabled={asset.isDefault || defaultMut.isPending}
                       className={`flex items-center gap-1 text-[10px] font-bold tracking-wider uppercase px-2 py-1 rounded transition-colors ${
-                        asset.isDefault ? 'bg-violet-950/40 text-violet-400 border border-violet-900/30' : 'bg-slate-700 text-slate-400 hover:text-slate-200'
+                        asset.isDefault ? 'bg-violet-950/40 text-black font-semibold border border-violet-900/30' : 'bg-slate-700 text-gray-500 hover:text-gray-900'
                       }`}
                     >
                       {asset.isDefault ? 'Default' : 'Set Default'}
@@ -185,17 +185,17 @@ export const ImageLibrary: React.FC = () => {
 
       {confirmDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-2xl border border-slate-600 bg-slate-800 p-6 text-center space-y-5">
+          <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 text-center space-y-5">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
               <AlertTriangle size={24} />
             </div>
             <div className="space-y-1">
-              <h3 className="text-lg font-bold text-slate-100">Remove this image?</h3>
-              <p className="text-sm text-slate-400">Services using this image will fall back to the category default.</p>
+              <h3 className="text-lg font-bold text-gray-900">Remove this image?</h3>
+              <p className="text-sm text-gray-500">Services using this image will fall back to the category default.</p>
             </div>
             <div className="flex gap-3">
-              <button onClick={() => setConfirmDelete(null)} className="flex-1 rounded-lg border border-slate-600 py-2.5 text-sm font-semibold text-slate-300 hover:bg-slate-700">Cancel</button>
-              <button onClick={() => removeMut.mutate(confirmDelete)} disabled={removeMut.isPending} className="flex-1 rounded-lg bg-rose-600 hover:bg-rose-500 py-2.5 text-sm font-semibold text-white disabled:opacity-50">
+              <button onClick={() => setConfirmDelete(null)} className="flex-1 rounded-lg border border-gray-200 py-2.5 text-sm font-semibold text-gray-800 hover:bg-gray-100">Cancel</button>
+              <button onClick={() => removeMut.mutate(confirmDelete)} disabled={removeMut.isPending} className="flex-1 rounded-lg bg-rose-600 hover:bg-rose-500 py-2.5 text-sm font-semibold text-gray-900 disabled:opacity-50">
                 {removeMut.isPending ? 'Removing…' : 'Remove'}
               </button>
             </div>

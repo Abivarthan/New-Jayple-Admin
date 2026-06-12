@@ -11,7 +11,6 @@ const UIConfigEditor = lazy(() =>
 const PlatformConfig = lazy(() =>
   import('./pages/PlatformConfig').then((m) => ({ default: m.PlatformConfig }))
 );
-const FeatureFlags = lazy(() => import('./pages/FeatureFlags'));
 
 const Fallback = <LoadingSpinner message="Loading settings..." />;
 
@@ -19,5 +18,4 @@ export const settingsRoutes: RouteObject[] = [
   { path: 'settings/service-radius', element: <Suspense fallback={Fallback}><ServiceRadius /></Suspense> },
   { path: 'settings/ui-config',      element: <Suspense fallback={Fallback}><UIConfigEditor /></Suspense> },
   { path: 'settings/platform-config',element: <Suspense fallback={Fallback}><PlatformConfig /></Suspense> },
-  { path: 'settings/feature-flags',  element: <Suspense fallback={Fallback}><FeatureFlags /></Suspense> },
 ];

@@ -74,8 +74,8 @@ export const VendorApprovals: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-100">Vendor Registration Approvals</h1>
-        <p className="text-sm text-slate-400">Review, approve, or reject new merchant applications requesting live access.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-gray-900">Vendor Registration Approvals</h1>
+        <p className="text-sm text-gray-500">Review, approve, or reject new merchant applications requesting live access.</p>
       </div>
 
       {/* Action alert banner */}
@@ -87,10 +87,10 @@ export const VendorApprovals: React.FC = () => {
       )}
 
       {/* Requests table */}
-      <div className="overflow-x-auto rounded-xl border border-slate-600 bg-slate-800">
+      <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-slate-600 text-slate-400 text-xs font-semibold uppercase bg-[#0f172a]/20">
+            <tr className="border-b border-gray-200 text-gray-500 text-xs font-semibold uppercase bg-gray-50/20">
               <th className="py-4 px-6">Shop details</th>
               <th className="py-4 px-6">Owner details</th>
               <th className="py-4 px-6">Coverage Area</th>
@@ -99,36 +99,36 @@ export const VendorApprovals: React.FC = () => {
               <th className="py-4 px-6 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800 text-sm text-slate-350">
+          <tbody className="divide-y divide-slate-800 text-sm text-gray-600">
             {requests.map((req) => (
-              <tr key={req.uid} className="hover:bg-[#0f172a]/10 transition-colors">
+              <tr key={req.uid} className="hover:bg-gray-50/10 transition-colors">
                 <td className="py-4 px-6">
                   <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-violet-600/15 p-2 text-violet-400 border border-violet-500/20">
+                    <div className="rounded-lg bg-black text-white p-2 text-black font-semibold border border-black">
                       <Store size={18} />
                     </div>
                     <div>
-                      <p className="font-semibold text-slate-200">{req.shopName}</p>
-                      <p className="text-xs text-slate-500 mt-0.5">UID: {req.uid}</p>
+                      <p className="font-semibold text-gray-900">{req.shopName}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">UID: {req.uid}</p>
                     </div>
                   </div>
                 </td>
                 <td className="py-4 px-6">
                   <div className="space-y-1">
-                    <div className="flex items-center gap-1.5 text-xs text-slate-300">
-                      <User size={13} className="text-slate-500" />
+                    <div className="flex items-center gap-1.5 text-xs text-gray-800">
+                      <User size={13} className="text-gray-500" />
                       <span>{req.ownerName}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-xs text-slate-400">
-                      <Phone size={13} className="text-slate-500" />
+                    <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                      <Phone size={13} className="text-gray-500" />
                       <span>+91 {req.phone}</span>
                     </div>
                   </div>
                 </td>
                 <td className="py-4 px-6">
                   <div>
-                    <p className="text-xs text-slate-300">{req.city}</p>
-                    <p className="text-[10px] text-slate-500 font-semibold mt-0.5">Pincode: {req.pincode}</p>
+                    <p className="text-xs text-gray-800">{req.city}</p>
+                    <p className="text-[10px] text-gray-500 font-semibold mt-0.5">Pincode: {req.pincode}</p>
                   </div>
                 </td>
                 <td className="py-4 px-6">
@@ -137,7 +137,7 @@ export const VendorApprovals: React.FC = () => {
                       GST: {req.gstNumber}
                     </span>
                   ) : (
-                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-slate-750 text-slate-500 border border-slate-600">
+                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-slate-750 text-gray-500 border border-gray-200">
                       Non-GST
                     </span>
                   )}
@@ -148,7 +148,7 @@ export const VendorApprovals: React.FC = () => {
                     <button
                       onClick={() => handleApprove(req.uid, req.shopName)}
                       disabled={submitting}
-                      className="flex items-center gap-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold py-1 px-3 transition-colors disabled:opacity-50"
+                      className="flex items-center gap-1 rounded bg-emerald-600 hover:bg-emerald-500 text-gray-900 text-xs font-semibold py-1 px-3 transition-colors disabled:opacity-50"
                     >
                       <Check size={12} />
                       Approve
@@ -167,7 +167,7 @@ export const VendorApprovals: React.FC = () => {
             ))}
             {requests.length === 0 && (
               <tr>
-                <td colSpan={6} className="py-8 text-center text-slate-500">
+                <td colSpan={6} className="py-8 text-center text-gray-500">
                   {isLoading ? 'Loading…' : 'No registrations pending approvals.'}
                 </td>
               </tr>
@@ -179,41 +179,41 @@ export const VendorApprovals: React.FC = () => {
       {/* Reject Reason input Modal */}
       {rejectingRequest && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-2xl border border-slate-600 bg-slate-800 p-6 shadow-2xl space-y-6">
+          <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-2xl space-y-6">
             <div className="flex items-center gap-3">
               <div className="rounded-full bg-rose-500/10 text-rose-450 border border-rose-500/20 p-2">
                 <ShieldAlert size={20} />
               </div>
-              <h3 className="text-lg font-bold text-slate-100">Reject Application</h3>
+              <h3 className="text-lg font-bold text-gray-900">Reject Application</h3>
             </div>
 
-            <p className="text-xs text-slate-400 leading-relaxed">
-              State the reason for rejecting <span className="text-slate-200 font-semibold">{rejectingRequest.shopName}</span>. 
+            <p className="text-xs text-gray-500 leading-relaxed">
+              State the reason for rejecting <span className="text-gray-900 font-semibold">{rejectingRequest.shopName}</span>. 
               The vendor will see this rejection comment inside their registration app flow.
             </p>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Rejection Reason</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Rejection Reason</label>
               <textarea
                 required
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
                 placeholder="e.g. Incomplete verification documentation or area pincode not yet operational."
-                className="w-full h-24 rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 px-3 text-slate-200 outline-none focus:border-violet-500 placeholder-slate-650 resize-none text-sm"
+                className="w-full h-24 rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-3 text-gray-900 outline-none focus:border-black placeholder-slate-650 resize-none text-sm"
               />
             </div>
 
             <div className="flex items-center justify-end gap-3">
               <button
                 onClick={() => setRejectingRequest(null)}
-                className="rounded-lg border border-slate-700 bg-[#0f172a]/20 text-slate-400 hover:bg-slate-700 hover:text-slate-200 text-xs font-semibold py-2 px-4 transition-colors"
+                className="rounded-lg border border-gray-200 bg-gray-50/20 text-gray-500 hover:bg-gray-100 hover:text-gray-900 text-xs font-semibold py-2 px-4 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={executeReject}
                 disabled={!rejectionReason.trim() || submitting}
-                className="rounded-lg bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-xs font-semibold text-white py-2 px-4 transition-colors disabled:opacity-50"
+                className="rounded-lg bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-xs font-semibold text-gray-900 py-2 px-4 transition-colors disabled:opacity-50"
               >
                 Confirm Rejection
               </button>

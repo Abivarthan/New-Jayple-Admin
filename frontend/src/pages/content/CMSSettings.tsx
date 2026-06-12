@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import React, { useState } from 'react';
 import { useCmsSettings } from '../../hooks/useCms';
 import { publishCms } from '../../services/cmsService';
@@ -18,44 +19,44 @@ export const CMSSettings: React.FC = () => {
         setPublishSuccess(true);
         setTimeout(() => setPublishSuccess(false), 5000);
       } catch {
-        alert('Failed to publish CMS updates.');
+        toast.error('Failed to publish CMS updates.');
       } finally {
         setIsPublishing(false);
       }
     }
   };
 
-  if (isLoading) return <div className="p-8 text-slate-400">Loading settings...</div>;
+  if (isLoading) return <div className="p-8 text-gray-500">Loading settings...</div>;
 
   return (
     <div className="p-8 max-w-4xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-100">CMS Settings & Publishing</h1>
-        <p className="text-slate-400 text-sm mt-1">Control how and when content changes go live on customer devices.</p>
+        <h1 className="text-2xl font-bold text-gray-900">CMS Settings & Publishing</h1>
+        <p className="text-gray-500 text-sm mt-1">Control how and when content changes go live on customer devices.</p>
       </div>
 
       <div className="grid grid-cols-1 gap-6">
         
         {/* Publish Card */}
-        <div className="bg-slate-800 border border-slate-600 rounded-xl p-6">
+        <div className="bg-white border border-gray-200 rounded-xl p-6">
           <div className="flex items-start justify-between">
             <div>
-              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-                <UploadCloud className="text-violet-400" /> Push to Live
+              <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                <UploadCloud className="text-black font-semibold" /> Push to Live
               </h2>
-              <p className="text-slate-400 text-sm mt-2 max-w-xl">
+              <p className="text-gray-500 text-sm mt-2 max-w-xl">
                 Changes made in the CMS are saved as drafts by default. To make them visible on the customer mobile app, you must increment the global CMS version by clicking Publish.
               </p>
               
-              <div className="mt-6 flex items-center gap-6 bg-[#0f172a] p-4 rounded-lg border border-slate-600 inline-flex">
+              <div className="mt-6 flex items-center gap-6 bg-gray-50 p-4 rounded-lg border border-gray-200 inline-flex">
                 <div>
-                  <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-1">Current Live Version</p>
-                  <p className="text-2xl font-bold text-slate-200">v{settings?.version || 0}</p>
+                  <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">Current Live Version</p>
+                  <p className="text-2xl font-bold text-gray-900">v{settings?.version || 0}</p>
                 </div>
                 <div className="w-px h-10 bg-slate-700"></div>
                 <div>
-                  <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-1">Last Published</p>
-                  <p className="text-sm font-medium text-slate-300">
+                  <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">Last Published</p>
+                  <p className="text-sm font-medium text-gray-800">
                     {settings?.lastPublishedAt ? new Date(settings.lastPublishedAt).toLocaleString() : 'Never'}
                   </p>
                 </div>
@@ -66,7 +67,7 @@ export const CMSSettings: React.FC = () => {
               <button
                 onClick={handlePublish}
                 disabled={isPublishing}
-                className="px-6 py-3 bg-violet-600 hover:bg-violet-500 text-white rounded-lg font-bold shadow-lg transition-all disabled:opacity-50 disabled:hover:bg-violet-600 flex items-center gap-2"
+                className="px-6 py-3 bg-black text-white hover:bg-gray-900 text-gray-900 rounded-lg font-bold shadow-lg transition-all disabled:opacity-50 disabled:hover:bg-black text-white flex items-center gap-2"
               >
                 {isPublishing ? 'Publishing...' : 'Publish All Changes'}
               </button>

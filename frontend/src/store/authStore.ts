@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { AdminPermission } from '../shared/constants/permissions';
-import type { AdminUser } from '../../../../shared/src/types';
+import type { AdminUser } from '../../../shared/src/types';
 
 // ── Auth Store ────────────────────────────────────────────────────────────────
 // Mirrors AuthContext state in Zustand so services/utilities outside React

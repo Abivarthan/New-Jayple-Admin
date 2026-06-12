@@ -8,14 +8,10 @@ const Settlements = lazy(() =>
 const RefundCases = lazy(() =>
   import('./pages/RefundCases').then((m) => ({ default: m.RefundCases }))
 );
-const Transactions = lazy(() => import('./pages/Transactions'));
-const RevenueReports = lazy(() => import('./pages/RevenueReports'));
 
 const Fallback = <LoadingSpinner message="Loading finance..." />;
 
 export const financeRoutes: RouteObject[] = [
   { path: 'finance/settlements', element: <Suspense fallback={Fallback}><Settlements /></Suspense> },
   { path: 'finance/refunds',     element: <Suspense fallback={Fallback}><RefundCases /></Suspense> },
-  { path: 'finance/transactions',element: <Suspense fallback={Fallback}><Transactions /></Suspense> },
-  { path: 'finance/revenue',     element: <Suspense fallback={Fallback}><RevenueReports /></Suspense> },
 ];

@@ -175,10 +175,10 @@ export const PlatformConfig: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-100">Platform Configuration</h1>
-          <p className="text-sm text-slate-400">Manage global operational rules, dynamic variables, and system parameters.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Platform Configuration</h1>
+          <p className="text-sm text-gray-500">Manage global operational rules, dynamic variables, and system parameters.</p>
         </div>
-        <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-600">
+        <div className="flex items-center gap-2 text-xs text-gray-500 bg-white px-3 py-1.5 rounded-lg border border-gray-200">
           <span>Config Version: 5</span>
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
         </div>
@@ -195,11 +195,11 @@ export const PlatformConfig: React.FC = () => {
       {/* Main Tabs Layout */}
       <div className="flex flex-col md:flex-row gap-6">
         {/* Navigation Tabs List */}
-        <div className="flex md:flex-col gap-2 overflow-x-auto md:w-64 shrink-0 bg-slate-800 p-2 rounded-xl border border-slate-600">
+        <div className="flex md:flex-col gap-2 overflow-x-auto md:w-64 shrink-0 bg-white p-2 rounded-xl border border-gray-200">
           <button
             onClick={() => setActiveTab('tax')}
             className={`px-4 py-2.5 rounded-lg text-left text-sm font-medium transition-all ${
-              activeTab === 'tax' ? 'bg-violet-600 text-white' : 'text-slate-400 hover:bg-slate-700 hover:text-slate-200'
+              activeTab === 'tax' ? 'bg-black text-white text-gray-900' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
             }`}
           >
             Tax Rates & Fees
@@ -207,7 +207,7 @@ export const PlatformConfig: React.FC = () => {
           <button
             onClick={() => setActiveTab('discount')}
             className={`px-4 py-2.5 rounded-lg text-left text-sm font-medium transition-all ${
-              activeTab === 'discount' ? 'bg-violet-600 text-white' : 'text-slate-400 hover:bg-slate-700 hover:text-slate-200'
+              activeTab === 'discount' ? 'bg-black text-white text-gray-900' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
             }`}
           >
             Discount Rules
@@ -215,7 +215,7 @@ export const PlatformConfig: React.FC = () => {
           <button
             onClick={() => setActiveTab('vendor')}
             className={`px-4 py-2.5 rounded-lg text-left text-sm font-medium transition-all ${
-              activeTab === 'vendor' ? 'bg-violet-600 text-white' : 'text-slate-400 hover:bg-slate-700 hover:text-slate-200'
+              activeTab === 'vendor' ? 'bg-black text-white text-gray-900' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
             }`}
           >
             Vendor Parameters
@@ -223,7 +223,7 @@ export const PlatformConfig: React.FC = () => {
           <button
             onClick={() => setActiveTab('financial')}
             className={`px-4 py-2.5 rounded-lg text-left text-sm font-medium transition-all ${
-              activeTab === 'financial' ? 'bg-violet-600 text-white' : 'text-slate-400 hover:bg-slate-700 hover:text-slate-200'
+              activeTab === 'financial' ? 'bg-black text-white text-gray-900' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
             }`}
           >
             Financial Policies
@@ -231,7 +231,7 @@ export const PlatformConfig: React.FC = () => {
           <button
             onClick={() => setActiveTab('app')}
             className={`px-4 py-2.5 rounded-lg text-left text-sm font-medium transition-all ${
-              activeTab === 'app' ? 'bg-violet-600 text-white' : 'text-slate-400 hover:bg-slate-700 hover:text-slate-200'
+              activeTab === 'app' ? 'bg-black text-white text-gray-900' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
             }`}
           >
             App Behavior
@@ -239,70 +239,70 @@ export const PlatformConfig: React.FC = () => {
         </div>
 
         {/* Tab Workspaces */}
-        <div className="flex-1 rounded-xl border border-slate-600 bg-slate-800 p-6">
+        <div className="flex-1 rounded-xl border border-gray-200 bg-white p-6">
           {/* Tab 1: Tax Rates */}
           {activeTab === 'tax' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-lg font-semibold text-slate-200">Tax Rates & Convenience Fees</h2>
-                <p className="text-xs text-slate-400 mt-1">Configure the base taxes assessed per service booking transaction.</p>
+                <h2 className="text-lg font-semibold text-gray-900">Tax Rates & Convenience Fees</h2>
+                <p className="text-xs text-gray-500 mt-1">Configure the base taxes assessed per service booking transaction.</p>
               </div>
 
               <div className="grid gap-6 sm:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">GST Registered Tax %</label>
+                  <label className="block text-sm font-medium text-gray-800 mb-2">GST Registered Tax %</label>
                   <div className="relative">
                     <input
                       type="number"
                       value={taxConfig.gstRegisteredTax}
                       onChange={(e) => setTaxConfig({ ...taxConfig, gstRegisteredTax: parseFloat(e.target.value) || 0 })}
-                      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-4 pr-12 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                      className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-4 pr-12 text-gray-900 outline-none focus:border-black focus:ring-1 focus:ring-violet-500"
                     />
-                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 text-sm">%</span>
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 text-sm">%</span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Non-GST Tax %</label>
+                  <label className="block text-sm font-medium text-gray-800 mb-2">Non-GST Tax %</label>
                   <div className="relative">
                     <input
                       type="number"
                       value={taxConfig.nonGstTax}
                       onChange={(e) => setTaxConfig({ ...taxConfig, nonGstTax: parseFloat(e.target.value) || 0 })}
-                      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-4 pr-12 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                      className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-4 pr-12 text-gray-900 outline-none focus:border-black focus:ring-1 focus:ring-violet-500"
                     />
-                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 text-sm">%</span>
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 text-sm">%</span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Platform Convenience Fee</label>
+                  <label className="block text-sm font-medium text-gray-800 mb-2">Platform Convenience Fee</label>
                   <div className="relative">
-                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 text-sm">₹</span>
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500 text-sm">₹</span>
                     <input
                       type="number"
                       value={taxConfig.convenienceFee}
                       onChange={(e) => setTaxConfig({ ...taxConfig, convenienceFee: parseFloat(e.target.value) || 0 })}
-                      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-8 pr-4 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                      className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-8 pr-4 text-gray-900 outline-none focus:border-black focus:ring-1 focus:ring-violet-500"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Tax Display Label</label>
+                  <label className="block text-sm font-medium text-gray-800 mb-2">Tax Display Label</label>
                   <input
                     type="text"
                     value={taxConfig.taxDisplayLabel}
                     onChange={(e) => setTaxConfig({ ...taxConfig, taxDisplayLabel: e.target.value })}
-                    className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 px-4 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                    className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-4 text-gray-900 outline-none focus:border-black focus:ring-1 focus:ring-violet-500"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-4 rounded-lg bg-[#0f172a]/40 border border-slate-600">
+              <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50/40 border border-gray-200">
                 <div>
-                  <p className="text-sm font-medium text-slate-200">Include Tax in Listed Service Prices</p>
-                  <p className="text-xs text-slate-400 mt-0.5">Toggle whether customer application shows price inclusive of taxes.</p>
+                  <p className="text-sm font-medium text-gray-900">Include Tax in Listed Service Prices</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Toggle whether customer application shows price inclusive of taxes.</p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
@@ -311,15 +311,15 @@ export const PlatformConfig: React.FC = () => {
                     onChange={(e) => setTaxConfig({ ...taxConfig, taxIncluded: e.target.checked })}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-400 after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600 peer-checked:after:bg-white" />
+                  <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-400 after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black text-white peer-checked:after:bg-white" />
                 </label>
               </div>
 
-              <div className="flex justify-end border-t border-slate-600 pt-4">
+              <div className="flex justify-end border-t border-gray-200 pt-4">
                 <button
                   onClick={() => handleSave('Tax Settings')}
                   disabled={loading}
-                  className="flex items-center gap-2 rounded-lg bg-violet-600 hover:bg-violet-500 active:bg-violet-700 px-4 py-2 text-sm font-semibold text-white transition-all disabled:opacity-50"
+                  className="flex items-center gap-2 rounded-lg bg-black text-white hover:bg-gray-900 active:bg-violet-700 px-4 py-2 text-sm font-semibold text-gray-900 transition-all disabled:opacity-50"
                 >
                   {loading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                   Save & Publish
@@ -332,58 +332,58 @@ export const PlatformConfig: React.FC = () => {
           {activeTab === 'discount' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-lg font-semibold text-slate-200">Discount & Badge Rules</h2>
-                <p className="text-xs text-slate-400 mt-1">Parameters determining badge display conditions and default fake discount caps.</p>
+                <h2 className="text-lg font-semibold text-gray-900">Discount & Badge Rules</h2>
+                <p className="text-xs text-gray-500 mt-1">Parameters determining badge display conditions and default fake discount caps.</p>
               </div>
 
               <div className="grid gap-6 sm:grid-cols-3">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Default Fake Discount %</label>
+                  <label className="block text-sm font-medium text-gray-800 mb-2">Default Fake Discount %</label>
                   <input
                     type="number"
                     value={discountConfig.defaultFakeDiscount}
                     onChange={(e) => setDiscountConfig({ ...discountConfig, defaultFakeDiscount: parseInt(e.target.value) || 0 })}
-                    className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 px-4 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                    className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-4 text-gray-900 outline-none focus:border-black focus:ring-1 focus:ring-violet-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Min % to Display Badge</label>
+                  <label className="block text-sm font-medium text-gray-800 mb-2">Min % to Display Badge</label>
                   <input
                     type="number"
                     value={discountConfig.minPercentForBadge}
                     onChange={(e) => setDiscountConfig({ ...discountConfig, minPercentForBadge: parseInt(e.target.value) || 0 })}
-                    className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 px-4 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                    className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-4 text-gray-900 outline-none focus:border-black focus:ring-1 focus:ring-violet-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Max Allowed Discount %</label>
+                  <label className="block text-sm font-medium text-gray-800 mb-2">Max Allowed Discount %</label>
                   <input
                     type="number"
                     value={discountConfig.maxAllowedDiscount}
                     onChange={(e) => setDiscountConfig({ ...discountConfig, maxAllowedDiscount: parseInt(e.target.value) || 0 })}
-                    className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 px-4 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                    className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-4 text-gray-900 outline-none focus:border-black focus:ring-1 focus:ring-violet-500"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-3">Badge Style Template</label>
+                <label className="block text-sm font-medium text-gray-800 mb-3">Badge Style Template</label>
                 <div className="grid grid-cols-2 gap-4">
                   <button
                     type="button"
                     onClick={() => setDiscountConfig({ ...discountConfig, badgeStyle: 'PERCENT' })}
                     className={`flex items-center gap-3 rounded-lg border p-4 text-left transition-all ${
                       discountConfig.badgeStyle === 'PERCENT'
-                        ? 'border-violet-500 bg-violet-600/10 text-violet-400'
-                        : 'border-slate-600 bg-[#0f172a]/20 text-slate-400 hover:border-slate-600'
+                        ? 'border-black bg-black text-white text-black font-semibold'
+                        : 'border-gray-200 bg-gray-50/20 text-gray-500 hover:border-gray-200'
                     }`}
                   >
                     <Percent size={18} />
                     <div>
                       <p className="text-sm font-semibold">Percent Style</p>
-                      <p className="text-xs text-slate-500 mt-0.5">Example: "10% OFF"</p>
+                      <p className="text-xs text-gray-500 mt-0.5">Example: "10% OFF"</p>
                     </div>
                   </button>
 
@@ -392,23 +392,23 @@ export const PlatformConfig: React.FC = () => {
                     onClick={() => setDiscountConfig({ ...discountConfig, badgeStyle: 'AMOUNT' })}
                     className={`flex items-center gap-3 rounded-lg border p-4 text-left transition-all ${
                       discountConfig.badgeStyle === 'AMOUNT'
-                        ? 'border-violet-500 bg-violet-600/10 text-violet-400'
-                        : 'border-slate-600 bg-[#0f172a]/20 text-slate-400 hover:border-slate-600'
+                        ? 'border-black bg-black text-white text-black font-semibold'
+                        : 'border-gray-200 bg-gray-50/20 text-gray-500 hover:border-gray-200'
                     }`}
                   >
                     <span className="text-sm font-bold">₹</span>
                     <div>
                       <p className="text-sm font-semibold">Amount Style</p>
-                      <p className="text-xs text-slate-500 mt-0.5">Example: "Save ₹50"</p>
+                      <p className="text-xs text-gray-500 mt-0.5">Example: "Save ₹50"</p>
                     </div>
                   </button>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-4 rounded-lg bg-[#0f172a]/40 border border-slate-600">
+              <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50/40 border border-gray-200">
                 <div>
-                  <p className="text-sm font-medium text-slate-200">Show Strikethrough Original Price</p>
-                  <p className="text-xs text-slate-400 mt-0.5">Displays standard markdown original price alongside discount price.</p>
+                  <p className="text-sm font-medium text-gray-900">Show Strikethrough Original Price</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Displays standard markdown original price alongside discount price.</p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
@@ -417,15 +417,15 @@ export const PlatformConfig: React.FC = () => {
                     onChange={(e) => setDiscountConfig({ ...discountConfig, showStrikethrough: e.target.checked })}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-400 after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600 peer-checked:after:bg-white" />
+                  <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-400 after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black text-white peer-checked:after:bg-white" />
                 </label>
               </div>
 
-              <div className="flex justify-end border-t border-slate-600 pt-4">
+              <div className="flex justify-end border-t border-gray-200 pt-4">
                 <button
                   onClick={() => handleSave('Discount Rules')}
                   disabled={loading}
-                  className="flex items-center gap-2 rounded-lg bg-violet-600 hover:bg-violet-500 active:bg-violet-700 px-4 py-2 text-sm font-semibold text-white transition-all disabled:opacity-50"
+                  className="flex items-center gap-2 rounded-lg bg-black text-white hover:bg-gray-900 active:bg-violet-700 px-4 py-2 text-sm font-semibold text-gray-900 transition-all disabled:opacity-50"
                 >
                   {loading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                   Save & Publish
@@ -438,69 +438,69 @@ export const PlatformConfig: React.FC = () => {
           {activeTab === 'vendor' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-lg font-semibold text-slate-200">Vendor Management Rules</h2>
-                <p className="text-xs text-slate-400 mt-1">Configure default commission structures, credit margins, and safety policies.</p>
+                <h2 className="text-lg font-semibold text-gray-900">Vendor Management Rules</h2>
+                <p className="text-xs text-gray-500 mt-1">Configure default commission structures, credit margins, and safety policies.</p>
               </div>
 
               <div className="grid gap-6 sm:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Default Base Commission %</label>
+                  <label className="block text-sm font-medium text-gray-800 mb-2">Default Base Commission %</label>
                   <div className="relative">
                     <input
                       type="number"
                       value={vendorConfig.defaultCommission}
                       onChange={(e) => setVendorConfig({ ...vendorConfig, defaultCommission: parseInt(e.target.value) || 0 })}
-                      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-4 pr-12 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                      className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-4 pr-12 text-gray-900 outline-none focus:border-black focus:ring-1 focus:ring-violet-500"
                     />
-                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 text-sm">%</span>
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 text-sm">%</span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Default COD Limit Threshold</label>
+                  <label className="block text-sm font-medium text-gray-800 mb-2">Default COD Limit Threshold</label>
                   <div className="relative">
-                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 text-sm">₹</span>
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500 text-sm">₹</span>
                     <input
                       type="number"
                       value={vendorConfig.defaultCodThreshold}
                       onChange={(e) => setVendorConfig({ ...vendorConfig, defaultCodThreshold: parseInt(e.target.value) || 0 })}
-                      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-8 pr-4 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                      className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-8 pr-4 text-gray-900 outline-none focus:border-black focus:ring-1 focus:ring-violet-500"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Wallet Disabling Limit</label>
+                  <label className="block text-sm font-medium text-gray-800 mb-2">Wallet Disabling Limit</label>
                   <div className="relative">
-                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 text-sm">₹</span>
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500 text-sm">₹</span>
                     <input
                       type="number"
                       value={vendorConfig.walletBlockThreshold}
                       onChange={(e) => setVendorConfig({ ...vendorConfig, walletBlockThreshold: parseInt(e.target.value) || 0 })}
-                      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-8 pr-4 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                      className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-8 pr-4 text-gray-900 outline-none focus:border-black focus:ring-1 focus:ring-violet-500"
                     />
                   </div>
-                  <p className="text-[10px] text-slate-500 mt-1">If wallet balance drops below this, vendor bookings lock automatically.</p>
+                  <p className="text-[10px] text-gray-500 mt-1">If wallet balance drops below this, vendor bookings lock automatically.</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Booking Slot Lock Lifetime</label>
+                  <label className="block text-sm font-medium text-gray-800 mb-2">Booking Slot Lock Lifetime</label>
                   <div className="relative">
                     <input
                       type="number"
                       value={vendorConfig.slotLockDuration}
                       onChange={(e) => setVendorConfig({ ...vendorConfig, slotLockDuration: parseInt(e.target.value) || 0 })}
-                      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-4 pr-20 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                      className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-4 pr-20 text-gray-900 outline-none focus:border-black focus:ring-1 focus:ring-violet-500"
                     />
-                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 text-sm">minutes</span>
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 text-sm">minutes</span>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-4 rounded-lg bg-[#0f172a]/40 border border-slate-600">
+              <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50/40 border border-gray-200">
                 <div>
-                  <p className="text-sm font-medium text-slate-200">Auto-Approve New Registered Vendors</p>
-                  <p className="text-xs text-slate-400 mt-0.5">When active, registrations immediately deploy as active instead of pending review.</p>
+                  <p className="text-sm font-medium text-gray-900">Auto-Approve New Registered Vendors</p>
+                  <p className="text-xs text-gray-500 mt-0.5">When active, registrations immediately deploy as active instead of pending review.</p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
@@ -509,15 +509,15 @@ export const PlatformConfig: React.FC = () => {
                     onChange={(e) => setVendorConfig({ ...vendorConfig, autoApproveVendors: e.target.checked })}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-400 after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600 peer-checked:after:bg-white" />
+                  <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-400 after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black text-white peer-checked:after:bg-white" />
                 </label>
               </div>
 
-              <div className="flex justify-end border-t border-slate-600 pt-4">
+              <div className="flex justify-end border-t border-gray-200 pt-4">
                 <button
                   onClick={() => handleSave('Vendor Rules')}
                   disabled={loading}
-                  className="flex items-center gap-2 rounded-lg bg-violet-600 hover:bg-violet-500 active:bg-violet-700 px-4 py-2 text-sm font-semibold text-white transition-all disabled:opacity-50"
+                  className="flex items-center gap-2 rounded-lg bg-black text-white hover:bg-gray-900 active:bg-violet-700 px-4 py-2 text-sm font-semibold text-gray-900 transition-all disabled:opacity-50"
                 >
                   {loading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                   Save & Publish
@@ -530,169 +530,169 @@ export const PlatformConfig: React.FC = () => {
           {activeTab === 'financial' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-lg font-semibold text-slate-200">Financial Policies & Penalties</h2>
-                <p className="text-xs text-slate-400 mt-1">Configure compensation rates, cashback rules, and cancellation parameters.</p>
+                <h2 className="text-lg font-semibold text-gray-900">Financial Policies & Penalties</h2>
+                <p className="text-xs text-gray-500 mt-1">Configure compensation rates, cashback rules, and cancellation parameters.</p>
               </div>
 
               <div className="grid gap-6 sm:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Full-Refund Window</label>
-                  <p className="text-[11px] text-slate-500 mb-2">Cancel ≥ this many minutes before the slot → 100% service refund (no vendor compensation).</p>
+                  <label className="block text-sm font-medium text-gray-800 mb-2">Full-Refund Window</label>
+                  <p className="text-[11px] text-gray-500 mb-2">Cancel ≥ this many minutes before the slot → 100% service refund (no vendor compensation).</p>
                   <div className="relative">
                     <input
                       type="number"
                       value={financialConfig.cancelFullRefundWindowMin}
                       onChange={(e) => setFinancialConfig({ ...financialConfig, cancelFullRefundWindowMin: parseInt(e.target.value) || 0 })}
-                      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-4 pr-16 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                      className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-4 pr-16 text-gray-900 outline-none focus:border-black focus:ring-1 focus:ring-violet-500"
                     />
-                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 text-sm">min</span>
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 text-sm">min</span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Late-Cancel Refund %</label>
-                  <p className="text-[11px] text-slate-500 mb-2">Inside the full-refund window → refund this % of the service price to the customer wallet.</p>
+                  <label className="block text-sm font-medium text-gray-800 mb-2">Late-Cancel Refund %</label>
+                  <p className="text-[11px] text-gray-500 mb-2">Inside the full-refund window → refund this % of the service price to the customer wallet.</p>
                   <div className="relative">
                     <input
                       type="number"
                       value={financialConfig.lateCancelRefundPercent}
                       onChange={(e) => setFinancialConfig({ ...financialConfig, lateCancelRefundPercent: parseInt(e.target.value) || 0 })}
-                      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-4 pr-12 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                      className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-4 pr-12 text-gray-900 outline-none focus:border-black focus:ring-1 focus:ring-violet-500"
                     />
-                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 text-sm">%</span>
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 text-sm">%</span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Late-Cancel Vendor Compensation %</label>
-                  <p className="text-[11px] text-slate-500 mb-2">Credited to the vendor wallet when a customer cancels late, as % of service price.</p>
+                  <label className="block text-sm font-medium text-gray-800 mb-2">Late-Cancel Vendor Compensation %</label>
+                  <p className="text-[11px] text-gray-500 mb-2">Credited to the vendor wallet when a customer cancels late, as % of service price.</p>
                   <div className="relative">
                     <input
                       type="number"
                       value={financialConfig.lateCancelVendorCompPercent}
                       onChange={(e) => setFinancialConfig({ ...financialConfig, lateCancelVendorCompPercent: parseInt(e.target.value) || 0 })}
-                      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-4 pr-12 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                      className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-4 pr-12 text-gray-900 outline-none focus:border-black focus:ring-1 focus:ring-violet-500"
                     />
-                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 text-sm">%</span>
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 text-sm">%</span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Vendor Reject Penalty %</label>
-                  <p className="text-[11px] text-slate-500 mb-2">Debited from the vendor wallet when a vendor rejects a booking, as % of service price.</p>
+                  <label className="block text-sm font-medium text-gray-800 mb-2">Vendor Reject Penalty %</label>
+                  <p className="text-[11px] text-gray-500 mb-2">Debited from the vendor wallet when a vendor rejects a booking, as % of service price.</p>
                   <div className="relative">
                     <input
                       type="number"
                       value={financialConfig.rejectVendorPenaltyPercent}
                       onChange={(e) => setFinancialConfig({ ...financialConfig, rejectVendorPenaltyPercent: parseInt(e.target.value) || 0 })}
-                      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-4 pr-12 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                      className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-4 pr-12 text-gray-900 outline-none focus:border-black focus:ring-1 focus:ring-violet-500"
                     />
-                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 text-sm">%</span>
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 text-sm">%</span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Auto-Accept Timeout</label>
-                  <p className="text-[11px] text-slate-500 mb-2">An unanswered pending booking auto-accepts after this many seconds.</p>
+                  <label className="block text-sm font-medium text-gray-800 mb-2">Auto-Accept Timeout</label>
+                  <p className="text-[11px] text-gray-500 mb-2">An unanswered pending booking auto-accepts after this many seconds.</p>
                   <div className="relative">
                     <input
                       type="number"
                       value={financialConfig.autoAcceptSeconds}
                       onChange={(e) => setFinancialConfig({ ...financialConfig, autoAcceptSeconds: parseInt(e.target.value) || 0 })}
-                      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-4 pr-16 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                      className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-4 pr-16 text-gray-900 outline-none focus:border-black focus:ring-1 focus:ring-violet-500"
                     />
-                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 text-sm">sec</span>
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 text-sm">sec</span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Service Grace Period</label>
-                  <p className="text-[11px] text-slate-500 mb-2">Grace after the slot start before delayed-service handling kicks in.</p>
+                  <label className="block text-sm font-medium text-gray-800 mb-2">Service Grace Period</label>
+                  <p className="text-[11px] text-gray-500 mb-2">Grace after the slot start before delayed-service handling kicks in.</p>
                   <div className="relative">
                     <input
                       type="number"
                       value={financialConfig.serviceGracePeriodMin}
                       onChange={(e) => setFinancialConfig({ ...financialConfig, serviceGracePeriodMin: parseInt(e.target.value) || 0 })}
-                      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-4 pr-16 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                      className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-4 pr-16 text-gray-900 outline-none focus:border-black focus:ring-1 focus:ring-violet-500"
                     />
-                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 text-sm">min</span>
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 text-sm">min</span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Last-Minute Window</label>
-                  <p className="text-[11px] text-slate-500 mb-2">A cancel ≤ this many minutes before the slot is treated as last-minute (fraud window).</p>
+                  <label className="block text-sm font-medium text-gray-800 mb-2">Last-Minute Window</label>
+                  <p className="text-[11px] text-gray-500 mb-2">A cancel ≤ this many minutes before the slot is treated as last-minute (fraud window).</p>
                   <div className="relative">
                     <input
                       type="number"
                       value={financialConfig.lastMinuteWindowMin}
                       onChange={(e) => setFinancialConfig({ ...financialConfig, lastMinuteWindowMin: parseInt(e.target.value) || 0 })}
-                      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-4 pr-16 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                      className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-4 pr-16 text-gray-900 outline-none focus:border-black focus:ring-1 focus:ring-violet-500"
                     />
-                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 text-sm">min</span>
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 text-sm">min</span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">No-Show Penalty %</label>
-                  <p className="text-[11px] text-slate-500 mb-2">Penalty as % of service price when a customer no-shows.</p>
+                  <label className="block text-sm font-medium text-gray-800 mb-2">No-Show Penalty %</label>
+                  <p className="text-[11px] text-gray-500 mb-2">Penalty as % of service price when a customer no-shows.</p>
                   <div className="relative">
                     <input
                       type="number"
                       value={financialConfig.noShowPenaltyPercent}
                       onChange={(e) => setFinancialConfig({ ...financialConfig, noShowPenaltyPercent: parseInt(e.target.value) || 0 })}
-                      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-4 pr-12 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                      className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-4 pr-12 text-gray-900 outline-none focus:border-black focus:ring-1 focus:ring-violet-500"
                     />
-                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 text-sm">%</span>
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 text-sm">%</span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Customer Cashback %</label>
-                  <p className="text-[11px] text-slate-500 mb-2">Wallet cashback credited on a normal completed booking.</p>
+                  <label className="block text-sm font-medium text-gray-800 mb-2">Customer Cashback %</label>
+                  <p className="text-[11px] text-gray-500 mb-2">Wallet cashback credited on a normal completed booking.</p>
                   <div className="relative">
                     <input
                       type="number"
                       value={financialConfig.normalCashback}
                       onChange={(e) => setFinancialConfig({ ...financialConfig, normalCashback: parseInt(e.target.value) || 0 })}
-                      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-4 pr-12 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                      className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-4 pr-12 text-gray-900 outline-none focus:border-black focus:ring-1 focus:ring-violet-500"
                     />
-                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 text-sm">%</span>
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 text-sm">%</span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">New Account Welcome Bonus</label>
+                  <label className="block text-sm font-medium text-gray-800 mb-2">New Account Welcome Bonus</label>
                   <div className="relative">
-                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 text-sm">₹</span>
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500 text-sm">₹</span>
                     <input
                       type="number"
                       value={financialConfig.welcomeBonus}
                       onChange={(e) => setFinancialConfig({ ...financialConfig, welcomeBonus: parseInt(e.target.value) || 0 })}
-                      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-8 pr-4 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                      className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-8 pr-4 text-gray-900 outline-none focus:border-black focus:ring-1 focus:ring-violet-500"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Platform Payout Threshold</label>
+                  <label className="block text-sm font-medium text-gray-800 mb-2">Platform Payout Threshold</label>
                   <div className="relative">
-                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 text-sm">₹</span>
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500 text-sm">₹</span>
                     <input
                       type="number"
                       value={financialConfig.minWeeklyPayout}
                       onChange={(e) => setFinancialConfig({ ...financialConfig, minWeeklyPayout: parseInt(e.target.value) || 0 })}
-                      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-8 pr-4 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                      className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-8 pr-4 text-gray-900 outline-none focus:border-black focus:ring-1 focus:ring-violet-500"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="flex justify-end border-t border-slate-600 pt-4">
+              <div className="flex justify-end border-t border-gray-200 pt-4">
                 <button
                   onClick={() => handleSave('Financial Policies')}
                   disabled={loading}
-                  className="flex items-center gap-2 rounded-lg bg-violet-600 hover:bg-violet-500 active:bg-violet-700 px-4 py-2 text-sm font-semibold text-white transition-all disabled:opacity-50"
+                  className="flex items-center gap-2 rounded-lg bg-black text-white hover:bg-gray-900 active:bg-violet-700 px-4 py-2 text-sm font-semibold text-gray-900 transition-all disabled:opacity-50"
                 >
                   {loading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                   Save & Publish
@@ -705,67 +705,67 @@ export const PlatformConfig: React.FC = () => {
           {activeTab === 'app' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-lg font-semibold text-slate-200">Application Parameters & Behavior</h2>
-                <p className="text-xs text-slate-400 mt-1">Variables configuration for customer client flow operations.</p>
+                <h2 className="text-lg font-semibold text-gray-900">Application Parameters & Behavior</h2>
+                <p className="text-xs text-gray-500 mt-1">Variables configuration for customer client flow operations.</p>
               </div>
 
               <div className="grid gap-6 sm:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">COD Eligibility Threshold</label>
+                  <label className="block text-sm font-medium text-gray-800 mb-2">COD Eligibility Threshold</label>
                   <div className="relative">
                     <input
                       type="number"
                       value={appBehaviorConfig.codEligibilityCompleted}
                       onChange={(e) => setAppBehaviorConfig({ ...appBehaviorConfig, codEligibilityCompleted: parseInt(e.target.value) || 0 })}
-                      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-4 pr-24 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                      className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-4 pr-24 text-gray-900 outline-none focus:border-black focus:ring-1 focus:ring-violet-500"
                     />
-                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 text-sm">bookings</span>
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 text-sm">bookings</span>
                   </div>
-                  <p className="text-[10px] text-slate-500 mt-1">Number of completed bookings required before user unlocks COD payment.</p>
+                  <p className="text-[10px] text-gray-500 mt-1">Number of completed bookings required before user unlocks COD payment.</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Max Service Selection per Booking</label>
+                  <label className="block text-sm font-medium text-gray-800 mb-2">Max Service Selection per Booking</label>
                   <input
                     type="number"
                     value={appBehaviorConfig.maxServicesPerBooking}
                     onChange={(e) => setAppBehaviorConfig({ ...appBehaviorConfig, maxServicesPerBooking: parseInt(e.target.value) || 0 })}
-                    className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 px-4 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                    className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-4 text-gray-900 outline-none focus:border-black focus:ring-1 focus:ring-violet-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Advance Scheduling Horizon Limit</label>
+                  <label className="block text-sm font-medium text-gray-800 mb-2">Advance Scheduling Horizon Limit</label>
                   <div className="relative">
                     <input
                       type="number"
                       value={appBehaviorConfig.maxAdvanceBookingDays}
                       onChange={(e) => setAppBehaviorConfig({ ...appBehaviorConfig, maxAdvanceBookingDays: parseInt(e.target.value) || 0 })}
-                      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-4 pr-16 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                      className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-4 pr-16 text-gray-900 outline-none focus:border-black focus:ring-1 focus:ring-violet-500"
                     />
-                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 text-sm">days</span>
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 text-sm">days</span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Vendor Notification Re-ping Interval</label>
+                  <label className="block text-sm font-medium text-gray-800 mb-2">Vendor Notification Re-ping Interval</label>
                   <div className="relative">
                     <input
                       type="number"
                       value={appBehaviorConfig.vendorRePingInterval}
                       onChange={(e) => setAppBehaviorConfig({ ...appBehaviorConfig, vendorRePingInterval: parseInt(e.target.value) || 0 })}
-                      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2.5 pl-4 pr-16 text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                      className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-4 pr-16 text-gray-900 outline-none focus:border-black focus:ring-1 focus:ring-violet-500"
                     />
-                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 text-sm">minutes</span>
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 text-sm">minutes</span>
                   </div>
                 </div>
               </div>
 
-              <div className="flex justify-end border-t border-slate-600 pt-4">
+              <div className="flex justify-end border-t border-gray-200 pt-4">
                 <button
                   onClick={() => handleSave('App Behavior')}
                   disabled={loading}
-                  className="flex items-center gap-2 rounded-lg bg-violet-600 hover:bg-violet-500 active:bg-violet-700 px-4 py-2 text-sm font-semibold text-white transition-all disabled:opacity-50"
+                  className="flex items-center gap-2 rounded-lg bg-black text-white hover:bg-gray-900 active:bg-violet-700 px-4 py-2 text-sm font-semibold text-gray-900 transition-all disabled:opacity-50"
                 >
                   {loading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                   Save & Publish

@@ -7,6 +7,7 @@ import { DashboardLayout } from './components/layout/DashboardLayout';
 import { Login } from './pages/Login';
 import { Unauthorized } from './pages/Unauthorized';
 import { moduleRoutes } from './router/moduleRoutes';
+import { Toaster } from 'react-hot-toast';
 
 // ── TanStack Query Client ──────────────────────────────────────────────────────
 const queryClient = new QueryClient({
@@ -57,6 +58,7 @@ const App: React.FC = () => {
           </Routes>
         </AuthProvider>
       </BrowserRouter>
+      <Toaster position="top-right" />
     </QueryClientProvider>
   );
 };

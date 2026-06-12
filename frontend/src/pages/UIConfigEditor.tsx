@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Eye, CloudLightning, ToggleLeft, ToggleRight, Plus, Trash2,
@@ -138,46 +139,46 @@ const arr = (v: unknown): string[] => (Array.isArray(v) ? v.map((x) => String(x)
 // ── Small reusable inputs ───────────────────────────────────────────────────
 const ColorField: React.FC<{ label: string; value: string; onChange: (v: string) => void }> = ({ label, value, onChange }) => (
   <div>
-    <label className="block text-xs text-slate-400 mb-1.5">{label}</label>
+    <label className="block text-xs text-gray-500 mb-1.5">{label}</label>
     <div className="flex gap-2">
       <input type="color" value={value || '#000000'} onChange={(e) => onChange(e.target.value)}
-        className="rounded border border-slate-700 h-9 w-10 cursor-pointer bg-[#0f172a] p-0.5" />
+        className="rounded border border-gray-200 h-9 w-10 cursor-pointer bg-gray-50 p-0.5" />
       <input type="text" value={value} onChange={(e) => onChange(e.target.value)}
-        className="flex-1 rounded-lg border border-slate-600 bg-[#0f172a] py-1.5 px-2 text-xs text-slate-200 outline-none focus:border-violet-500" />
+        className="flex-1 rounded-lg border border-gray-200 bg-gray-50 py-1.5 px-2 text-xs text-gray-900 outline-none focus:border-black" />
     </div>
   </div>
 );
 
 const TextField: React.FC<{ label: string; value: string; onChange: (v: string) => void; placeholder?: string }> = ({ label, value, onChange, placeholder }) => (
   <div>
-    <label className="block text-xs text-slate-400 mb-1.5">{label}</label>
+    <label className="block text-xs text-gray-500 mb-1.5">{label}</label>
     <input type="text" value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)}
-      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2 px-3 text-sm text-slate-200 outline-none focus:border-violet-500" />
+      className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 px-3 text-sm text-gray-900 outline-none focus:border-black" />
   </div>
 );
 
 const NumberField: React.FC<{ label: string; value: number; onChange: (v: number) => void; step?: string }> = ({ label, value, onChange, step }) => (
   <div>
-    <label className="block text-xs text-slate-400 mb-1.5">{label}</label>
+    <label className="block text-xs text-gray-500 mb-1.5">{label}</label>
     <input type="number" step={step} value={value} onChange={(e) => onChange(Number(e.target.value))}
-      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2 px-3 text-sm text-slate-200 outline-none focus:border-violet-500" />
+      className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 px-3 text-sm text-gray-900 outline-none focus:border-black" />
   </div>
 );
 
 const ColorListField: React.FC<{ label: string; value: string[]; onChange: (v: string[]) => void }> = ({ label, value, onChange }) => (
   <div>
-    <label className="block text-xs text-slate-400 mb-1.5">{label}</label>
+    <label className="block text-xs text-gray-500 mb-1.5">{label}</label>
     <div className="space-y-2">
       {value.map((c, i) => (
         <div key={i} className="flex gap-2 items-center">
           <input type="color" value={c || '#000000'} onChange={(e) => { const n = [...value]; n[i] = e.target.value; onChange(n); }}
-            className="rounded border border-slate-700 h-8 w-9 cursor-pointer bg-[#0f172a] p-0.5" />
+            className="rounded border border-gray-200 h-8 w-9 cursor-pointer bg-gray-50 p-0.5" />
           <input type="text" value={c} onChange={(e) => { const n = [...value]; n[i] = e.target.value; onChange(n); }}
-            className="flex-1 rounded-lg border border-slate-600 bg-[#0f172a] py-1.5 px-2 text-xs text-slate-200 outline-none focus:border-violet-500" />
-          <button onClick={() => onChange(value.filter((_, j) => j !== i))} className="text-slate-500 hover:text-rose-400 p-1"><Trash2 size={14} /></button>
+            className="flex-1 rounded-lg border border-gray-200 bg-gray-50 py-1.5 px-2 text-xs text-gray-900 outline-none focus:border-black" />
+          <button onClick={() => onChange(value.filter((_, j) => j !== i))} className="text-gray-500 hover:text-rose-400 p-1"><Trash2 size={14} /></button>
         </div>
       ))}
-      <button onClick={() => onChange([...value, '#0E7490'])} className="flex items-center gap-1 text-xs text-violet-400 hover:text-violet-300 font-semibold"><Plus size={13} /> Add color</button>
+      <button onClick={() => onChange([...value, '#0E7490'])} className="flex items-center gap-1 text-xs text-black font-semibold hover:text-black font-semibold font-semibold"><Plus size={13} /> Add color</button>
     </div>
   </div>
 );
@@ -369,13 +370,13 @@ export const UIConfigEditor: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-100">UI Configuration & Theme Engine</h1>
-          <p className="text-sm text-slate-400">Dynamic homepage — theme, hero & sections. Edit a draft, preview, then publish. Rollback any version.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">UI Configuration & Theme Engine</h1>
+          <p className="text-sm text-gray-500">Dynamic homepage — theme, hero & sections. Edit a draft, preview, then publish. Rollback any version.</p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-slate-400 font-semibold">Target:</span>
+          <span className="text-sm text-gray-500 font-semibold">Target:</span>
           <select value={target} onChange={(e) => setTarget(e.target.value)}
-            className="rounded-lg border border-slate-600 bg-slate-800 py-2 px-3 text-sm text-slate-200 outline-none focus:border-violet-500">
+            className="rounded-lg border border-gray-200 bg-white py-2 px-3 text-sm text-gray-900 outline-none focus:border-black">
             <option value="_global">🌐 Global Theme</option>
             {zones.map((z) => <option key={z.id} value={z.id}>📍 {z.name}</option>)}
           </select>
@@ -385,17 +386,17 @@ export const UIConfigEditor: React.FC = () => {
       {/* Audience scope: All = base config; Men/Women override it for that
           audience (shown when the customer's gender filter matches). */}
       <div className="flex items-center gap-3">
-        <span className="text-sm text-slate-400 font-semibold">Audience:</span>
-        <div className="inline-flex rounded-lg border border-slate-700 bg-slate-800 p-1">
+        <span className="text-sm text-gray-500 font-semibold">Audience:</span>
+        <div className="inline-flex rounded-lg border border-gray-200 bg-white p-1">
           {(['all', 'men', 'women'] as const).map((s) => (
             <button key={s} onClick={() => setScope(s)}
-              className={`px-4 py-1.5 text-sm font-semibold rounded-md capitalize transition-colors ${scope === s ? 'bg-violet-600 text-white' : 'text-slate-300 hover:text-white'}`}>
+              className={`px-4 py-1.5 text-sm font-semibold rounded-md capitalize transition-colors ${scope === s ? 'bg-black text-white text-gray-900' : 'text-gray-800 hover:text-gray-900'}`}>
               {s === 'all' ? 'All (base)' : s}
             </button>
           ))}
         </div>
         {scope !== 'all' && (
-          <span className="text-xs text-slate-500">Editing the <b className="text-slate-300 capitalize">{scope}</b> override — only changed fields override the base.</span>
+          <span className="text-xs text-gray-500">Editing the <b className="text-gray-800 capitalize">{scope}</b> override — only changed fields override the base.</span>
         )}
       </div>
 
@@ -409,37 +410,37 @@ export const UIConfigEditor: React.FC = () => {
       {isGlobal && !hasPublished && !loading && (
         <div className="flex items-center justify-between gap-3 rounded-lg border border-amber-500/20 bg-amber-500/10 p-4 text-amber-400 text-sm">
           <span>No global theme published yet. Seed the default (matches the current app) to start.</span>
-          <button onClick={onSeed} disabled={busy} className="rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-semibold py-1.5 px-3 text-xs disabled:opacity-50">Seed default theme</button>
+          <button onClick={onSeed} disabled={busy} className="rounded-lg bg-amber-600 hover:bg-amber-500 text-gray-900 font-semibold py-1.5 px-3 text-xs disabled:opacity-50">Seed default theme</button>
         </div>
       )}
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-700">
+      <div className="flex items-center gap-2 border-b border-gray-200">
         {(isGlobal ? ['theme', 'hero', 'preview'] : ['template', 'theme', 'preview']).map((t) => (
           <button key={t} onClick={() => setTab(t as typeof tab)}
-            className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors ${tab === t ? 'border-violet-500 text-violet-300' : 'border-transparent text-slate-400 hover:text-slate-200'}`}>
+            className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors ${tab === t ? 'border-black text-black font-semibold' : 'border-transparent text-gray-500 hover:text-gray-900'}`}>
             {t === 'theme' && <Palette size={15} />}{t === 'template' && <LayoutList size={15} />}{t === 'hero' && <UploadCloud size={15} />}{t === 'preview' && <Eye size={15} />}
             {t === 'theme' ? (isGlobal ? 'Theme' : 'Theme Override') : t === 'template' ? 'Template' : t === 'hero' ? 'Hero (global)' : 'Live Preview'}
           </button>
         ))}
         <div className="ml-auto flex items-center gap-2 pb-1.5">
           <button onClick={onBackfill} disabled={busy || loading} title="Recompute vendor offer flags for the landing row"
-            className="flex items-center gap-1.5 rounded-lg border border-slate-600 bg-slate-700 hover:bg-slate-600 text-slate-300 font-semibold py-2 px-3 text-sm disabled:opacity-50">
+            className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-slate-700 hover:bg-slate-600 text-gray-800 font-semibold py-2 px-3 text-sm disabled:opacity-50">
             <RefreshCw size={14} /> Backfill offers
           </button>
           <button onClick={onSaveDraft} disabled={busy || loading}
-            className="flex items-center gap-1.5 rounded-lg border border-slate-600 bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold py-2 px-3 text-sm disabled:opacity-50">
+            className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-slate-700 hover:bg-slate-600 text-gray-900 font-semibold py-2 px-3 text-sm disabled:opacity-50">
             {busy ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save size={15} />} Save Draft
           </button>
           <button onClick={onPublish} disabled={busy || loading}
-            className="flex items-center gap-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white font-semibold py-2 px-3 text-sm disabled:opacity-50">
+            className="flex items-center gap-1.5 rounded-lg bg-black text-white hover:bg-gray-900 text-gray-900 font-semibold py-2 px-3 text-sm disabled:opacity-50">
             {busy ? <RefreshCw className="h-4 w-4 animate-spin" /> : <CloudLightning size={15} />} Publish
           </button>
         </div>
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-20 text-slate-500"><RefreshCw className="h-6 w-6 animate-spin mr-2" /> Loading…</div>
+        <div className="flex items-center justify-center py-20 text-gray-500"><RefreshCw className="h-6 w-6 animate-spin mr-2" /> Loading…</div>
       ) : (
         <div className="grid gap-6 lg:grid-cols-3">
           {/* ── Editors (left/main) ── */}
@@ -453,9 +454,9 @@ export const UIConfigEditor: React.FC = () => {
               />
             )}
             {tab === 'hero' && isGlobal && (
-              <div className="rounded-xl border border-slate-700 bg-slate-800 p-5">
+              <div className="rounded-xl border border-gray-200 bg-white p-5">
                 <HeroEditor data={sHero} onPatch={(p) => setSHero(p)} />
-                <p className="text-xs text-slate-500 mt-4 border-t border-slate-700 pt-3">{scope === 'all' ? 'Default hero for every zone (video / GIF / image). A zone can override it.' : `${scope.toUpperCase()} audience hero — overrides the base hero only for ${scope} users.`}</p>
+                <p className="text-xs text-gray-500 mt-4 border-t border-gray-200 pt-3">{scope === 'all' ? 'Default hero for every zone (video / GIF / image). A zone can override it.' : `${scope.toUpperCase()} audience hero — overrides the base hero only for ${scope} users.`}</p>
               </div>
             )}
             {tab === 'template' && !isGlobal && (
@@ -463,12 +464,12 @@ export const UIConfigEditor: React.FC = () => {
                 {/* Layout mode (modal): Template preset vs Custom feed. A non-empty
                     custom feed is the app's source of truth — the template picker
                     below is ignored while in feed mode. */}
-                <div className="rounded-xl border border-slate-700 bg-slate-800 p-4">
-                  <div className="flex items-center gap-2 mb-2"><Layers size={15} className="text-violet-400" /><h3 className="text-sm font-bold uppercase tracking-wider text-slate-400">Layout mode</h3></div>
-                  <div className="inline-flex rounded-lg border border-slate-700 bg-[#0f172a] p-1">
+                <div className="rounded-xl border border-gray-200 bg-white p-4">
+                  <div className="flex items-center gap-2 mb-2"><Layers size={15} className="text-black font-semibold" /><h3 className="text-sm font-bold uppercase tracking-wider text-gray-500">Layout mode</h3></div>
+                  <div className="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-1">
                     {(['template', 'feed'] as const).map((m) => (
                       <button key={m} onClick={() => { setLayoutMode(m); setFeedSel(null); }}
-                        className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-colors ${layoutMode === m ? 'bg-violet-600 text-white' : 'text-slate-300 hover:text-white'}`}>
+                        className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-colors ${layoutMode === m ? 'bg-black text-white text-gray-900' : 'text-gray-800 hover:text-gray-900'}`}>
                         {m === 'template' ? 'Template preset' : 'Custom feed (advanced)'}
                       </button>
                     ))}
@@ -476,7 +477,7 @@ export const UIConfigEditor: React.FC = () => {
                   {scope !== 'all' && layoutMode === 'feed' && (
                     <p className="text-[11px] text-amber-400/90 mt-2">Custom feed edits the <b>base</b> layout (all audiences). Per-gender feed authoring is a separate follow-up — the Men/Women scope here still applies to theme/hero.</p>
                   )}
-                  <p className="text-[11px] text-slate-500 mt-2">
+                  <p className="text-[11px] text-gray-500 mt-2">
                     {layoutMode === 'feed'
                       ? 'Custom feed is LIVE for this zone — full control of order, visibility, per-section layout & targeting. Switch back to Template preset (then Save) to discard it.'
                       : 'Using a predefined template. Switch to Custom feed for drag-style reordering, per-section targeting & layout params.'}
@@ -505,17 +506,17 @@ export const UIConfigEditor: React.FC = () => {
           </div>
 
           {/* ── Version history (right) ── */}
-          <div className="rounded-xl border border-slate-700 bg-slate-800 p-5 h-fit">
-            <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-400 mb-3"><History size={15} /> Version History</h3>
+          <div className="rounded-xl border border-gray-200 bg-white p-5 h-fit">
+            <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-gray-500 mb-3"><History size={15} /> Version History</h3>
             {versions.length === 0 ? (
-              <p className="text-xs text-slate-500">No previous versions yet. Publish to create the first restore point.</p>
+              <p className="text-xs text-gray-500">No previous versions yet. Publish to create the first restore point.</p>
             ) : (
               <div className="space-y-2">
                 {versions.map((v) => (
-                  <div key={v.version} className="flex items-center justify-between rounded-lg border border-slate-700 bg-[#0f172a]/40 p-3">
+                  <div key={v.version} className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50/40 p-3">
                     <div>
-                      <p className="text-sm font-semibold text-slate-200">Version {v.version}</p>
-                      <p className="text-[11px] text-slate-500">{v.publishedAt ? new Date(v.publishedAt).toLocaleString() : '—'}{v.publishedBy ? ` · ${v.publishedBy}` : ''}</p>
+                      <p className="text-sm font-semibold text-gray-900">Version {v.version}</p>
+                      <p className="text-[11px] text-gray-500">{v.publishedAt ? new Date(v.publishedAt).toLocaleString() : '—'}{v.publishedBy ? ` · ${v.publishedBy}` : ''}</p>
                     </div>
                     <button onClick={() => onRollback(v.version)} disabled={busy}
                       className="flex items-center gap-1 text-xs text-amber-400 hover:text-amber-300 font-semibold disabled:opacity-50"><RotateCcw size={13} /> Restore</button>
@@ -539,8 +540,8 @@ const ThemeEditor: React.FC<{ isGlobal: boolean; value: ThemeMap; base: ThemeMap
   const pal = derivePalette(seed, accent);
   const swatch = (label: string, color: string) => (
     <div className="flex flex-col items-center gap-1">
-      <div className="h-9 w-9 rounded-lg border border-slate-600" style={{ backgroundColor: color }} />
-      <span className="text-[10px] text-slate-500">{label}</span>
+      <div className="h-9 w-9 rounded-lg border border-gray-200" style={{ backgroundColor: color }} />
+      <span className="text-[10px] text-gray-500">{label}</span>
     </div>
   );
   return (
@@ -550,18 +551,18 @@ const ThemeEditor: React.FC<{ isGlobal: boolean; value: ThemeMap; base: ThemeMap
           Per-zone override — set a theme colour here to override the global theme for this zone, or leave blank to inherit global.
         </div>
       )}
-      <div className="rounded-xl border border-slate-700 bg-slate-800 p-6 space-y-6">
+      <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-6">
         <div>
-          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-1">Theme color</h3>
-          <p className="text-xs text-slate-500 mb-4">One colour drives the entire top section — header gradient, search, category chips, buttons and promo cards are all derived from it.</p>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-1">Theme color</h3>
+          <p className="text-xs text-gray-500 mb-4">One colour drives the entire top section — header gradient, search, category chips, buttons and promo cards are all derived from it.</p>
           <div className="grid gap-4 sm:grid-cols-3">
             <ColorField label="Theme color" value={seed} onChange={(v) => onChange('seed', v)} />
             <ColorField label="Accent (highlights)" value={accent} onChange={(v) => onChange('accent', v)} />
             <ColorField label="Content background" value={str(value.sheetBg ?? base.sheetBg ?? '#F8FAFC')} onChange={(v) => onChange('sheetBg', v)} />
           </div>
         </div>
-        <div className="border-t border-slate-700 pt-4">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Derived palette (auto)</h4>
+        <div className="border-t border-gray-200 pt-4">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">Derived palette (auto)</h4>
           <div className="flex flex-wrap gap-4">
             {swatch('Header', pal.headerTop as string)}
             {swatch('Header ↓', pal.headerBottom as string)}
@@ -590,14 +591,14 @@ const TemplateEditor: React.FC<{
   return (
     <div className="space-y-6">
       {/* Template picker */}
-      <div className="rounded-xl border border-slate-700 bg-slate-800 p-5">
-        <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Template</h3>
+      <div className="rounded-xl border border-gray-200 bg-white p-5">
+        <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-4">Template</h3>
         <div className="grid gap-3 sm:grid-cols-3">
           {TEMPLATES.map((t) => (
             <button key={t.id} onClick={() => { setTemplateId(t.id); setActiveType(null); }}
-              className={`rounded-lg border p-4 text-left transition-all ${templateId === t.id ? 'border-violet-500 bg-violet-600/10' : 'border-slate-700 bg-[#0f172a]/30 hover:border-slate-600'}`}>
-              <p className="text-sm font-bold text-slate-200">{t.label}</p>
-              <p className="text-xs text-slate-500 mt-1">{t.desc}</p>
+              className={`rounded-lg border p-4 text-left transition-all ${templateId === t.id ? 'border-black bg-black text-white' : 'border-gray-200 bg-gray-50/30 hover:border-gray-200'}`}>
+              <p className="text-sm font-bold text-gray-900">{t.label}</p>
+              <p className="text-xs text-gray-500 mt-1">{t.desc}</p>
             </button>
           ))}
         </div>
@@ -605,29 +606,29 @@ const TemplateEditor: React.FC<{
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Section visibility (order fixed by template) */}
-        <div className="rounded-xl border border-slate-700 bg-slate-800 p-5 space-y-3 h-fit">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400">Sections — visibility</h3>
+        <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-3 h-fit">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500">Sections — visibility</h3>
           {tpl.sections.map((type) => {
             const visible = sectionVisibility[type] !== false;
             return (
-              <div key={type} className={`flex items-center justify-between rounded-lg border p-3 ${activeType === type ? 'border-violet-500 bg-violet-600/5' : 'border-slate-700 bg-[#0f172a]/30'}`}>
+              <div key={type} className={`flex items-center justify-between rounded-lg border p-3 ${activeType === type ? 'border-black bg-black text-white' : 'border-gray-200 bg-gray-50/30'}`}>
                 <button onClick={() => setActiveType(type)} className="text-left">
-                  <p className="text-sm font-semibold text-slate-200">{sectionLabel(type)}</p>
-                  <p className="text-xs text-slate-500">{visible ? '🟢 Visible' : '🔴 Hidden'}</p>
+                  <p className="text-sm font-semibold text-gray-900">{sectionLabel(type)}</p>
+                  <p className="text-xs text-gray-500">{visible ? '🟢 Visible' : '🔴 Hidden'}</p>
                 </button>
                 <button onClick={() => toggleVisibility(type)} className="p-1">
-                  {visible ? <ToggleRight className="h-5 w-5 text-violet-500" /> : <ToggleLeft className="h-5 w-5 text-slate-600" />}
+                  {visible ? <ToggleRight className="h-5 w-5 text-violet-500" /> : <ToggleLeft className="h-5 w-5 text-gray-400" />}
                 </button>
               </div>
             );
           })}
-          <p className="text-[11px] text-slate-500 pt-2 border-t border-slate-700">Order is fixed by the template. Switch templates above to change the layout.</p>
+          <p className="text-[11px] text-gray-500 pt-2 border-t border-gray-200">Order is fixed by the template. Switch templates above to change the layout.</p>
         </div>
 
         {/* Selected section sub-editor */}
-        <div className="rounded-xl border border-slate-700 bg-slate-800 p-5">
+        <div className="rounded-xl border border-gray-200 bg-white p-5">
           {activeType === null ? (
-            <p className="text-sm text-slate-500">Select a section to edit its content.</p>
+            <p className="text-sm text-gray-500">Select a section to edit its content.</p>
           ) : (
             <SectionDataEditor section={{ type: activeType, data: sectionData[activeType] || {} }} onPatch={(p) => patchSectionData(activeType, p)} />
           )}
@@ -644,7 +645,7 @@ const SectionDataEditor: React.FC<{ section: UiSection; onPatch: (p: Record<stri
   if (section.type === 'queueBanner')
     return (
       <div className="space-y-4">
-        <h3 className="text-base font-bold text-slate-200">Queue Banner</h3>
+        <h3 className="text-base font-bold text-gray-900">Queue Banner</h3>
         <div className="grid gap-4 sm:grid-cols-2">
           <TextField label="Title" value={str(d.title)} onChange={(v) => onPatch({ title: v })} placeholder="Still Waiting?" />
           <TextField label="Subtitle" value={str(d.subtitle)} onChange={(v) => onPatch({ subtitle: v })} placeholder="Long queues. Uncertain time." />
@@ -660,8 +661,8 @@ const SectionDataEditor: React.FC<{ section: UiSection; onPatch: (p: Record<stri
         </div>
         <ColorListField label="Background gradient colors" value={arr(d.bgColors)} onChange={(v) => onPatch({ bgColors: v })} />
         <div>
-          <label className="block text-xs text-slate-400 mb-1.5">Height</label>
-          <select value={str(d.heightMode, 'medium')} onChange={(e) => onPatch({ heightMode: e.target.value })} className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2 px-3 text-sm text-slate-200 outline-none focus:border-violet-500">
+          <label className="block text-xs text-gray-500 mb-1.5">Height</label>
+          <select value={str(d.heightMode, 'medium')} onChange={(e) => onPatch({ heightMode: e.target.value })} className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 px-3 text-sm text-gray-900 outline-none focus:border-black">
             <option value="compact">Compact</option><option value="medium">Medium</option><option value="campaign">Campaign</option>
           </select>
         </div>
@@ -670,15 +671,15 @@ const SectionDataEditor: React.FC<{ section: UiSection; onPatch: (p: Record<stri
   if (section.type === 'landing')
     return (
       <div className="space-y-3">
-        <h3 className="text-base font-bold text-slate-200">Landing (top picks)</h3>
+        <h3 className="text-base font-bold text-gray-900">Landing (top picks)</h3>
         <TextField label="Section title" value={str(d.title)} onChange={(v) => onPatch({ title: v })} placeholder="Top picks near you" />
-        <p className="text-xs text-slate-500">Shows the top-3 vendors with active offers (else top-rated). Run <span className="text-slate-300">Backfill offers</span> once after deploy so existing vendors get the offer flag.</p>
+        <p className="text-xs text-gray-500">Shows the top-3 vendors with active offers (else top-rated). Run <span className="text-gray-800">Backfill offers</span> once after deploy so existing vendors get the offer flag.</p>
       </div>
     );
   if (section.type === 'popularServices')
     return (
       <div className="space-y-4">
-        <h3 className="text-base font-bold text-slate-200">Categories</h3>
+        <h3 className="text-base font-bold text-gray-900">Categories</h3>
         <TextField label="Section title" value={str(d.title)} onChange={(v) => onPatch({ title: v })} placeholder="Popular Services" />
         <div className="grid gap-4 sm:grid-cols-2">
           <NumberField label="Chip size (px)" value={num(d.iconSize, 58)} onChange={(v) => onPatch({ iconSize: v })} />
@@ -687,12 +688,12 @@ const SectionDataEditor: React.FC<{ section: UiSection; onPatch: (p: Record<stri
       </div>
     );
   if (section.type === 'services' || section.type === 'sponsor')
-    return <div className="space-y-4"><h3 className="text-base font-bold text-slate-200">{sectionLabel(section.type)}</h3><TextField label="Section title" value={str(d.title)} onChange={(v) => onPatch({ title: v })} placeholder="Popular Services" /></div>;
+    return <div className="space-y-4"><h3 className="text-base font-bold text-gray-900">{sectionLabel(section.type)}</h3><TextField label="Section title" value={str(d.title)} onChange={(v) => onPatch({ title: v })} placeholder="Popular Services" /></div>;
   if (section.type === 'referral')
-    return <div><h3 className="text-base font-bold text-slate-200 mb-2">Referral Banner</h3><p className="text-sm text-slate-500">Show/hide and order this banner here. Its <span className="text-slate-300">headline & subtext are managed under Home Content (CMS)</span> — the customer banner reads those, not this section.</p></div>;
+    return <div><h3 className="text-base font-bold text-gray-900 mb-2">Referral Banner</h3><p className="text-sm text-gray-500">Show/hide and order this banner here. Its <span className="text-gray-800">headline & subtext are managed under Home Content (CMS)</span> — the customer banner reads those, not this section.</p></div>;
   if (section.type === 'vendorList')
-    return <div className="space-y-4"><h3 className="text-base font-bold text-slate-200">Vendor List</h3><div><label className="block text-xs text-slate-400 mb-1.5">Max vendors</label><input type="number" value={num(d.limit, 20)} onChange={(e) => onPatch({ limit: Number(e.target.value) })} className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2 px-3 text-sm text-slate-200 outline-none focus:border-violet-500" /></div></div>;
-  return <div><h3 className="text-base font-bold text-slate-200 mb-2">{sectionLabel(section.type)}</h3><p className="text-sm text-slate-500">This section has no editable content — its data is admin-managed elsewhere (CMS) or auto-generated.</p></div>;
+    return <div className="space-y-4"><h3 className="text-base font-bold text-gray-900">Vendor List</h3><div><label className="block text-xs text-gray-500 mb-1.5">Max vendors</label><input type="number" value={num(d.limit, 20)} onChange={(e) => onPatch({ limit: Number(e.target.value) })} className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 px-3 text-sm text-gray-900 outline-none focus:border-black" /></div></div>;
+  return <div><h3 className="text-base font-bold text-gray-900 mb-2">{sectionLabel(section.type)}</h3><p className="text-sm text-gray-500">This section has no editable content — its data is admin-managed elsewhere (CMS) or auto-generated.</p></div>;
 };
 
 // ── Hero section editor (media + height + overlay + copy) ───────────────────
@@ -714,24 +715,24 @@ const HeroEditor: React.FC<{ data: Record<string, unknown>; onPatch: (p: Record<
         url = await uploadUiConfigFile(file); // video / lottie json
       }
       if (url) onPatch({ mediaUrl: url });
-    } catch (err) { window.alert(err instanceof Error ? err.message : 'Upload failed'); }
+    } catch (err) { toast.error(err instanceof Error ? err.message : 'Upload failed'); }
     finally { setUploading(false); if (fileRef.current) fileRef.current.value = ''; }
   };
 
   const accept = mediaType === 'video' ? 'video/*' : mediaType === 'lottie' ? 'application/json,.json' : 'image/*';
   return (
     <div className="space-y-5">
-      <h3 className="text-base font-bold text-slate-200">Hero Section</h3>
+      <h3 className="text-base font-bold text-gray-900">Hero Section</h3>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className="block text-xs text-slate-400 mb-1.5">Media type</label>
-          <select value={mediaType} onChange={(e) => onPatch({ mediaType: e.target.value })} className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2 px-3 text-sm text-slate-200 outline-none focus:border-violet-500">
+          <label className="block text-xs text-gray-500 mb-1.5">Media type</label>
+          <select value={mediaType} onChange={(e) => onPatch({ mediaType: e.target.value })} className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 px-3 text-sm text-gray-900 outline-none focus:border-black">
             <option value="video">Video</option><option value="image">Image</option><option value="lottie">Lottie</option><option value="gif">GIF</option><option value="none">None (color/gradient)</option>
           </select>
         </div>
         <div>
-          <label className="block text-xs text-slate-400 mb-1.5">Height</label>
-          <select value={str(data.heightMode, '')} onChange={(e) => onPatch({ heightMode: e.target.value })} className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2 px-3 text-sm text-slate-200 outline-none focus:border-violet-500">
+          <label className="block text-xs text-gray-500 mb-1.5">Height</label>
+          <select value={str(data.heightMode, '')} onChange={(e) => onPatch({ heightMode: e.target.value })} className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 px-3 text-sm text-gray-900 outline-none focus:border-black">
             <option value="">Default (banner)</option><option value="compact">Compact (~38%)</option><option value="medium">Medium (~50%)</option><option value="campaign">Campaign (~66%)</option>
           </select>
         </div>
@@ -739,7 +740,7 @@ const HeroEditor: React.FC<{ data: Record<string, unknown>; onPatch: (p: Record<
       {mediaType !== 'none' && (
         <div className="space-y-2">
           <TextField label="Media URL" value={str(data.mediaUrl)} onChange={(v) => onPatch({ mediaUrl: v })} placeholder="https://… (or upload)" />
-          <button onClick={() => fileRef.current?.click()} disabled={uploading} className="flex items-center gap-1.5 text-xs text-violet-400 hover:text-violet-300 font-semibold disabled:opacity-50">
+          <button onClick={() => fileRef.current?.click()} disabled={uploading} className="flex items-center gap-1.5 text-xs text-black font-semibold hover:text-black font-semibold font-semibold disabled:opacity-50">
             {uploading ? <RefreshCw size={13} className="animate-spin" /> : <UploadCloud size={13} />} Upload {mediaType}
           </button>
           <input ref={fileRef} type="file" accept={accept} onChange={onUpload} className="hidden" />
@@ -751,8 +752,8 @@ const HeroEditor: React.FC<{ data: Record<string, unknown>; onPatch: (p: Record<
       </div>
       <ColorListField label="Background gradient (optional)" value={arr(data.gradientColors)} onChange={(v) => onPatch({ gradientColors: v })} />
       <div>
-        <label className="block text-xs text-slate-400 mb-1.5">Overlay opacity (0–1)</label>
-        <input type="number" step="0.05" min="0" max="1" value={num(data.overlayOpacity, 0)} onChange={(e) => onPatch({ overlayOpacity: Number(e.target.value) })} className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2 px-3 text-sm text-slate-200 outline-none focus:border-violet-500" />
+        <label className="block text-xs text-gray-500 mb-1.5">Overlay opacity (0–1)</label>
+        <input type="number" step="0.05" min="0" max="1" value={num(data.overlayOpacity, 0)} onChange={(e) => onPatch({ overlayOpacity: Number(e.target.value) })} className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 px-3 text-sm text-gray-900 outline-none focus:border-black" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <TextField label="Title (optional)" value={str(data.title)} onChange={(v) => onPatch({ title: v })} />
@@ -778,19 +779,19 @@ const CashbackEditor: React.FC<{ data: Record<string, unknown>; onPatch: (p: Rec
       const res = await uploadCmsImage({ fileBase64: b64, contentType: file.type, folder: 'cashback' });
       const url = (res.data as { url?: string }).url || '';
       if (url) onPatch({ imageUrl: url });
-    } catch (err) { window.alert(err instanceof Error ? err.message : 'Upload failed'); }
+    } catch (err) { toast.error(err instanceof Error ? err.message : 'Upload failed'); }
     finally { setUploading(false); if (fileRef.current) fileRef.current.value = ''; }
   };
   return (
     <div className="space-y-4">
-      <h3 className="text-base font-bold text-slate-200">Cashback Banner</h3>
-      <p className="text-xs text-slate-500">Overrides the CMS copy/visual for this banner. Leave headline/subtext blank to inherit the Home Content (CMS) copy.</p>
+      <h3 className="text-base font-bold text-gray-900">Cashback Banner</h3>
+      <p className="text-xs text-gray-500">Overrides the CMS copy/visual for this banner. Leave headline/subtext blank to inherit the Home Content (CMS) copy.</p>
       <TextField label="Headline (optional override)" value={str(data.headline)} onChange={(v) => onPatch({ headline: v })} />
       <TextField label="Subtext (optional override)" value={str(data.subtext)} onChange={(v) => onPatch({ subtext: v })} />
       <ColorListField label="Background gradient colors" value={arr(data.bgColors)} onChange={(v) => onPatch({ bgColors: v })} />
       <div className="space-y-2">
         <TextField label="Left visual image URL (optional)" value={str(data.imageUrl)} onChange={(v) => onPatch({ imageUrl: v })} placeholder="https://… (or upload)" />
-        <button onClick={() => fileRef.current?.click()} disabled={uploading} className="flex items-center gap-1.5 text-xs text-violet-400 hover:text-violet-300 font-semibold disabled:opacity-50">
+        <button onClick={() => fileRef.current?.click()} disabled={uploading} className="flex items-center gap-1.5 text-xs text-black font-semibold hover:text-black font-semibold font-semibold disabled:opacity-50">
           {uploading ? <RefreshCw size={13} className="animate-spin" /> : <UploadCloud size={13} />} Upload image
         </button>
         <input ref={fileRef} type="file" accept="image/*" onChange={onUpload} className="hidden" />
@@ -834,8 +835,8 @@ const patchSchedule = (i: number, cur: FeedSection, patchAt: PatchAt, key: 'star
 
 const LayoutSelect: React.FC<{ label: string; value: string; opts: string[]; labels?: Record<string, string>; onChange: (v: string) => void }> = ({ label, value, opts, labels, onChange }) => (
   <div>
-    <label className="block text-xs text-slate-400 mb-1.5">{label}</label>
-    <select value={value} onChange={(e) => onChange(e.target.value)} className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2 px-3 text-sm text-slate-200 outline-none focus:border-violet-500 capitalize">
+    <label className="block text-xs text-gray-500 mb-1.5">{label}</label>
+    <select value={value} onChange={(e) => onChange(e.target.value)} className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 px-3 text-sm text-gray-900 outline-none focus:border-black capitalize">
       {opts.map((o) => <option key={o} value={o}>{labels?.[o] ?? (o === '' ? 'Default' : o)}</option>)}
     </select>
   </div>
@@ -843,13 +844,13 @@ const LayoutSelect: React.FC<{ label: string; value: string; opts: string[]; lab
 
 const ChipMultiSelect: React.FC<{ label: string; all: string[]; value: string[]; labelFor?: (v: string) => string; onChange: (v: string[]) => void }> = ({ label, all, value, labelFor, onChange }) => (
   <div>
-    <label className="block text-xs text-slate-400 mb-1.5">{label}</label>
+    <label className="block text-xs text-gray-500 mb-1.5">{label}</label>
     <div className="flex flex-wrap gap-1.5">
       {all.map((o) => {
         const on = value.includes(o);
         return (
           <button key={o} onClick={() => onChange(on ? value.filter((x) => x !== o) : [...value, o])}
-            className={`px-2.5 py-1 rounded-full text-xs font-semibold border transition-colors capitalize ${on ? 'border-violet-500 bg-violet-600/20 text-violet-200' : 'border-slate-600 bg-[#0f172a] text-slate-400 hover:text-slate-200'}`}>
+            className={`px-2.5 py-1 rounded-full text-xs font-semibold border transition-colors capitalize ${on ? 'border-black bg-black text-white text-violet-200' : 'border-gray-200 bg-gray-50 text-gray-500 hover:text-gray-900'}`}>
             {labelFor ? labelFor(o) : o}
           </button>
         );
@@ -860,9 +861,9 @@ const ChipMultiSelect: React.FC<{ label: string; all: string[]; value: string[];
 
 const ScheduleField: React.FC<{ label: string; value: string; onChange: (v: string) => void }> = ({ label, value, onChange }) => (
   <div>
-    <label className="block text-xs text-slate-400 mb-1.5">{label}</label>
+    <label className="block text-xs text-gray-500 mb-1.5">{label}</label>
     <input type="datetime-local" value={value} onChange={(e) => onChange(e.target.value)}
-      className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2 px-3 text-sm text-slate-200 outline-none focus:border-violet-500" />
+      className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 px-3 text-sm text-gray-900 outline-none focus:border-black" />
   </div>
 );
 
@@ -888,44 +889,44 @@ const FeedComposer: React.FC<{
   return (
     <div className="grid gap-6 md:grid-cols-2">
       {/* Section list + add */}
-      <div className="rounded-xl border border-slate-700 bg-slate-800 p-5 space-y-3 h-fit">
-        <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400">Feed — order & visibility</h3>
-        {feed.length === 0 && <p className="text-xs text-slate-500">Empty feed. Add sections below to compose the home, top to bottom.</p>}
+      <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-3 h-fit">
+        <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500">Feed — order & visibility</h3>
+        {feed.length === 0 && <p className="text-xs text-gray-500">Empty feed. Add sections below to compose the home, top to bottom.</p>}
         {feed.map((s, i) => {
           const visible = s.visible !== false;
           const targeted = !!s.targeting && Object.keys(s.targeting).length > 0;
           return (
-            <div key={s.id || i} className={`flex items-center gap-1.5 rounded-lg border p-2.5 ${sel === i ? 'border-violet-500 bg-violet-600/5' : 'border-slate-700 bg-[#0f172a]/30'}`}>
-              <span className="text-[10px] text-slate-500 w-4 text-center shrink-0">{i + 1}</span>
+            <div key={s.id || i} className={`flex items-center gap-1.5 rounded-lg border p-2.5 ${sel === i ? 'border-black bg-black text-white' : 'border-gray-200 bg-gray-50/30'}`}>
+              <span className="text-[10px] text-gray-500 w-4 text-center shrink-0">{i + 1}</span>
               <button onClick={() => setSel(i)} className="text-left flex-1 min-w-0">
-                <p className="text-sm font-semibold text-slate-200 truncate">{sectionLabel(s.type)}</p>
-                <p className="text-[11px] text-slate-500 truncate">{visible ? '🟢' : '🔴'}{s.themed ? ' · themed' : ''}{targeted ? ' · 🎯' : ''}</p>
+                <p className="text-sm font-semibold text-gray-900 truncate">{sectionLabel(s.type)}</p>
+                <p className="text-[11px] text-gray-500 truncate">{visible ? '🟢' : '🔴'}{s.themed ? ' · themed' : ''}{targeted ? ' · 🎯' : ''}</p>
               </button>
-              <button onClick={() => move(i, -1)} disabled={i === 0} className="p-1 text-slate-400 hover:text-violet-300 disabled:opacity-30"><ArrowUp size={14} /></button>
-              <button onClick={() => move(i, 1)} disabled={i === feed.length - 1} className="p-1 text-slate-400 hover:text-violet-300 disabled:opacity-30"><ArrowDown size={14} /></button>
-              <button onClick={() => patchAt(i, { visible: !visible })} className="p-1">{visible ? <ToggleRight className="h-5 w-5 text-violet-500" /> : <ToggleLeft className="h-5 w-5 text-slate-600" />}</button>
-              <button onClick={() => removeAt(i)} className="p-1 text-slate-500 hover:text-rose-400"><Trash2 size={14} /></button>
+              <button onClick={() => move(i, -1)} disabled={i === 0} className="p-1 text-gray-500 hover:text-black font-semibold disabled:opacity-30"><ArrowUp size={14} /></button>
+              <button onClick={() => move(i, 1)} disabled={i === feed.length - 1} className="p-1 text-gray-500 hover:text-black font-semibold disabled:opacity-30"><ArrowDown size={14} /></button>
+              <button onClick={() => patchAt(i, { visible: !visible })} className="p-1">{visible ? <ToggleRight className="h-5 w-5 text-violet-500" /> : <ToggleLeft className="h-5 w-5 text-gray-400" />}</button>
+              <button onClick={() => removeAt(i)} className="p-1 text-gray-500 hover:text-rose-400"><Trash2 size={14} /></button>
             </div>
           );
         })}
-        <div className="flex gap-2 pt-2 border-t border-slate-700">
-          <select value={addType} onChange={(e) => setAddType(e.target.value)} className="flex-1 rounded-lg border border-slate-600 bg-[#0f172a] py-2 px-2 text-xs text-slate-200 outline-none focus:border-violet-500">
+        <div className="flex gap-2 pt-2 border-t border-gray-200">
+          <select value={addType} onChange={(e) => setAddType(e.target.value)} className="flex-1 rounded-lg border border-gray-200 bg-gray-50 py-2 px-2 text-xs text-gray-900 outline-none focus:border-black">
             {SECTION_CATALOG.map((s) => <option key={s.type} value={s.type}>{s.label}</option>)}
           </select>
-          <button onClick={addSection} className="flex items-center gap-1 rounded-lg bg-violet-600 hover:bg-violet-500 text-white font-semibold py-2 px-3 text-xs"><Plus size={13} /> Add</button>
+          <button onClick={addSection} className="flex items-center gap-1 rounded-lg bg-black text-white hover:bg-gray-900 text-gray-900 font-semibold py-2 px-3 text-xs"><Plus size={13} /> Add</button>
         </div>
-        <p className="text-[11px] text-slate-500">Use ▲▼ to reorder; renders top→bottom. Themed sections paint on the blue top zone.</p>
+        <p className="text-[11px] text-gray-500">Use ▲▼ to reorder; renders top→bottom. Themed sections paint on the blue top zone.</p>
       </div>
 
       {/* Per-section panel */}
-      <div className="rounded-xl border border-slate-700 bg-slate-800 p-5 space-y-5">
+      <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-5">
         {cur === null || sel === null ? (
-          <p className="text-sm text-slate-500">Select a section to edit its placement, layout, targeting & content.</p>
+          <p className="text-sm text-gray-500">Select a section to edit its placement, layout, targeting & content.</p>
         ) : (
           <>
             <div className="flex items-center justify-between gap-3">
-              <h3 className="text-base font-bold text-slate-200">{sectionLabel(cur.type)}</h3>
-              <label className="flex items-center gap-2 text-xs text-slate-400 shrink-0">
+              <h3 className="text-base font-bold text-gray-900">{sectionLabel(cur.type)}</h3>
+              <label className="flex items-center gap-2 text-xs text-gray-500 shrink-0">
                 <input type="checkbox" checked={!!cur.themed} onChange={(e) => patchAt(sel, { themed: e.target.checked })} />
                 Themed (blue top)
               </label>
@@ -933,7 +934,7 @@ const FeedComposer: React.FC<{
 
             {/* Layout params */}
             <div className="space-y-3">
-              <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500"><SlidersHorizontal size={13} /> Layout</div>
+              <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-500"><SlidersHorizontal size={13} /> Layout</div>
               <div className="grid gap-3 sm:grid-cols-2">
                 <LayoutSelect label="Vertical spacing" value={str(lay.padding, 'normal')} opts={[...PADDING_OPTS]} onChange={(v) => patchAt(sel, { layout: { ...lay, padding: v } })} />
                 <LayoutSelect label="Divider after" value={str(lay.divider, 'none')} opts={[...DIVIDER_OPTS]} onChange={(v) => patchAt(sel, { layout: { ...lay, divider: v } })} />
@@ -950,8 +951,8 @@ const FeedComposer: React.FC<{
             </div>
 
             {/* Targeting predicates */}
-            <div className="space-y-3 border-t border-slate-700 pt-4">
-              <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500"><Crosshair size={13} /> Targeting <span className="normal-case font-normal text-slate-600">· empty = always show</span></div>
+            <div className="space-y-3 border-t border-gray-200 pt-4">
+              <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-500"><Crosshair size={13} /> Targeting <span className="normal-case font-normal text-gray-400">· empty = always show</span></div>
               <ChipMultiSelect label="Genders" all={[...GENDER_OPTS]} value={arr(tgt.genders)} onChange={(v) => patchTarget(sel, cur, patchAt, 'genders', v)} />
               {zones.length > 0 && (
                 <ChipMultiSelect label="Zones" all={zones.map((z) => z.id)} labelFor={(id) => zones.find((z) => z.id === id)?.name || id} value={arr(tgt.zones)} onChange={(v) => patchTarget(sel, cur, patchAt, 'zones', v)} />
@@ -968,8 +969,8 @@ const FeedComposer: React.FC<{
             </div>
 
             {/* Content — reuse the existing per-type data editors */}
-            <div className="space-y-3 border-t border-slate-700 pt-4">
-              <div className="text-xs font-bold uppercase tracking-wider text-slate-500">Content</div>
+            <div className="space-y-3 border-t border-gray-200 pt-4">
+              <div className="text-xs font-bold uppercase tracking-wider text-gray-500">Content</div>
               <SectionDataEditor section={{ type: cur.type, data: (cur.data as Record<string, unknown>) || {} }} onPatch={(p) => patchAt(sel, { data: { ...(cur.data || {}), ...p } })} />
             </div>
           </>
@@ -1006,12 +1007,12 @@ const PreviewPane: React.FC<{ theme: ThemeMap; sections: UiSection[]; device: 'm
 
   const frameW = device === 'mobile' ? 'max-w-[360px]' : 'max-w-[760px]';
   return (
-    <div className="rounded-xl border border-slate-700 bg-slate-800 p-5">
+    <div className="rounded-xl border border-gray-200 bg-white p-5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2 text-xs text-amber-400/90"><AlertTriangle size={14} /> Approximate preview — colors/layout indicative; verify on device.</div>
-        <div className="flex gap-1 bg-[#0f172a] rounded-lg p-1">
-          <button onClick={() => setDevice('mobile')} className={`p-1.5 rounded ${device === 'mobile' ? 'bg-violet-600 text-white' : 'text-slate-400'}`}><Smartphone size={15} /></button>
-          <button onClick={() => setDevice('desktop')} className={`p-1.5 rounded ${device === 'desktop' ? 'bg-violet-600 text-white' : 'text-slate-400'}`}><Monitor size={15} /></button>
+        <div className="flex gap-1 bg-gray-50 rounded-lg p-1">
+          <button onClick={() => setDevice('mobile')} className={`p-1.5 rounded ${device === 'mobile' ? 'bg-black text-white text-gray-900' : 'text-gray-500'}`}><Smartphone size={15} /></button>
+          <button onClick={() => setDevice('desktop')} className={`p-1.5 rounded ${device === 'desktop' ? 'bg-black text-white text-gray-900' : 'text-gray-500'}`}><Monitor size={15} /></button>
         </div>
       </div>
       <div className={`mx-auto ${frameW} rounded-[28px] border-4 border-slate-950 overflow-hidden shadow-2xl`} style={{ backgroundColor: t('sheetBg') }}>
@@ -1029,25 +1030,25 @@ const PreviewPane: React.FC<{ theme: ThemeMap; sections: UiSection[]; device: 'm
           <div className="relative w-full flex items-end" style={{ height: heroH, background: heroBg }}>
             {num(heroData.overlayOpacity, 0) > 0 && <div className="absolute inset-0" style={{ backgroundColor: str(heroData.overlayColor, '#000'), opacity: num(heroData.overlayOpacity, 0) }} />}
             <div className="relative p-3">
-              {str(heroData.title) && <div className="text-white font-extrabold text-lg leading-tight">{str(heroData.title)}</div>}
-              {str(heroData.subtitle) && <div className="text-white/90 text-xs">{str(heroData.subtitle)}</div>}
+              {str(heroData.title) && <div className="text-gray-900 font-extrabold text-lg leading-tight">{str(heroData.title)}</div>}
+              {str(heroData.subtitle) && <div className="text-gray-900/90 text-xs">{str(heroData.subtitle)}</div>}
               {str(heroData.ctaText) && <span className="inline-block mt-2 text-xs font-bold px-3 py-1 rounded-full" style={{ backgroundColor: t('ctaBg'), color: t('ctaFg') }}>{str(heroData.ctaText)}</span>}
             </div>
-            {!str(heroData.title) && <div className="absolute inset-0 flex items-center justify-center text-white/70 text-xs uppercase tracking-wide">{str(heroData.mediaType, 'video')} hero</div>}
+            {!str(heroData.title) && <div className="absolute inset-0 flex items-center justify-center text-gray-900/70 text-xs uppercase tracking-wide">{str(heroData.mediaType, 'video')} hero</div>}
           </div>
         )}
         {/* Queue banner (themed top, Template C) */}
         {queue && (
           <div className="relative w-full flex items-center justify-between px-4" style={{ height: qH, background: qBg }}>
             <div className="pr-2">
-              <div className="text-white font-extrabold text-xl leading-tight">{str(qd.title) || 'Still Waiting?'}</div>
-              <div className="text-white/80 text-[11px] mt-1">{str(qd.subtitle) || 'Long queues. Uncertain time.'}</div>
+              <div className="text-gray-900 font-extrabold text-xl leading-tight">{str(qd.title) || 'Still Waiting?'}</div>
+              <div className="text-gray-900/80 text-[11px] mt-1">{str(qd.subtitle) || 'Long queues. Uncertain time.'}</div>
               <span className="inline-block mt-3 text-[11px] font-bold px-3 py-1 rounded-full" style={{ backgroundColor: t('ctaBg'), color: t('ctaFg') }}>{str(qd.ctaText) || 'Book Now'}</span>
             </div>
             <div className="rounded-xl px-3 py-3 text-center shrink-0" style={{ border: `1.5px solid ${t('accent')}`, boxShadow: `0 0 18px ${t('accent')}55` }}>
               <div className="text-[8px] font-bold tracking-wide" style={{ color: t('accent') }}>{str(qd.tokenLabel) || 'YOUR TOKEN'}</div>
-              <div className="text-white text-3xl font-extrabold">{str(qd.tokenNumber) || '45'}</div>
-              <div className="text-white/70 text-[7px] tracking-wide">{str(qd.tokenCaption) || 'PEOPLE AHEAD'}</div>
+              <div className="text-gray-900 text-3xl font-extrabold">{str(qd.tokenNumber) || '45'}</div>
+              <div className="text-gray-900/70 text-[7px] tracking-wide">{str(qd.tokenCaption) || 'PEOPLE AHEAD'}</div>
             </div>
           </div>
         )}
@@ -1058,8 +1059,8 @@ const PreviewPane: React.FC<{ theme: ThemeMap; sections: UiSection[]; device: 'm
               <div key={i} className="grid grid-cols-2 gap-2">
                 {[promo[0] || '#14B8A6', promo[1] || '#7C3AED'].map((c, j) => (
                   <div key={j} className="rounded-xl p-3 h-16 flex flex-col justify-center" style={{ background: `linear-gradient(135deg, ${c}, ${c})` }}>
-                    <span className="text-white text-xs font-extrabold">{j === 0 ? 'Flat Offer' : 'Refer & Earn'}</span>
-                    <span className="text-white/85 text-[10px]">{j === 0 ? 'Up to 20% OFF' : 'Earn with friends'}</span>
+                    <span className="text-gray-900 text-xs font-extrabold">{j === 0 ? 'Flat Offer' : 'Refer & Earn'}</span>
+                    <span className="text-gray-900/85 text-[10px]">{j === 0 ? 'Up to 20% OFF' : 'Earn with friends'}</span>
                   </div>
                 ))}
               </div>
@@ -1067,7 +1068,7 @@ const PreviewPane: React.FC<{ theme: ThemeMap; sections: UiSection[]; device: 'm
             if (s.type === 'cashback') {
               const cb = arr(s.data?.bgColors);
               const cbBg = cb.length >= 2 ? `linear-gradient(90deg, ${cb.join(',')})` : 'linear-gradient(90deg,#0B1326,#14233F)';
-              return <div key={i} className="rounded-xl p-3 text-white" style={{ background: cbBg }}><div className="text-xs font-extrabold">{str(s.data?.headline) || '2% Cashback on every booking'}</div><div className="text-[10px] text-white/70">{str(s.data?.subtext) || 'Credited instantly to your Jayple Wallet'}</div></div>;
+              return <div key={i} className="rounded-xl p-3 text-gray-900" style={{ background: cbBg }}><div className="text-xs font-extrabold">{str(s.data?.headline) || '2% Cashback on every booking'}</div><div className="text-[10px] text-gray-900/70">{str(s.data?.subtext) || 'Credited instantly to your Jayple Wallet'}</div></div>;
             }
             if (s.type === 'popularServices' || s.type === 'services') {
               const sz = num(s.data?.iconSize, 48);
@@ -1080,7 +1081,7 @@ const PreviewPane: React.FC<{ theme: ThemeMap; sections: UiSection[]; device: 'm
               <div key={i}><div className="text-sm font-extrabold mb-2" style={{ color: t('chipText') }}>{str(s.data?.title) || 'Top picks near you'}</div>
                 <div className="flex gap-2">{[0, 1, 2].map((j) => (<div key={j} className="w-28 shrink-0 rounded-xl overflow-hidden border border-slate-200/30"><div className="h-16 bg-slate-300/30" /><div className="p-1.5"><div className="h-2 w-16 bg-slate-300/40 rounded mb-1" /><div className="h-2 w-10 bg-slate-300/30 rounded" /></div></div>))}</div></div>
             );
-            return <div key={i} className="rounded-lg border border-dashed border-slate-300/40 p-2 text-[10px] text-slate-400 text-center">{sectionLabel(s.type)}</div>;
+            return <div key={i} className="rounded-lg border border-dashed border-slate-300/40 p-2 text-[10px] text-gray-500 text-center">{sectionLabel(s.type)}</div>;
           })}
         </div>
       </div>

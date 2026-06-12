@@ -34,14 +34,14 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
             <AlertTriangle className="h-8 w-8 text-rose-400" />
           </div>
           <div className="space-y-1">
-            <p className="text-base font-semibold text-slate-200">Something went wrong</p>
-            <p className="text-sm text-slate-500 max-w-sm">
+            <p className="text-base font-semibold text-gray-900">Something went wrong</p>
+            <p className="text-sm text-gray-500 max-w-sm">
               {this.state.error?.message || 'An unexpected error occurred in this section.'}
             </p>
           </div>
           <button
             onClick={() => this.setState({ hasError: false, error: null })}
-            className="flex items-center gap-2 rounded-lg bg-slate-700 px-4 py-2 text-sm text-slate-200 hover:bg-slate-600 transition-colors"
+            className="flex items-center gap-2 rounded-lg bg-slate-700 px-4 py-2 text-sm text-gray-900 hover:bg-slate-600 transition-colors"
           >
             <RefreshCw className="h-4 w-4" />
             Try again

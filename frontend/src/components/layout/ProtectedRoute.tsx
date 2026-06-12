@@ -17,9 +17,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   if (loading) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-[#0f172a] text-slate-200">
+      <div className="flex h-screen w-screen items-center justify-center bg-gray-50 text-gray-900">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-violet-500 border-t-transparent" />
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-black border-t-transparent" />
           <p className="text-sm font-medium animate-pulse">Loading secure session...</p>
         </div>
       </div>

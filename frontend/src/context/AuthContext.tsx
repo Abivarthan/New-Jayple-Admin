@@ -3,7 +3,8 @@ import { onAuthStateChanged, signOut } from 'firebase/auth';
 import type { User } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../services/firebase';
-import type { AdminUser, AdminPermission } from '../../../shared/src/types';
+import type { AdminUser } from '../../../shared/src/types';
+import type { AdminPermission } from '../shared/constants/permissions';
 
 interface AuthContextType {
   user: User | null;
@@ -29,7 +30,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const hasPermission = (permission: AdminPermission): boolean => {
     if (!adminProfile) return false;
     if (adminProfile.role === 'superadmin') return true;
-    return adminProfile.permissions.includes(permission);
+    return (adminProfile.permissions as string[]).includes(permission);
   };
 
   useEffect(() => {

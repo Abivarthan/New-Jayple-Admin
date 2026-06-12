@@ -5,7 +5,6 @@ import { LoadingSpinner } from '../../shared/components/feedback/LoadingSpinner'
 const Categories = lazy(() =>
   import('./pages/Categories').then((m) => ({ default: m.Categories }))
 );
-const SubCategories = lazy(() => import('./pages/SubCategories'));
 const ImageLibrary = lazy(() =>
   import('./pages/ImageLibrary').then((m) => ({ default: m.ImageLibrary }))
 );
@@ -16,10 +15,6 @@ export const catalogRoutes: RouteObject[] = [
   {
     path: 'catalog/categories',
     element: <Suspense fallback={Fallback}><Categories /></Suspense>,
-  },
-  {
-    path: 'catalog/sub-categories',
-    element: <Suspense fallback={Fallback}><SubCategories /></Suspense>,
   },
   {
     path: 'catalog/image-library',

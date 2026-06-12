@@ -42,16 +42,16 @@ export const ExploreDiscovery: React.FC = () => {
 
   const setPick = (i: number, patch: Partial<Pick>) => setPicks(picks.map((p, j) => (j === i ? { ...p, ...patch } : p)));
 
-  if (loading) return <div className="flex items-center justify-center py-20 text-slate-500"><RefreshCw className="h-6 w-6 animate-spin mr-2" /> Loading…</div>;
+  if (loading) return <div className="flex items-center justify-center py-20 text-gray-500"><RefreshCw className="h-6 w-6 animate-spin mr-2" /> Loading…</div>;
 
   return (
     <div className="space-y-6 max-w-4xl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight text-slate-100"><Compass size={22} /> Explore Discovery</h1>
-          <p className="text-sm text-slate-400">Popular Picks + Trending searches on the customer Explore page. Tapping any of these runs a search → shows the salons that offer it.</p>
+          <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight text-gray-900"><Compass size={22} /> Explore Discovery</h1>
+          <p className="text-sm text-gray-500">Popular Picks + Trending searches on the customer Explore page. Tapping any of these runs a search → shows the salons that offer it.</p>
         </div>
-        <button onClick={onSave} disabled={saving} className="flex items-center gap-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-white font-semibold py-2.5 px-4 text-sm disabled:opacity-50">
+        <button onClick={onSave} disabled={saving} className="flex items-center gap-2 rounded-lg bg-black text-white hover:bg-gray-900 text-gray-900 font-semibold py-2.5 px-4 text-sm disabled:opacity-50">
           {saving ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save size={16} />} Save
         </button>
       </div>
@@ -63,47 +63,47 @@ export const ExploreDiscovery: React.FC = () => {
       )}
 
       {/* Popular Picks */}
-      <div className="rounded-xl border border-slate-700 bg-slate-800 p-6 space-y-4">
+      <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400">Popular Picks</h2>
-          <button onClick={() => setPicks([...picks, { label: '', category: '', imageUrl: '' }])} className="flex items-center gap-1 text-xs text-violet-400 hover:text-violet-300 font-semibold"><Plus size={14} /> Add pick</button>
+          <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500">Popular Picks</h2>
+          <button onClick={() => setPicks([...picks, { label: '', category: '', imageUrl: '' }])} className="flex items-center gap-1 text-xs text-black font-semibold hover:text-black font-semibold font-semibold"><Plus size={14} /> Add pick</button>
         </div>
-        {picks.length === 0 && <p className="text-xs text-slate-500">No picks yet — the app shows sensible defaults until you add some.</p>}
+        {picks.length === 0 && <p className="text-xs text-gray-500">No picks yet — the app shows sensible defaults until you add some.</p>}
         <div className="space-y-4">
           {picks.map((p, i) => (
-            <div key={i} className="grid gap-4 sm:grid-cols-[120px_1fr_auto] items-start rounded-lg border border-slate-700 bg-[#0f172a]/30 p-4">
+            <div key={i} className="grid gap-4 sm:grid-cols-[120px_1fr_auto] items-start rounded-lg border border-gray-200 bg-gray-50/30 p-4">
               <div className="w-[120px]"><ImageUploader value={p.imageUrl} onChange={(url) => setPick(i, { imageUrl: url })} folder="explore" label="Image" /></div>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1.5">Label (shown on the card)</label>
-                  <input type="text" value={p.label} onChange={(e) => setPick(i, { label: e.target.value })} placeholder="Haircut" className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2 px-3 text-sm text-slate-200 outline-none focus:border-violet-500" />
+                  <label className="block text-xs text-gray-500 mb-1.5">Label (shown on the card)</label>
+                  <input type="text" value={p.label} onChange={(e) => setPick(i, { label: e.target.value })} placeholder="Haircut" className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 px-3 text-sm text-gray-900 outline-none focus:border-black" />
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1.5">Search category (what tapping it searches for)</label>
-                  <input type="text" value={p.category} onChange={(e) => setPick(i, { category: e.target.value })} placeholder="Haircut" className="w-full rounded-lg border border-slate-600 bg-[#0f172a] py-2 px-3 text-sm text-slate-200 outline-none focus:border-violet-500" />
+                  <label className="block text-xs text-gray-500 mb-1.5">Search category (what tapping it searches for)</label>
+                  <input type="text" value={p.category} onChange={(e) => setPick(i, { category: e.target.value })} placeholder="Haircut" className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 px-3 text-sm text-gray-900 outline-none focus:border-black" />
                 </div>
               </div>
-              <button onClick={() => setPicks(picks.filter((_, j) => j !== i))} className="text-slate-500 hover:text-rose-400 p-1"><Trash2 size={16} /></button>
+              <button onClick={() => setPicks(picks.filter((_, j) => j !== i))} className="text-gray-500 hover:text-rose-400 p-1"><Trash2 size={16} /></button>
             </div>
           ))}
         </div>
       </div>
 
       {/* Trending */}
-      <div className="rounded-xl border border-slate-700 bg-slate-800 p-6 space-y-4">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400">Trending Searches</h2>
+      <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-4">
+        <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500">Trending Searches</h2>
         <div className="flex gap-2">
-          <input type="text" value={trendingInput} onChange={(e) => setTrendingInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && trendingInput.trim()) { setTrending([...trending, trendingInput.trim()]); setTrendingInput(''); } }} placeholder="Type a term and press Enter (e.g. Hair Spa)" className="flex-1 rounded-lg border border-slate-600 bg-[#0f172a] py-2 px-3 text-sm text-slate-200 outline-none focus:border-violet-500" />
-          <button onClick={() => { if (trendingInput.trim()) { setTrending([...trending, trendingInput.trim()]); setTrendingInput(''); } }} className="rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold px-4 text-sm">Add</button>
+          <input type="text" value={trendingInput} onChange={(e) => setTrendingInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && trendingInput.trim()) { setTrending([...trending, trendingInput.trim()]); setTrendingInput(''); } }} placeholder="Type a term and press Enter (e.g. Hair Spa)" className="flex-1 rounded-lg border border-gray-200 bg-gray-50 py-2 px-3 text-sm text-gray-900 outline-none focus:border-black" />
+          <button onClick={() => { if (trendingInput.trim()) { setTrending([...trending, trendingInput.trim()]); setTrendingInput(''); } }} className="rounded-lg bg-slate-700 hover:bg-slate-600 text-gray-900 font-semibold px-4 text-sm">Add</button>
         </div>
         <div className="flex flex-wrap gap-2">
           {trending.map((t, i) => (
-            <span key={i} className="flex items-center gap-1.5 rounded-full border border-slate-600 bg-[#0f172a] py-1.5 px-3 text-sm text-slate-200">
+            <span key={i} className="flex items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 py-1.5 px-3 text-sm text-gray-900">
               {t}
-              <button onClick={() => setTrending(trending.filter((_, j) => j !== i))} className="text-slate-500 hover:text-rose-400"><Trash2 size={12} /></button>
+              <button onClick={() => setTrending(trending.filter((_, j) => j !== i))} className="text-gray-500 hover:text-rose-400"><Trash2 size={12} /></button>
             </span>
           ))}
-          {trending.length === 0 && <p className="text-xs text-slate-500">No trending terms yet — defaults are shown in the app.</p>}
+          {trending.length === 0 && <p className="text-xs text-gray-500">No trending terms yet — defaults are shown in the app.</p>}
         </div>
       </div>
     </div>
