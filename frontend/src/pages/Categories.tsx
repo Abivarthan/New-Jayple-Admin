@@ -218,8 +218,8 @@ export const Categories: React.FC = () => {
                     <td className="px-5 py-3 capitalize text-gray-800">{c.genderTarget}</td>
                     <td className="px-5 py-3 text-center">
                       <div className="flex flex-col items-center gap-1">
-                        <span className="text-[10px] bg-slate-700 px-1.5 py-0.5 rounded text-gray-800">{c.subCategories?.length || 0} sub</span>
-                        <span className="text-[10px] bg-slate-700 px-1.5 py-0.5 rounded text-gray-800">{c.services?.length || 0} svc</span>
+                        <span className="text-[10px] font-bold bg-gray-100 px-2 py-0.5 rounded-full text-gray-700 border border-gray-200">{c.subCategories?.length || 0} sub</span>
+                        <span className="text-[10px] font-bold bg-gray-100 px-2 py-0.5 rounded-full text-gray-700 border border-gray-200">{c.services?.length || 0} svc</span>
                       </div>
                     </td>
                     <td className="px-5 py-3">

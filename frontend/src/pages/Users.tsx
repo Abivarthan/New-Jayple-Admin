@@ -58,10 +58,12 @@ const mapCustomer = (c: AdminCustomer): CustomerListItem => ({
 
 export const Users: React.FC = () => {
   const qc = useQueryClient();
-  const { data: customers = [], isLoading } = useQuery({
+  const { data: rawCustomers = [], isLoading } = useQuery({
     queryKey: ['adminCustomers'],
-    queryFn: async (): Promise<CustomerListItem[]> => (await fetchCustomers()).map(mapCustomer),
+    queryFn: fetchCustomers,
   });
+
+  const customers = React.useMemo(() => rawCustomers.map(mapCustomer), [rawCustomers]);
   const [searchQuery, setSearchQuery] = useState('');
   
   // Filtering States

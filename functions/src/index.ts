@@ -1,4 +1,5 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
+import { onDocumentWritten } from 'firebase-functions/v2/firestore';
 import * as admin from 'firebase-admin';
 import { z } from 'zod';
 
@@ -596,5 +597,98 @@ export const automatedNightlyBackup = onSchedule({
 
 export * from './cms';
 
+/**
+ * Scheduled/Triggered Job: detectFraudFlags
+ * Re-evaluates vendor cancellation rate when bookings change.
+ */
+export const detectFraudFlags = onDocumentWritten({
+  document: 'bookings/{bookingId}',
+  region: 'asia-south1',
+}, async (event) => {
+  const snapshot = event.data;
+  if (!snapshot) return;
 
+  const after = snapshot.after.exists ? snapshot.after.data() : null;
+  const before = snapshot.before.exists ? snapshot.before.data() : null;
+  const bookingData = after || before;
 
+  if (!bookingData || !bookingData.vendorId) return;
+
+  const vendorId = bookingData.vendorId;
+  const vendorName = bookingData.shopName || bookingData.vendorName || 'Unknown Vendor';
+
+  // 1. Calculate the 7-day window
+  const weekStartMillis = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  
+  // In a robust production environment, you might query Firestore here instead of the whole collection.
+  // We query all bookings for this vendor within the last 7 days.
+  const bookingsRef = db.collection('bookings');
+  
+  // Note: Depending on your exact schema, 'createdAt' might be a Timestamp or numeric timestamp.
+  // Using a broad query for the vendor and filtering in memory if 'createdAt' types differ.
+  const vendorBookingsSnap = await bookingsRef
+    .where('vendorId', '==', vendorId)
+    .orderBy('createdAt', 'desc')
+    .get();
+
+  let totalBookings = 0;
+  let cancelledBookings = 0;
+
+  vendorBookingsSnap.forEach((doc) => {
+    const data = doc.data();
+    
+    // Ignore draft/test/future bookings if status marks it so
+    if (data.status === 'draft' || data.status === 'test') return;
+    
+    // Extract timestamp
+    let createdMillis = 0;
+    if (data.createdAt && typeof data.createdAt.toMillis === 'function') {
+      createdMillis = data.createdAt.toMillis();
+    } else if (typeof data.createdAt === 'number') {
+      createdMillis = data.createdAt;
+    } else if (typeof data.createdAt === 'string') {
+      createdMillis = new Date(data.createdAt).getTime();
+    }
+    
+    if (createdMillis < weekStartMillis) return; // ignore older than 7 days
+    
+    totalBookings++;
+    if (data.status === 'cancelled') {
+      // Assuming all cancellations are either vendor or customer.
+      cancelledBookings++;
+    }
+  });
+
+  const cancellationRate = totalBookings > 0 ? (cancelledBookings / totalBookings) * 100 : 0;
+  
+  const fraudRef = db.collection('fraudFlags').doc(vendorId);
+
+  // Fraud Rule: Total >= 10 AND Rate >= 50%
+  if (totalBookings >= 10 && cancellationRate >= 50) {
+    let riskLevel = 'Medium Risk';
+    if (cancellationRate > 75) riskLevel = 'High Risk';
+
+    await fraudRef.set({
+      vendorId,
+      vendorName,
+      totalBookings,
+      cancelledBookings,
+      cancellationRate,
+      riskLevel,
+      flaggedAt: admin.firestore.FieldValue.serverTimestamp(),
+      status: 'Flagged' // Can be updated by admin later
+    }, { merge: true }); // Merge to not overwrite existing investigations if any
+  } else {
+    // If they no longer meet criteria, we might want to clear the flag or just update it
+    const flagSnap = await fraudRef.get();
+    if (flagSnap.exists) {
+      await fraudRef.update({
+        totalBookings,
+        cancelledBookings,
+        cancellationRate,
+        riskLevel: cancellationRate >= 40 ? 'Low Risk' : 'None',
+        status: 'Cleared'
+      });
+    }
+  }
+});

@@ -56,7 +56,6 @@ export const navigationConfig: NavGroup[] = [
     icon: 'Calendar',
     permission: 'bookings',
     children: [
-      { title: 'All Bookings',      path: '/bookings' },
       { title: 'Booking Monitor',   path: '/bookings/monitor' },
       { title: 'Auto Accepted',     path: '/bookings/auto-accepted' },
       { title: 'Delayed Services',  path: '/bookings/delayed' },

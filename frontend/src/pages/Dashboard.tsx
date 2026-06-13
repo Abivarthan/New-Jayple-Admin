@@ -99,26 +99,26 @@ export const Dashboard: React.FC = () => {
           <div className="space-y-3">
             <button
               onClick={() => navigate('/vendors/approvals')}
-              className="w-full rounded-lg bg-black text-white hover:bg-gray-900 py-2.5 text-sm font-semibold text-gray-900 transition-all flex items-center justify-center gap-1.5"
+              className="w-full rounded-lg bg-black text-white hover:bg-gray-900 py-2.5 text-sm font-semibold transition-all flex items-center justify-center gap-1.5"
             >
               Review Pending Vendors ({stats?.pendingVendors ?? 0})
               <ArrowRight size={14} />
             </button>
             <button
               onClick={() => navigate('/vendors')}
-              className="w-full rounded-lg bg-slate-700 hover:bg-slate-600 border border-gray-200 py-2.5 text-sm font-semibold text-gray-900 transition-all"
+              className="w-full rounded-lg bg-slate-700 hover:bg-slate-600 border border-gray-200 py-2.5 text-sm font-semibold text-white transition-all"
             >
               All Vendors
             </button>
             <button
               onClick={() => navigate('/settlements')}
-              className="w-full rounded-lg bg-slate-700 hover:bg-slate-600 border border-gray-200 py-2.5 text-sm font-semibold text-gray-900 transition-all"
+              className="w-full rounded-lg bg-slate-700 hover:bg-slate-600 border border-gray-200 py-2.5 text-sm font-semibold text-white transition-all"
             >
               Settlements
             </button>
             <button
               onClick={() => navigate('/users')}
-              className="w-full rounded-lg bg-slate-700 hover:bg-slate-600 border border-gray-200 py-2.5 text-sm font-semibold text-gray-900 transition-all"
+              className="w-full rounded-lg bg-slate-700 hover:bg-slate-600 border border-gray-200 py-2.5 text-sm font-semibold text-white transition-all"
             >
               Customers
             </button>

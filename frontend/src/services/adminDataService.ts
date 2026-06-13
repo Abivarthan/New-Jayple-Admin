@@ -12,6 +12,8 @@ import {
   limit,
   serverTimestamp,
   Timestamp,
+  onSnapshot,
+  writeBatch,
 } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app, db } from './firebase';
@@ -339,6 +341,8 @@ export const fetchVendors = async (): Promise<AdminVendor[]> => {
       let cancelledBookings = 0;
       let ongoingBookings = 0;
       let totalEarnings = 0;
+      let pendingSettlement = 0;
+      const commissionRate = n(x.commissionRate, 15);
 
       try {
         const bq = query(collection(db, 'bookings'), where('vendorId', '==', d.id));
@@ -349,7 +353,13 @@ export const fetchVendors = async (): Promise<AdminVendor[]> => {
           
           if (status === 'completed' || status === 'reviewed') {
             completedBookings++;
-            totalEarnings += n(bx.servicePrice) || n(bx.totalAmount);
+            const amount = n(bx.servicePrice) || n(bx.totalAmount);
+            totalEarnings += amount;
+
+            if (s(bx.settlementStatus) !== 'settled') {
+               const commission = (amount * commissionRate) / 100;
+               pendingSettlement += (amount - commission);
+            }
           } else if (status === 'cancelled' || status === 'rejected' || status === 'failed') {
             cancelledBookings++;
           } else {
@@ -358,27 +368,9 @@ export const fetchVendors = async (): Promise<AdminVendor[]> => {
         });
       } catch { /* ignore */ }
 
-      // Calculate settlements
-      let pendingSettlement = 0;
-      let totalSettlementsPaid = 0;
-      let lastSettlementDate: number | null = null;
-      try {
-        const sq = query(collection(db, 'history'), where('vendorId', '==', d.id));
-        const ss = await getDocs(sq);
-        ss.docs.forEach((sd) => {
-          const sx = sd.data() as Record<string, unknown>;
-          const sStatus = s(sx.status).toUpperCase();
-          if (sStatus === 'PAID') {
-             totalSettlementsPaid += n(sx.payoutAmount) || n(sx.netAmount);
-             const at = toMillis(sx.processedAt || sx.createdAt);
-             if (at && (!lastSettlementDate || at > lastSettlementDate)) {
-               lastSettlementDate = at;
-             }
-          } else {
-             pendingSettlement += n(sx.payoutAmount) || n(sx.netAmount);
-          }
-        });
-      } catch { /* ignore */ }
+      // Settlements from vendor doc
+      const totalSettlementsPaid = n(x.totalSettledAmount) || 0;
+      const lastSettlementDate = toMillis(x.lastSettlementDate);
 
       const docs = (x.documents || {}) as Record<string, unknown>;
       const loc = (x.location || {}) as Record<string, unknown>;
@@ -419,6 +411,138 @@ export const fetchVendors = async (): Promise<AdminVendor[]> => {
       };
     }),
   );
+};
+
+// ══════════════════════════════════════════════════════════════
+// SETTLEMENT WORKFLOW
+// ══════════════════════════════════════════════════════════════
+export interface VendorSettlementData {
+  grossRevenue: number;
+  commissionRate: number;
+  commissionAmount: number;
+  netSettlementAmount: number;
+  includedBookingIds: string[];
+  totalSettlementsPaid: number;
+  lastSettlementDate: number | null;
+  totalLifetimeEarnings: number;
+}
+
+export const fetchVendorSettlementData = async (vendorId: string): Promise<VendorSettlementData> => {
+  const vendorDoc = await getDoc(doc(db, 'vendors', vendorId));
+  const vendorData = vendorDoc.data() || {};
+  const commissionRate = n(vendorData.commissionRate, 15);
+  
+  const bq = query(collection(db, 'bookings'), where('vendorId', '==', vendorId));
+  const bs = await getDocs(bq);
+  
+  let grossRevenue = 0;
+  const includedBookingIds: string[] = [];
+  let totalLifetimeEarnings = 0;
+
+  bs.docs.forEach((bd) => {
+    const bx = bd.data() as Record<string, unknown>;
+    const status = s(bx.status).toLowerCase();
+    
+    if (status === 'completed' || status === 'reviewed') {
+      const amount = n(bx.totalAmount) || n(bx.servicePrice);
+      totalLifetimeEarnings += amount;
+
+      if (s(bx.settlementStatus) !== 'settled') {
+        grossRevenue += amount;
+        includedBookingIds.push(bd.id);
+      }
+    }
+  });
+
+  const commissionAmount = (grossRevenue * commissionRate) / 100;
+  const netSettlementAmount = grossRevenue - commissionAmount;
+
+  return {
+    grossRevenue,
+    commissionRate,
+    commissionAmount,
+    netSettlementAmount,
+    includedBookingIds,
+    totalSettlementsPaid: n(vendorData.totalSettledAmount) || 0,
+    lastSettlementDate: toMillis(vendorData.lastSettlementDate),
+    totalLifetimeEarnings,
+  };
+};
+
+export interface SettlementHistoryRecord {
+  id: string;
+  date: string;
+  grossRevenue: number;
+  commissionAmount: number;
+  netSettlement: number;
+  settledBy: string;
+  notes: string;
+}
+
+export const fetchVendorSettlementHistory = async (vendorId: string): Promise<SettlementHistoryRecord[]> => {
+  const sq = query(collection(db, 'settlements'), where('vendorId', '==', vendorId), orderBy('settledAt', 'desc'));
+  const ss = await getDocs(sq);
+  
+  return ss.docs.map(d => {
+    const x = d.data();
+    return {
+      id: d.id,
+      date: toMillis(x.settledAt) ? new Date(toMillis(x.settledAt)!).toLocaleDateString() : '—',
+      grossRevenue: n(x.grossRevenue),
+      commissionAmount: n(x.commissionAmount),
+      netSettlement: n(x.settlementAmount),
+      settledBy: s(x.settledBy) || 'Admin',
+      notes: s(x.notes),
+    };
+  });
+};
+
+export const processVendorSettlement = async (
+  vendorId: string,
+  vendorName: string,
+  data: VendorSettlementData,
+  notes: string,
+  settledBy: string
+): Promise<void> => {
+  if (data.includedBookingIds.length === 0 || data.netSettlementAmount <= 0) {
+    throw new Error("No eligible bookings or zero pending settlement.");
+  }
+
+  const batch = writeBatch(db);
+  const settlementRef = doc(collection(db, 'settlements'));
+  const settlementId = settlementRef.id;
+
+  batch.set(settlementRef, {
+    vendorId,
+    vendorName,
+    grossRevenue: data.grossRevenue,
+    commissionRate: data.commissionRate,
+    commissionAmount: data.commissionAmount,
+    settlementAmount: data.netSettlementAmount,
+    settledAt: serverTimestamp(),
+    settledBy,
+    notes,
+    bookingCount: data.includedBookingIds.length
+  });
+
+  const vendorRef = doc(db, 'vendors', vendorId);
+  const newTotalSettled = data.totalSettlementsPaid + data.netSettlementAmount;
+  batch.update(vendorRef, {
+    totalSettledAmount: newTotalSettled,
+    pendingSettlementAmount: 0,
+    lastSettlementDate: serverTimestamp()
+  });
+
+  data.includedBookingIds.forEach(bookingId => {
+    const bookingRef = doc(db, 'bookings', bookingId);
+    batch.update(bookingRef, {
+      settlementStatus: 'settled',
+      settlementId: settlementId,
+      settledAt: serverTimestamp()
+    });
+  });
+
+  await batch.commit();
 };
 
 /** Admin status override. Writes to the vendor doc (rules: isAdmin). */

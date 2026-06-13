@@ -11,6 +11,9 @@ import {
   recomputeAllVendorRatings, 
   fetchVendorBookings,
   fetchVendorServices,
+  fetchVendorSettlementData,
+  fetchVendorSettlementHistory,
+  processVendorSettlement,
   type AdminVendor,
   type AdminVendorBooking,
   type AdminVendorService
@@ -42,6 +45,43 @@ export const AllVendors: React.FC = () => {
   // Drawer states
   const [selectedVendor, setSelectedVendor] = useState<VendorDrawerData | null>(null);
   const [drawerTab, setDrawerTab] = useState<'business' | 'location' | 'services' | 'bookings' | 'finance' | 'documents'>('business');
+
+  // Settlement states
+  const [isSettlementModalOpen, setIsSettlementModalOpen] = useState(false);
+  const [settlementNotes, setSettlementNotes] = useState('');
+  
+  const { data: settlementData, refetch: refetchSettlementData } = useQuery({
+    queryKey: ['vendorSettlement', selectedVendor?.uid],
+    queryFn: () => fetchVendorSettlementData(selectedVendor!.uid),
+    enabled: !!selectedVendor && drawerTab === 'finance',
+  });
+
+  const { data: settlementHistory, refetch: refetchSettlementHistory } = useQuery({
+    queryKey: ['vendorSettlementHistory', selectedVendor?.uid],
+    queryFn: () => fetchVendorSettlementHistory(selectedVendor!.uid),
+    enabled: !!selectedVendor && drawerTab === 'finance',
+  });
+
+  const settleMut = useMutation({
+    mutationFn: () => processVendorSettlement(
+      selectedVendor!.uid,
+      selectedVendor!.shopName,
+      settlementData!,
+      settlementNotes,
+      'Admin'
+    ),
+    onSuccess: () => {
+      toast.success('Settlement processed successfully');
+      setIsSettlementModalOpen(false);
+      setSettlementNotes('');
+      qc.invalidateQueries({ queryKey: ['adminVendors'] });
+      refetchSettlementData();
+      refetchSettlementHistory();
+    },
+    onError: (e: any) => {
+      toast.error(e.message || 'Settlement failed');
+    }
+  });
 
   const syncRatingsMut = useMutation({
     mutationFn: recomputeAllVendorRatings,
@@ -425,26 +465,80 @@ export const AllVendors: React.FC = () => {
               {/* Financial Info Tab */}
               {drawerTab === 'finance' && (
                 <div className="space-y-6">
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-                      <span className="text-xs uppercase font-bold text-gray-500 block mb-2">Total Lifetime Earnings</span>
-                      <span className="text-3xl font-bold text-gray-900">₹{selectedVendor.totalEarnings.toLocaleString()}</span>
-                    </div>
-                    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-                      <span className="text-xs uppercase font-bold text-gray-500 block mb-2">Platform Commission Rate</span>
-                      <span className="text-3xl font-bold text-black font-semibold">{selectedVendor.commissionRate}%</span>
-                    </div>
-                    <div className="rounded-xl border border-green-200 bg-green-50 p-6">
-                      <span className="text-xs uppercase font-bold text-green-700 block mb-2">Total Settlements Paid</span>
-                      <span className="text-3xl font-bold text-green-800">₹{selectedVendor.totalSettlementsPaid.toLocaleString()}</span>
-                      <span className="text-xs font-medium text-green-700 block mt-2">Last Settled: {selectedVendor.lastSettlementDate ? new Date(selectedVendor.lastSettlementDate).toLocaleDateString() : 'Never'}</span>
-                    </div>
-                    <div className="rounded-xl border border-amber-200 bg-amber-50 p-6">
-                      <span className="text-xs uppercase font-bold text-amber-700 block mb-2">Pending Settlement Amount</span>
-                      <span className="text-3xl font-bold text-amber-800">₹{selectedVendor.pendingSettlement.toLocaleString()}</span>
-                      <span className="text-xs font-medium text-amber-700 block mt-2">To be paid in next cycle</span>
-                    </div>
-                  </div>
+                  {/* Settlement Dashboard */}
+                  {settlementData ? (
+                    <>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+                          <span className="text-xs uppercase font-bold text-gray-500 block mb-2">Total Lifetime Earnings</span>
+                          <span className="text-3xl font-bold text-gray-900">₹{settlementData.totalLifetimeEarnings.toLocaleString()}</span>
+                        </div>
+                        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+                          <span className="text-xs uppercase font-bold text-gray-500 block mb-2">Platform Commission Rate</span>
+                          <span className="text-3xl font-bold text-black font-semibold">{settlementData.commissionRate}%</span>
+                        </div>
+                        <div className="rounded-xl border border-green-200 bg-green-50 p-6">
+                          <span className="text-xs uppercase font-bold text-green-700 block mb-2">Total Settlements Paid</span>
+                          <span className="text-3xl font-bold text-green-800">₹{settlementData.totalSettlementsPaid.toLocaleString()}</span>
+                          <span className="text-xs font-medium text-green-700 block mt-2">Last Settled: {settlementData.lastSettlementDate ? new Date(settlementData.lastSettlementDate).toLocaleDateString() : 'Never'}</span>
+                        </div>
+                        <div className="rounded-xl border border-amber-200 bg-amber-50 p-6">
+                          <div className="flex flex-col xl:flex-row justify-between items-start gap-4">
+                            <div>
+                              <span className="text-xs uppercase font-bold text-amber-700 block mb-2">Pending Settlement</span>
+                              <span className="text-3xl font-bold text-amber-800">₹{settlementData.netSettlementAmount.toLocaleString()}</span>
+                              <span className="text-xs font-medium text-amber-700 block mt-2">Included Bookings: {settlementData.includedBookingIds.length}</span>
+                            </div>
+                            
+                            {settlementData.netSettlementAmount > 0 && (
+                              <button 
+                                onClick={() => setIsSettlementModalOpen(true)}
+                                className="shrink-0 px-4 py-2 bg-black text-white rounded-lg text-sm font-bold shadow-md hover:bg-gray-900 transition-colors mt-2 xl:mt-0"
+                              >
+                                Settle Amount
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Settlement History */}
+                      <div>
+                        <h3 className="text-sm font-bold uppercase tracking-wider text-gray-900 mb-4 mt-8">Settlement History</h3>
+                        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                          <table className="w-full text-left border-collapse">
+                            <thead>
+                              <tr className="border-b border-gray-200 bg-gray-50 text-gray-600 text-xs font-semibold uppercase">
+                                <th className="py-3 px-4">Date</th>
+                                <th className="py-3 px-4 text-right">Gross Rev.</th>
+                                <th className="py-3 px-4 text-right">Commission</th>
+                                <th className="py-3 px-4 text-right">Net Settled</th>
+                                <th className="py-3 px-4">Settled By</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
+                              {settlementHistory?.map(sh => (
+                                <tr key={sh.id} className="hover:bg-gray-50">
+                                  <td className="py-3 px-4 font-medium text-gray-900">{sh.date}<br/><span className="text-[10px] text-gray-500 font-mono">{sh.id.slice(0,8)}</span></td>
+                                  <td className="py-3 px-4 text-right">₹{sh.grossRevenue.toLocaleString()}</td>
+                                  <td className="py-3 px-4 text-right text-red-600">-₹{sh.commissionAmount.toLocaleString()}</td>
+                                  <td className="py-3 px-4 text-right font-bold text-green-700">₹{sh.netSettlement.toLocaleString()}</td>
+                                  <td className="py-3 px-4 text-gray-500 text-xs">{sh.settledBy}</td>
+                                </tr>
+                              ))}
+                              {(!settlementHistory || settlementHistory.length === 0) && (
+                                <tr>
+                                  <td colSpan={5} className="py-8 text-center text-gray-500 text-sm">No past settlements found.</td>
+                                </tr>
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="py-12 text-center text-gray-500">Loading settlement data...</div>
+                  )}
                 </div>
               )}
 
@@ -532,8 +626,74 @@ export const AllVendors: React.FC = () => {
             </div>
           </div>
         </>
-      )}
+      )}      {/* Settlement Confirmation Modal */}
+      {isSettlementModalOpen && selectedVendor && settlementData && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between bg-gray-50/50">
+              <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2"><CheckCircle size={20} className="text-green-600" /> Confirm Settlement</h3>
+              <button onClick={() => setIsSettlementModalOpen(false)} className="text-gray-400 hover:text-gray-900 transition-colors"><X size={20}/></button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 text-sm space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-gray-500 font-medium">Vendor:</span>
+                  <span className="font-bold text-gray-900">{selectedVendor.shopName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500 font-medium">Vendor ID:</span>
+                  <span className="font-mono text-gray-900">{selectedVendor.uid}</span>
+                </div>
+                <div className="border-t border-gray-200 my-2"></div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500 font-medium">Included Bookings:</span>
+                  <span className="font-bold text-gray-900">{settlementData.includedBookingIds.length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500 font-medium">Gross Revenue:</span>
+                  <span className="font-bold text-gray-900">₹{settlementData.grossRevenue.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-red-600">
+                  <span className="font-medium">Platform Commission ({settlementData.commissionRate}%):</span>
+                  <span className="font-bold">-₹{settlementData.commissionAmount.toLocaleString()}</span>
+                </div>
+                <div className="border-t border-gray-200 my-2"></div>
+                <div className="flex justify-between text-lg">
+                  <span className="text-gray-900 font-bold">Net Settlement:</span>
+                  <span className="font-black text-green-700">₹{settlementData.netSettlementAmount.toLocaleString()}</span>
+                </div>
+              </div>
 
+              <div>
+                <label className="block text-xs font-bold uppercase text-gray-700 mb-2">Payment Reference / Notes</label>
+                <input
+                  type="text"
+                  value={settlementNotes}
+                  onChange={(e) => setSettlementNotes(e.target.value)}
+                  placeholder="e.g. UTR / Bank Ref Number"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none focus:border-black"
+                />
+              </div>
+            </div>
+            <div className="p-6 bg-gray-50 border-t border-gray-200 flex gap-3 justify-end">
+              <button 
+                onClick={() => setIsSettlementModalOpen(false)}
+                className="px-5 py-2.5 text-sm font-semibold text-gray-700 hover:text-gray-900 bg-white border border-gray-300 rounded-lg transition-colors"
+                disabled={settleMut.isPending}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => settleMut.mutate()}
+                disabled={settleMut.isPending}
+                className="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-bold shadow-md transition-colors flex items-center gap-2 disabled:opacity-70"
+              >
+                {settleMut.isPending ? 'Processing...' : 'Confirm Settlement'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
